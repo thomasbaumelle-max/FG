@@ -14,6 +14,7 @@ import logging
 import os
 import random
 from enum import Enum, auto
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple, Set, TYPE_CHECKING, Sequence
 
 try:  # pragma: no cover - pygame is only required for rendering
@@ -270,19 +271,42 @@ BIOME_CHARS = set(BIOME_CHAR_MAP.keys())
 
 
 
+@dataclass(slots=True)
 class Tile:
-    """Represents a single map tile."""
+    """Represents a single map tile.
 
-    def __init__(self, biome: str = "scarletia_echo_plain") -> None:
-        self.biome = biome
-        self.obstacle = False
-        self.treasure: Optional[Dict[str, Tuple[int, int]]] = None
-        self.enemy_units: Optional[List[Unit]] = None
-        # Optional strategic resource deposit present on this tile
-        self.resource: Optional[str] = None
-        # Optional building such as a mine or sawmill
-        self.building: Optional['Building'] = None
-        self.owner: Optional[int] = None
+    Only dynamic attributes are stored on the ``Tile`` instance itself.  Static
+    per‑tile data such as the biome type and obstacle flag are kept in the
+    parent :class:`WorldMap` as separate arrays for better cache locality and
+    reduced memory usage.
+    """
+
+    world: "WorldMap"
+    x: int
+    y: int
+    treasure: Optional[Dict[str, Tuple[int, int]]] = None
+    enemy_units: Optional[List[Unit]] = None
+    # Optional strategic resource deposit present on this tile
+    resource: Optional[str] = None
+    # Optional building such as a mine or sawmill
+    building: Optional['Building'] = None
+    owner: Optional[int] = None
+
+    @property
+    def biome(self) -> str:
+        return self.world.biomes[self.y][self.x]
+
+    @biome.setter
+    def biome(self, value: str) -> None:  # pragma: no cover - trivial
+        self.world.biomes[self.y][self.x] = value
+
+    @property
+    def obstacle(self) -> bool:
+        return self.world.obstacles[self.y][self.x]
+
+    @obstacle.setter
+    def obstacle(self, value: bool) -> None:  # pragma: no cover - trivial
+        self.world.obstacles[self.y][self.x] = value
 
     def capture(
         self,
@@ -349,27 +373,11 @@ class WorldMap:
         self.enemy_starting_area: Optional[Tuple[int, int, int]] = None
         # Neutral creature groups present on the map
         self.creatures: List[CreatureAI] = []
+
         if map_data:
             parsed_rows = [self._parse_row(row) for row in map_data]
             self.height = len(parsed_rows)
             self.width = max(len(r) for r in parsed_rows) if parsed_rows else 0
-            self.grid: List[List[Tile]] = [[Tile() for _ in range(self.width)] for _ in range(self.height)]
-            self._load_from_parsed_data(parsed_rows)
-            self._create_starting_area()
-
-            total_tiles = max(1, self.width * self.height)
-            if num_resources > 1:
-                if num_resources > 100:
-                    self.resource_density = (num_resources / total_tiles) * 100
-                else:
-                    self.resource_density = num_resources
-            else:
-                self.resource_density = num_resources * 100
-
-            if self.resource_density > 0:
-                self.place_random_resources(random)
-            if num_buildings:
-                self._place_resources()
         else:
             if width is None:
                 width = random.randint(*size_range)
@@ -377,15 +385,34 @@ class WorldMap:
                 height = random.randint(*size_range)
             self.width = width
             self.height = height
-            total_tiles = max(1, width * height)
-            if num_resources > 1:
-                if num_resources > 100:
-                    self.resource_density = (num_resources / total_tiles) * 100
-                else:
-                    self.resource_density = num_resources
+
+        # Arrays storing invariant per-tile data
+        self.biomes: List[List[str]] = [
+            ["scarletia_echo_plain" for _ in range(self.width)]
+            for _ in range(self.height)
+        ]
+        self.obstacles: List[List[bool]] = [
+            [False for _ in range(self.width)] for _ in range(self.height)
+        ]
+        # Grid of tile objects referencing the above arrays
+        self.grid: List[List[Tile]] = [
+            [Tile(self, x, y) for x in range(self.width)] for y in range(self.height)
+        ]
+
+        if map_data:
+            self._load_from_parsed_data(parsed_rows)
+            self._create_starting_area()
+
+        total_tiles = max(1, self.width * self.height)
+        if num_resources > 1:
+            if num_resources > 100:
+                self.resource_density = (num_resources / total_tiles) * 100
             else:
-                self.resource_density = num_resources * 100
-            self.grid = [[Tile() for _ in range(width)] for _ in range(height)]
+                self.resource_density = num_resources
+        else:
+            self.resource_density = num_resources * 100
+
+        if not map_data:
             self._assign_biomes(biome_weights)
             self._place_obstacles(num_obstacles)
             self._place_treasures(num_treasures)
@@ -393,6 +420,11 @@ class WorldMap:
             if self.resource_density > 0:
                 self.place_random_resources(random)
             self._place_buildings(num_buildings)
+        else:
+            if self.resource_density > 0:
+                self.place_random_resources(random)
+            if num_buildings:
+                self._place_resources()
 
         # Per-player fog of war state. ``visible`` marks tiles currently seen,
         # while ``explored`` remembers tiles that have ever been seen.  Entries
@@ -428,8 +460,10 @@ class WorldMap:
 
     def _build_render_maps(self) -> None:
         """Prepare biome and water lookup grids for the renderer."""
-        self.biome_grid = [[tile.biome for tile in row] for row in self.grid]
-        self.water_map = [[tile.biome in {"ocean", "river"} for tile in row] for row in self.grid]
+        self.biome_grid = self.biomes
+        self.water_map = [
+            [biome in {"ocean", "river"} for biome in row] for row in self.biomes
+        ]
 
     # ------------------------------------------------------------------
     #def populate_flora(self, loader: "FloraLoader", rng_seed: Optional[int] = None) -> None:
