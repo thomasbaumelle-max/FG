@@ -1,0 +1,8 @@
+[
+  {"id": "move", "file": "audio/move.wav"},
+  {"id": "attack", "file": "audio/attack.wav"},
+  {"id": "victory", "file": "audio/victory.wav"},
+  {"id": "hover", "file": "audio/hover.wav"},
+  {"id": "click", "file": "audio/click.wav"},
+  {"id": "end_turn", "file": "audio/end_turn.wav"}
+]

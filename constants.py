@@ -233,15 +233,3 @@ BIOME_BASE_IMAGES: Dict[str, List[str]] = {
     "scarletia_crimson_forest": ["terrain/forest.png"],
     "scarletia_volcanic": ["terrain/desert.png"],
 }
-
-
-
-# Audio file names (may be missing in minimal test environments)
-SOUND_MOVE = "move.wav"
-SOUND_ATTACK = "attack.wav"
-SOUND_VICTORY = "victory.wav"
-# UI interaction sounds
-SOUND_HOVER = "hover.wav"
-SOUND_CLICK = "click.wav"
-SOUND_END_TURN = "end_turn.wav"
-MUSIC_TITLE = "title_theme.ogg"
