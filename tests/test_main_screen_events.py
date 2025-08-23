@@ -1,4 +1,6 @@
 from types import SimpleNamespace
+import json
+from pathlib import Path
 
 import pytest
 
@@ -153,3 +155,38 @@ def test_highlight_moves_when_selecting_army(monkeypatch):
     # Draw again – the world should now highlight the army
     game.draw_world(1)
     assert selected[1] is army
+
+
+def test_process_event_queue_dispatches_events():
+    """Events in the queue are dispatched via the registry."""
+
+    from core.game import Game
+
+    class DummyWorld:
+        def __init__(self):
+            size = 10
+            self.explored = {0: [[False for _ in range(size)] for _ in range(size)]}
+
+        def reveal(self, player_id, x, y, radius=0):
+            self.explored[player_id][y][x] = True
+
+    class DummyHero:
+        def __init__(self):
+            self.army = []
+
+    game = Game.__new__(Game)
+    game.world = DummyWorld()
+    game.hero = DummyHero()
+
+    event_file = Path(__file__).resolve().parents[1] / "events" / "events.json"
+    data = json.loads(event_file.read_text(encoding="utf-8"))
+    explore_evt = next(e for e in data if e["type"] == "explore_tile")
+    recruit_evt = next(e for e in data if e["type"] == "recruit_unit")
+    game.event_queue = [explore_evt, recruit_evt]
+
+    game.process_event_queue()
+
+    ex_params = explore_evt["params"]
+    assert game.world.explored[0][ex_params["y"]][ex_params["x"]] is True
+    rec_params = recruit_evt["params"]
+    assert game.hero.army == [rec_params["unit"]] * rec_params.get("count", 1)

@@ -31,6 +31,7 @@ from loaders import units_loader
 from loaders.scenario_loader import load_scenario
 from tools.artifact_manifest import load_artifact_manifest
 from tools.load_manifest import load_manifest
+from events import dispatch as dispatch_event
 from core.entities import (
     Hero,
     Army,
@@ -478,6 +479,21 @@ class Game:
         """Log ``message`` and publish it to the UI event bus."""
         logger.info(message)
         EVENT_BUS.publish(ON_INFO_MESSAGE, message)
+
+    # ------------------------------------------------------------------ events
+    def process_event_queue(self) -> None:
+        """Dispatch and clear all queued game events.
+
+        Events are simple dictionaries loaded from :mod:`events.events.json`
+        and must contain a ``type`` key.  The registry defined in
+        :mod:`events` maps these type strings to handler functions.
+        """
+        while self.event_queue:
+            evt = self.event_queue.pop(0)
+            try:
+                dispatch_event(self, evt)
+            except KeyError:
+                logger.warning("Unknown event type: %s", evt.get("type"))
 
     def load_assets(self) -> None:
         """Load all images referenced in constants.  If a file is missing, skip it."""
