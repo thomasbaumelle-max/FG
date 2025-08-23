@@ -11,7 +11,7 @@ from typing import Dict, Optional, Tuple, Set, List, Sequence
 
 import constants
 import settings
-from core.world import WorldMap, ENEMY_UNIT_IMAGES
+from core.world import WorldMap, ENEMY_UNIT_IMAGES, FLORA_CHUNK_TILES
 from core.buildings import Town
 from core.entities import UnitCarrier, Army
 from render.autotile import AutoTileRenderer
@@ -369,16 +369,25 @@ class WorldRenderer:
         if getattr(world, "flora_loader", None) and world.flora_props:
             view_rect = pygame.Rect(self.cam_x, self.cam_y, view_w, view_h)
             active_collectibles = set(getattr(world, "collectibles", {}).keys())
-
-            visible_props = [
-                p
-                for p in world.flora_props
-                if p.rect_world.colliderect(view_rect)
-                and (
-                    world.flora_loader.assets[p.asset_id].type != "collectible"
-                    or p.tile_xy in active_collectibles
-                )
-            ]
+            chunk_px = FLORA_CHUNK_TILES * constants.TILE_SIZE
+            cx0 = view_rect.x // chunk_px
+            cy0 = view_rect.y // chunk_px
+            cx1 = (view_rect.x + view_rect.width - 1) // chunk_px
+            cy1 = (view_rect.y + view_rect.height - 1) // chunk_px
+            seen: Set[int] = set()
+            visible_props: List[object] = []
+            for cy in range(cy0, cy1 + 1):
+                for cx in range(cx0, cx1 + 1):
+                    for p in world.flora_prop_chunks.get((cx, cy), []):
+                        pid = id(p)
+                        if pid in seen:
+                            continue
+                        seen.add(pid)
+                        if p.rect_world.colliderect(view_rect) and (
+                            world.flora_loader.assets[p.asset_id].type != "collectible"
+                            or p.tile_xy in active_collectibles
+                        ):
+                            visible_props.append(p)
             loader = world.flora_loader
             tall_props: List[object] = []
             other_props: List[object] = []

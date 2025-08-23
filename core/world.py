@@ -62,6 +62,9 @@ ENEMY_UNIT_IMAGES: Dict[str, str] = {
     HURLOMBE_STATS.name: HURLOMBE_STATS.name,
 }
 
+# Number of tiles grouped into a single flora chunk used for spatial indexing
+FLORA_CHUNK_TILES = 32
+
 # All known creature stats indexed by their unique name
 CREATURE_STATS: Dict[str, "UnitStats"] = {
     FUMEROLLE_LIZARD_STATS.name: FUMEROLLE_LIZARD_STATS,
@@ -404,21 +407,18 @@ class WorldMap:
         self.biome_grid: List[List[str]] = []
         self.water_map: List[List[bool]] = []
         self.renderer: Optional[AutoTileRenderer] = None
-        self.flora_loader: Optional[FloraLoader] = None
-        self.flora_props: List[PropInstance] = []
-        self.collectibles: Dict[Tuple[int, int], PropInstance] = {}
         self._build_render_maps()
         # Create a basic autotile renderer so ``WorldRenderer`` can always draw
         # terrain using texture files instead of solid colours.
         self.renderer = AutoTileRenderer(None, constants.TILE_SIZE)
         for biome, variants in constants.BIOME_BASE_IMAGES.items():
             self.renderer.register_biome(biome, variants)
-        self.populate_flora(self.flora_loader)
 
         # Optional flora decorations populated via FloraLoader
         self.flora_loader: Optional[FloraLoader] = None
         self.flora_props: List[PropInstance] = []
-        self.collectibles = {}
+        self.collectibles: Dict[Tuple[int, int], PropInstance] = {}
+        self.flora_prop_chunks: Dict[Tuple[int, int], List[PropInstance]] = {}
 
     def _place_obstacles(self, count: int) -> None:
         """Randomly place a number of impassable obstacles."""
@@ -495,6 +495,70 @@ class WorldMap:
                 for yy in range(y0, y0 + fh):
                     for xx in range(x0, x0 + fw):
                         self.grid[yy][xx].obstacle = True
+
+        self._build_flora_prop_index()
+
+    def _build_flora_prop_index(self) -> None:
+        """Rebuild the spatial index for ``flora_props``."""
+        chunk_px = FLORA_CHUNK_TILES * constants.TILE_SIZE
+        self.flora_prop_chunks = {}
+        for prop in self.flora_props:
+            rect = getattr(prop, "rect_world", None)
+            if not rect or not hasattr(rect, "x"):
+                continue
+            x0 = rect.x
+            y0 = rect.y
+            x1 = x0 + rect.width
+            y1 = y0 + rect.height
+            cx0 = x0 // chunk_px
+            cy0 = y0 // chunk_px
+            cx1 = (x1 - 1) // chunk_px
+            cy1 = (y1 - 1) // chunk_px
+            for cy in range(cy0, cy1 + 1):
+                for cx in range(cx0, cx1 + 1):
+                    self.flora_prop_chunks.setdefault((cx, cy), []).append(prop)
+
+    def invalidate_prop_chunk(self, prop: PropInstance) -> None:
+        """Rebuild the chunk(s) containing ``prop`` in the flora index."""
+        rect = getattr(prop, "rect_world", None)
+        if not rect or not hasattr(rect, "x"):
+            return
+        chunk_px = FLORA_CHUNK_TILES * constants.TILE_SIZE
+        x0 = rect.x
+        y0 = rect.y
+        x1 = x0 + rect.width
+        y1 = y0 + rect.height
+        cx0 = x0 // chunk_px
+        cy0 = y0 // chunk_px
+        cx1 = (x1 - 1) // chunk_px
+        cy1 = (y1 - 1) // chunk_px
+        for cy in range(cy0, cy1 + 1):
+            for cx in range(cx0, cx1 + 1):
+                key = (cx, cy)
+                chunk_left = cx * chunk_px
+                chunk_top = cy * chunk_px
+                chunk_right = chunk_left + chunk_px
+                chunk_bottom = chunk_top + chunk_px
+                props: List[PropInstance] = []
+                for p in self.flora_props:
+                    r2 = getattr(p, "rect_world", None)
+                    if not r2 or not hasattr(r2, "x"):
+                        continue
+                    px0 = r2.x
+                    py0 = r2.y
+                    px1 = px0 + r2.width
+                    py1 = py0 + r2.height
+                    if (
+                        px0 < chunk_right
+                        and px1 > chunk_left
+                        and py0 < chunk_bottom
+                        and py1 > chunk_top
+                    ):
+                        props.append(p)
+                if props:
+                    self.flora_prop_chunks[key] = props
+                else:
+                    self.flora_prop_chunks.pop(key, None)
 
     def _ensure_player_fog(self, player_id: int) -> None:
         """Initialise fog of war matrices for ``player_id`` if missing."""

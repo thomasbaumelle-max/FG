@@ -5,6 +5,11 @@ from core.world import WorldMap
 from loaders.flora_loader import PropInstance
 
 class DummyRect:
+    left = 0
+    top = 0
+    right = constants.TILE_SIZE
+    bottom = constants.TILE_SIZE
+
     def colliderect(self, other):
         return True
 
@@ -20,6 +25,7 @@ def test_collectible_rendering_does_not_error():
     prop = PropInstance("scarlet_herb_a", "scarletia", (0,0), 0, (1,1), (0,0), True, False, DummyRect())
     world.flora_props = [prop]
     world.collectibles = {(0,0): prop}
+    world.invalidate_prop_chunk(prop)
     renderer = WorldRenderer({})
     renderer.world = world
     dest = types.SimpleNamespace(get_width=lambda: constants.TILE_SIZE, get_height=lambda: constants.TILE_SIZE, blit=lambda *a,**k: None)
