@@ -85,3 +85,26 @@ def test_get_is_case_insensitive(tmp_path, monkeypatch):
     surf = am.get("foo/myimage")
     assert surf is not am._fallback
     assert loaded == [str(file_path)]
+
+
+def test_progress_callback_fires(tmp_path, monkeypatch):
+    loaded: list[str] = []
+    pygame_stub = _make_stub(loaded)
+    monkeypatch.setitem(sys.modules, "pygame", pygame_stub)
+    import loaders.asset_manager as asset_manager
+    importlib.reload(asset_manager)
+
+    asset_dir = tmp_path / "assets"
+    asset_dir.mkdir(parents=True)
+    (asset_dir / "test.png").write_text("x")
+
+    progress: list[tuple[int, int]] = []
+
+    def cb(done: int, total: int) -> None:
+        progress.append((done, total))
+
+    asset_manager.AssetManager(str(tmp_path), progress_callback=cb)
+
+    assert progress
+    assert progress[-1][0] == progress[-1][1]
+    assert len(progress) == progress[-1][1]
