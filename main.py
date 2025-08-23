@@ -10,9 +10,13 @@ import pygame
 try:  # pragma: no cover - package vs script execution
     from . import constants, audio
     from .ui.menu import main_menu
+    from .loaders.asset_manager import AssetManager
+    from .ui.loading_screen import LoadingScreen
 except ImportError:  # pragma: no cover - fallback when run as a script
     import constants, audio  # type: ignore
     from ui.menu import main_menu  # type: ignore
+    from loaders.asset_manager import AssetManager  # type: ignore
+    from ui.loading_screen import LoadingScreen  # type: ignore
 
 def _compute_window_size() -> tuple[int, int]:
     """Determine an appropriate window size based on the default map."""
@@ -49,15 +53,18 @@ def _compute_window_size() -> tuple[int, int]:
     
 def main() -> None:
     pygame.init()
-    audio.init()
     settings = audio.load_settings()
-    # Configure AI difficulty from persisted settings so both the overworld
-    # and combat logic can adjust their behaviour accordingly.
     constants.AI_DIFFICULTY = settings.get("ai_difficulty", constants.AI_DIFFICULTY)
     window_size = _compute_window_size()
     flags = pygame.FULLSCREEN if settings.get("fullscreen") else 0
     screen = pygame.display.set_mode(window_size, flags)
     pygame.display.set_caption("Fantasy Strategy Game")
+
+    LoadingScreen(screen)
+    repo_root = os.path.dirname(__file__)
+    assets = AssetManager(repo_root)
+    audio.init(assets)
+
     screen = main_menu(screen)
     pygame.quit()
 

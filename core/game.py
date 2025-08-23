@@ -1375,14 +1375,22 @@ class Game:
         if not hasattr(self, "world"):
             return
         tile = self.world.grid[y][x]
+        if not hasattr(self, "resource_tiles"):
+            self.resource_tiles = set()
         if tile.resource:
             self.resource_tiles.add((x, y))
         else:
             self.resource_tiles.discard((x, y))
+
+        if not hasattr(self, "treasure_tiles"):
+            self.treasure_tiles = set()
         if tile.treasure is not None:
             self.treasure_tiles.add((x, y))
         else:
             self.treasure_tiles.discard((x, y))
+
+        if not hasattr(self, "neutral_buildings"):
+            self.neutral_buildings = set()
         if tile.building and getattr(tile.building, "owner", None) != 1:
             self.neutral_buildings.add((x, y))
         else:
