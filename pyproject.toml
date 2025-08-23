@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fantaisie-turn-based-strategy"
+version = "0.1.0"
+description = "Graphical Heroes-like turn based strategy game"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = ["pygame"]
+
+[project.optional-dependencies]
+dev = ["black", "flake8", "pytest"]
+
+[project.scripts]
+fantaisie = "main:main"
+
+[tool.black]
+line-length = 88
+target-version = ["py38"]
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+
+[tool.setuptools]
+py-modules = ["__init__", "constants", "audio", "theme", "main"]
+packages = {find = {}}

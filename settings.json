@@ -1,0 +1,16 @@
+{
+  "music_volume": 1.0,
+  "sfx_volume": 1.0,
+  "fullscreen": false,
+  "debug_buildings": false,
+  "ai_difficulty": "Intermédiaire",
+  "language": "en",
+  "keymap": {
+    "pan_left": ["K_LEFT", "K_a"],
+    "pan_right": ["K_RIGHT", "K_d"],
+    "pan_up": ["K_UP", "K_w"],
+    "pan_down": ["K_DOWN", "K_s"],
+    "zoom_in": ["K_EQUALS", "K_PLUS"],
+    "zoom_out": ["K_MINUS", "K_UNDERSCORE"]
+  }
+}
