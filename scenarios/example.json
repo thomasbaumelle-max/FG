@@ -1,0 +1,8 @@
+{
+  "name": "example",
+  "units": [
+    {"type": "Swordsman", "x": 1, "y": 1, "count": 5}
+  ],
+  "objectives": ["Explore the world"],
+  "scripts": []
+}
