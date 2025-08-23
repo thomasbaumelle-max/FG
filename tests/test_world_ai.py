@@ -4,6 +4,7 @@ from core.buildings import Town, Building
 from core.game import Game
 import core.exploration_ai as exploration_ai
 import constants
+from core.ai.creature_ai import GuardianAI, RoamingAI
 
 
 def _make_world(width, height):
@@ -108,3 +109,28 @@ def test_free_tiles_updates_when_tile_occupied():
     assert (1, 0) in game.free_tiles
     Game.move_enemy_heroes(game)
     assert (1, 0) not in game.free_tiles
+
+
+def test_guardian_stays_put():
+    world = _make_world(5, 5)
+    units = [Unit(SWORDSMAN_STATS, 5, "enemy")]
+    world.grid[2][2].enemy_units = units
+    ai = GuardianAI(2, 2, units, guard_range=1)
+    hero_pos = (0, 0)
+    ai.update(world, hero_pos, hero_strength=10)
+    assert (ai.x, ai.y) == (2, 2)
+
+
+def test_roamer_patrols():
+    world = _make_world(5, 5)
+    units = [Unit(SWORDSMAN_STATS, 5, "enemy")]
+    world.grid[2][2].enemy_units = units
+    ai = RoamingAI(2, 2, units, patrol_radius=2)
+    hero_pos = (0, 0)
+    moved = False
+    for _ in range(5):
+        ai.update(world, hero_pos, hero_strength=100)
+        if (ai.x, ai.y) != (2, 2):
+            moved = True
+            break
+    assert moved
