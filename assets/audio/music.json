@@ -1,0 +1,4 @@
+[
+  {"id": "title", "file": "audio/title_theme.ogg", "default": true},
+  {"id": "battle", "file": "audio/battle_theme.ogg"}
+]

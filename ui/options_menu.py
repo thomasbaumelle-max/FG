@@ -98,26 +98,32 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
     fullscreen = _load_fullscreen()
     difficulties = ["Novice", "Intermédiaire", "Avancé"]
     difficulty_idx = difficulties.index(_load_difficulty())
+    tracks = audio.get_music_tracks()
+    current_track = audio.get_current_music() or audio.get_default_music()
+    track_idx = tracks.index(current_track) if current_track in tracks else -1
 
-    def _update_texts() -> Tuple[str, str, str, str, str]:
+    def _update_texts() -> Tuple[str, str, str, str, str, str]:
+        track_name = tracks[track_idx] if track_idx >= 0 else "Aucun"
         return (
             f"Musique : {int(music * 100)}%",
             f"Sons : {int(sfx * 100)}%",
             f"Plein écran : {'Oui' if fullscreen else 'Non'}",
             f"Difficulté IA : {difficulties[difficulty_idx]}",
+            f"Musique de fond : {track_name}",
             "Touches",
         )
 
     while True:
-        opt_music, opt_sfx, opt_full, opt_ai, opt_keys = _update_texts()
-        options = [opt_music, opt_sfx, opt_full, opt_ai, opt_keys, "Retour"]
+        opt_music, opt_sfx, opt_full, opt_ai, opt_track, opt_keys = _update_texts()
+        options = [opt_music, opt_sfx, opt_full, opt_ai, opt_track, opt_keys, "Retour"]
 
         choice, screen = simple_menu(screen, options, title="Options")
 
-        if choice is None or choice == 5:
+        if choice is None or choice == 6:
             audio.save_settings(
                 fullscreen=fullscreen,
                 ai_difficulty=difficulties[difficulty_idx],
+                music_track=tracks[track_idx] if track_idx >= 0 else "",
             )
             return screen
 
@@ -145,7 +151,9 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
             fullscreen = not fullscreen
             pygame.display.toggle_fullscreen()
             audio.save_settings(
-                fullscreen=fullscreen, ai_difficulty=difficulties[difficulty_idx]
+                fullscreen=fullscreen,
+                ai_difficulty=difficulties[difficulty_idx],
+                music_track=tracks[track_idx] if track_idx >= 0 else "",
             )
         elif choice == 3:
             sel, screen = simple_menu(
@@ -158,6 +166,21 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
                 audio.save_settings(
                     ai_difficulty=difficulties[difficulty_idx],
                     fullscreen=fullscreen,
+                    music_track=tracks[track_idx] if track_idx >= 0 else "",
                 )
         elif choice == 4:
+            if tracks:
+                sel, screen = simple_menu(
+                    screen,
+                    tracks + ["Arrêter", "Retour"],
+                    title="Musique de fond",
+                )
+                if sel is not None:
+                    if sel < len(tracks):
+                        track_idx = sel
+                        audio.play_music(tracks[track_idx])
+                    elif sel == len(tracks):
+                        track_idx = -1
+                        audio.stop_music()
+        elif choice == 5:
             screen = _keymap_menu(screen)

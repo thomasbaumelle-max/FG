@@ -347,7 +347,9 @@ def main_menu(screen: pygame.Surface, can_resume: bool = False) -> pygame.Surfac
     "Retour au jeu" option is added which exits the menu immediately.
     """
 
-    audio.play_music(constants.MUSIC_TITLE)
+    initial_track = audio.get_current_music() or audio.get_default_music()
+    if initial_track:
+        audio.play_music(initial_track)
 
     while True:
         options = [
@@ -389,7 +391,9 @@ def main_menu(screen: pygame.Surface, can_resume: bool = False) -> pygame.Surfac
             )
             game.run()
             screen = pygame.display.get_surface()
-            audio.play_music(constants.MUSIC_TITLE)
+            track = audio.get_current_music() or audio.get_default_music()
+            if track:
+                audio.play_music(track)
 
         elif choice == 1 + offset:  # Load game
             slot, screen = _slot_menu(screen, title=MENU_TEXTS["choose_save"])
@@ -409,7 +413,9 @@ def main_menu(screen: pygame.Surface, can_resume: bool = False) -> pygame.Surfac
             try:
                 game.load_game(save_path)
             except FileNotFoundError:
-                audio.play_music(constants.MUSIC_TITLE)
+                track = audio.get_current_music() or audio.get_default_music()
+                if track:
+                    audio.play_music(track)
                 _, screen = simple_menu(
                     screen,
                     [MENU_TEXTS["file_not_found"], MENU_TEXTS["back"]],
@@ -418,7 +424,9 @@ def main_menu(screen: pygame.Surface, can_resume: bool = False) -> pygame.Surfac
                 continue
             game.run()
             screen = pygame.display.get_surface()
-            audio.play_music(constants.MUSIC_TITLE)
+            track = audio.get_current_music() or audio.get_default_music()
+            if track:
+                audio.play_music(track)
 
         elif choice == 2 + offset:  # Options
             screen = options_menu(screen)

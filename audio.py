@@ -4,23 +4,23 @@ try:
     import pygame
     from typing import Dict, Optional
     try:
-        from . import constants
         from .loaders.asset_manager import AssetManager
-        from .loaders.core import Context, find_file
+        from .loaders.core import Context, find_file, read_json
     except ImportError:  # pragma: no cover - package vs script
-        import constants  # type: ignore
         from loaders.asset_manager import AssetManager  # type: ignore
-        from loaders.core import Context, find_file  # type: ignore
+        from loaders.core import Context, find_file, read_json  # type: ignore
 except Exception:  # pragma: no cover - when pygame is unavailable
     pygame = None
-    constants = None
     AssetManager = None  # type: ignore
     Context = None  # type: ignore
     find_file = None  # type: ignore
+    read_json = None  # type: ignore
 
 _sounds: Dict[str, 'pygame.mixer.Sound'] = {}
 _music_enabled: bool = True
 _current_music: Optional[str] = None
+_music_tracks: Dict[str, str] = {}
+_default_music: Optional[str] = None
 _music_volume: float = 1.0
 _sfx_volume: float = 1.0
 _SETTINGS_FILE = os.path.join(os.path.dirname(__file__), "settings.json")
@@ -64,6 +64,47 @@ def _has_mixer() -> bool:
     return pygame is not None and hasattr(pygame, 'mixer')
 
 
+def _load_manifests() -> None:
+    """Load sound and music manifests from the assets folder."""
+    if Context is None or read_json is None:
+        return
+
+    search_paths: list[str]
+    if _asset_manager is not None:
+        search_paths = list(_asset_manager.search_paths)
+    else:
+        search_paths = [os.path.join(os.path.dirname(__file__), "assets")]
+
+    ctx = Context(repo_root="", search_paths=search_paths, asset_loader=None)
+
+    # Load sounds
+    try:
+        data = read_json(ctx, os.path.join("audio", "sounds.json"))
+    except Exception:  # pragma: no cover - missing manifest
+        data = []
+    for entry in data or []:
+        key = entry.get("id")
+        file = entry.get("file")
+        if key and file:
+            load_sound(key, file)
+
+    # Load music tracks
+    global _default_music
+    try:
+        music_data = read_json(ctx, os.path.join("audio", "music.json"))
+    except Exception:  # pragma: no cover
+        music_data = []
+    for entry in music_data or []:
+        key = entry.get("id")
+        file = entry.get("file")
+        if key and file:
+            _music_tracks[key] = file
+            if _default_music is None:
+                _default_music = key
+            if entry.get("default"):
+                _default_music = key
+
+
 def init(asset_manager: AssetManager | None = None) -> None:
     """Initialise mixer and load core sounds.
 
@@ -76,6 +117,8 @@ def init(asset_manager: AssetManager | None = None) -> None:
     if asset_manager is not None:
         set_asset_manager(asset_manager)
 
+    _load_manifests()
+
     if not _has_mixer():
         return
     try:  # pragma: no cover - depends on system audio
@@ -83,16 +126,6 @@ def init(asset_manager: AssetManager | None = None) -> None:
             pygame.mixer.init()
     except Exception:
         return
-    # Load predefined sounds
-    if constants is None:
-        return
-    load_sound('move', constants.SOUND_MOVE)
-    load_sound('attack', constants.SOUND_ATTACK)
-    load_sound('victory', constants.SOUND_VICTORY)
-    # UI interactions
-    load_sound('hover', constants.SOUND_HOVER)
-    load_sound('click', constants.SOUND_CLICK)
-    load_sound('end_turn', constants.SOUND_END_TURN)
 
 
 def load_sound(key: str, filename: str) -> None:
@@ -137,6 +170,10 @@ def load_settings() -> dict:
             data = {}
     set_music_volume(float(data.get("music_volume", _music_volume)), save=False)
     set_sfx_volume(float(data.get("sfx_volume", _sfx_volume)), save=False)
+    track = data.get("music_track")
+    if isinstance(track, str) and track:
+        global _current_music
+        _current_music = track
     return data
 
 
@@ -180,6 +217,19 @@ def get_sfx_volume() -> float:
     return _sfx_volume
 
 
+def get_music_tracks() -> list[str]:
+    """Return list of available music track identifiers."""
+    return list(_music_tracks.keys())
+
+
+def get_current_music() -> Optional[str]:
+    return _current_music
+
+
+def get_default_music() -> Optional[str]:
+    return _default_music
+
+
 def play_sound(key: str) -> None:
     """Play a previously loaded sound identified by ``key``."""
     snd = _sounds.get(key)
@@ -191,11 +241,13 @@ def play_sound(key: str) -> None:
         pass
 
 
-def play_music(filename: str, loop: int = -1) -> None:
-    """Start playing a music track from the assets folder."""
+def play_music(track: str, loop: int = -1) -> None:
+    """Start playing a music track referenced by ``track`` id or filename."""
     global _current_music
     if not _music_enabled or not _has_mixer():
+        _current_music = track
         return
+    filename = _music_tracks.get(track, track)
     path = _find_asset(filename)
     if path is None or not os.path.isfile(path):
         return
@@ -203,21 +255,19 @@ def play_music(filename: str, loop: int = -1) -> None:
         pygame.mixer.music.load(path)
         pygame.mixer.music.play(loop)
         pygame.mixer.music.set_volume(_music_volume)
-        _current_music = filename
+        _current_music = track
     except Exception:
-        _current_music = None
+        _current_music = track
 
 
 def stop_music() -> None:
     """Stop any currently playing music."""
-    global _current_music
     if not _has_mixer():
         return
     try:  # pragma: no cover
         pygame.mixer.music.stop()
     except Exception:
         pass
-    _current_music = None
 
 
 def set_music_enabled(value: bool) -> None:
