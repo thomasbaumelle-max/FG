@@ -34,15 +34,17 @@ def _load_fullscreen() -> bool:
 
 
 def _load_difficulty() -> str:
-    """Return the saved AI difficulty or default to 'Intermédiaire'."""
+    """Return the saved AI difficulty or a sensible default."""
+    default = constants.AI_DIFFICULTY
     if os.path.isfile(SETTINGS_FILE):
         try:
             with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            return str(data.get("ai_difficulty", "Intermédiaire"))
+            diff = str(data.get("ai_difficulty", default))
+            return diff if diff in constants.AI_DIFFICULTIES else default
         except Exception:  # pragma: no cover - invalid json
-            return "Intermédiaire"
-    return "Intermédiaire"
+            return default
+    return default
 
 
 def _key_name(code: int) -> str:
@@ -96,7 +98,8 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
     music = audio.get_music_volume()
     sfx = audio.get_sfx_volume()
     fullscreen = _load_fullscreen()
-    difficulties = ["Novice", "Intermédiaire", "Avancé"]
+    difficulties = list(constants.AI_DIFFICULTIES)
+    labels = [constants.DIFFICULTY_LABELS[d] for d in difficulties]
     difficulty_idx = difficulties.index(_load_difficulty())
     tracks = audio.get_music_tracks()
     current_track = audio.get_current_music() or audio.get_default_music()
@@ -108,7 +111,7 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
             f"Musique : {int(music * 100)}%",
             f"Sons : {int(sfx * 100)}%",
             f"Plein écran : {'Oui' if fullscreen else 'Non'}",
-            f"Difficulté IA : {difficulties[difficulty_idx]}",
+            f"Difficulté IA : {labels[difficulty_idx]}",
             f"Musique de fond : {track_name}",
             "Touches",
         )
@@ -158,7 +161,7 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
         elif choice == 3:
             sel, screen = simple_menu(
                 screen,
-                [d.capitalize() for d in difficulties],
+                [l.capitalize() for l in labels],
                 title="Difficulté IA",
             )
             if sel is not None:
