@@ -1,0 +1,16 @@
+[
+  {
+    "id": "deliver_wood",
+    "type": "deliver_resource",
+    "difficulty": "Novice",
+    "params": {"resource": "wood", "amount": 10},
+    "reward": {"gold": 100}
+  },
+  {
+    "id": "slay_bandits",
+    "type": "defeat_enemy",
+    "difficulty": "Intermédiaire",
+    "params": {"enemy": "Bandit"},
+    "reward": {"artifact": "Bandit's Charm"}
+  }
+]

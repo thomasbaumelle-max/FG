@@ -1,0 +1,11 @@
+[
+  {"id": "fireball", "image": "vfx/fireball.png"},
+  {"id": "arrow", "image": "vfx/arrow.png"},
+  {"id": "chain_lightning", "image": "vfx/chain_lightning.png"},
+  {"id": "ice_wall", "image": "vfx/ice_wall.png"},
+  {"id": "heal", "image": "vfx/heal.png"},
+  {"id": "focus", "image": "vfx/focus.png"},
+  {"id": "shield_block", "image": "vfx/shield_block.png"},
+  {"id": "charge", "image": "vfx/charge.png"},
+  {"id": "dragon_breath", "image": "vfx/dragon_breath.png"}
+]

@@ -1,0 +1,7 @@
+[
+  {"id": "fumet_lizard", "image": "units/scarletia/fumet_lizard_0.png", "anchor_px": [384, 580], "shadow_baked": false, "biomes": ["scarletia_volcanic"]},
+  {"id": "shadowleaf_wolf", "image": "units/scarletia/shadowleaf_wolf_0.png", "anchor_px": [384, 590], "shadow_baked": false, "biomes": ["scarletia_crimson_forest"]},
+  {"id": "boar_raven", "image": "units/scarletia/boar_raven_0.png", "anchor_px": [384, 610], "shadow_baked": false, "biomes": ["scarletia_echo_plain", "mountain"]},
+  {"id": "hurlombe", "image": "units/scarletia/hurlombe_0.png", "anchor_px": [384, 600], "shadow_baked": false, "biomes": ["scarletia_crimson_forest", "mountain"]}
+]
+

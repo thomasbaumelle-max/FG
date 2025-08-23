@@ -1,0 +1,7 @@
+[
+  {"id": "wood", "path": "resources/wood/wood_0.png", "variants": 1, "income": {"wood": 1}, "passable": true},
+  {"id": "stone", "path": "resources/stone/stone_0.png", "variants": 1, "income": {"stone": 1}, "passable": true},
+  {"id": "crystal", "path": "resources/crystal/crystal_0.png", "variants": 1, "income": {"crystal": 1}, "passable": true},
+  {"id": "gold", "path": "resources/gold/gold_0.png", "variants": 1, "income": {"gold": 1}, "passable": true},
+  {"id": "treasure", "path": "resources/treasure/treasure_0.png", "variants": 1, "passable": true}
+]

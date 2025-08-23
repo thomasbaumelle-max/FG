@@ -1,0 +1,6 @@
+[
+  {"id": "strength", "name": "Strength", "desc": "Increase hero damage", "cost": 1, "requires": [], "effects": [{"stat": "dmg", "value": 1, "mode": "flat"}]},
+  {"id": "wisdom", "name": "Wisdom", "desc": "Increase hero mana", "cost": 1, "requires": [], "effects": [{"stat": "max_mana", "value": 1, "mode": "flat"}]},
+  {"id": "tactics", "name": "Tactics", "desc": "Improve initiative", "cost": 1, "requires": [], "effects": [{"stat": "init", "value": 1, "mode": "flat"}]},
+  {"id": "logistics", "name": "Logistics", "desc": "Increase movement", "cost": 1, "requires": [], "effects": [{"stat": "max_ap", "value": 1, "mode": "flat"}]}
+]

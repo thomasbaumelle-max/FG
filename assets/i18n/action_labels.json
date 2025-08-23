@@ -1,0 +1,16 @@
+{
+  "en": {
+    "move": "Move",
+    "melee": "Melee attack",
+    "ranged": "Ranged attack",
+    "spell": "Spell",
+    "wait": "Wait"
+  },
+  "fr": {
+    "move": "Déplacer",
+    "melee": "Attaquer Mélée",
+    "ranged": "Attaquer à distance",
+    "spell": "Sort",
+    "wait": "Attendre"
+  }
+}

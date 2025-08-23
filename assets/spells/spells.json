@@ -1,0 +1,71 @@
+[
+  {
+    "id": "fireball",
+    "school": "pyro",
+    "cost_mana": 6,
+    "cooldown": 0,
+    "range": 5,
+    "area_radius": 1,
+    "damage": { "base": 30, "per_power": 0, "type": "fire" },
+    "projectile_asset": "effects/fireball",
+    "fx_asset": "effects/explosion_small"
+  },
+  {
+    "id": "chain_lightning",
+    "school": "aero",
+    "cost_mana": 8,
+    "cooldown": 2,
+    "range": 6,
+    "max_jumps": 4,
+    "jump_range": 3,
+    "damage": { "base": 9, "per_power": 3, "type": "shock" },
+    "fx_asset": "effects/chain_lightning"
+  },
+  {
+    "id": "heal",
+    "school": "vita",
+    "cost_mana": 5,
+    "cooldown": 1,
+    "range": 4,
+    "heal": { "base": 20, "per_power": 0 },
+    "fx_asset": "effects/heal_wave"
+  },
+  {
+    "id": "ice_wall",
+    "school": "glacio",
+    "cost_mana": 7,
+    "cooldown": 2,
+    "range": 4,
+    "wall_length": 3,
+    "spawn": { "entity": "ice_wall", "hp": 20, "blocks": true },
+    "fx_asset": "effects/ice_wall"
+  },
+  {
+    "id": "shield",
+    "school": "terra",
+    "cost_mana": 4,
+    "cooldown": 1,
+    "range": 3,
+    "status": { "name": "shielded", "duration": 2, "reduction": 0.25 },
+    "fx_asset": "effects/shield_glow"
+  },
+  { "id": "shield_block", "passive": true },
+  { "id": "focus", "cost_mana": 0, "cooldown": 1, "range": 0 },
+  { "id": "charge", "cost_mana": 0, "cooldown": 0, "range": 1 },
+  { "id": "flying", "passive": true },
+  { "id": "multi_shot", "passive": true },
+  { "id": "dragon_breath", "cost_mana": 0, "cooldown": 0, "range": 3 },
+  { "id": "passive_heal", "passive": true },
+  { "id": "ember_spit", "cost_mana": 0, "cooldown": 2, "range": 2 },
+  { "id": "fire_resistance", "passive": true },
+  { "id": "heated_scales", "passive": true },
+  { "id": "pounce", "cost_mana": 0, "cooldown": 0, "range": 1 },
+  { "id": "forest_camouflage", "passive": true },
+  { "id": "stalk", "passive": true },
+  { "id": "gore_charge", "cost_mana": 0, "cooldown": 0, "range": 1 },
+  { "id": "thick_hide", "passive": true },
+  { "id": "scavenge_on_kill", "passive": true },
+  { "id": "wail", "cost_mana": 0, "cooldown": 2, "range": 2 },
+  { "id": "incorporeal", "passive": true },
+  { "id": "hover", "passive": true }
+]

@@ -1,0 +1,9 @@
+[
+  {"id": 1, "image": "items/iron_sword.png", "name": "Iron Sword", "slot": "WEAPON", "rarity": "common", "modifiers": {"dmg": 2}},
+  {"id": 2, "image": "items/leather_armor.png", "name": "Leather Armor", "slot": "TORSO", "rarity": "common", "modifiers": {"pv": 10, "def_melee": 1, "def_ranged": 1}},
+  {"id": 3, "image": "items/potion.png", "name": "Health Potion", "slot": null, "rarity": "uncommon", "modifiers": {}},
+  {"id": 4, "image": "items/ring_luck.png", "name": "Ring of Luck", "slot": "RING", "rarity": "rare", "modifiers": {"luck": 1}},
+  {"id": 5, "image": "items/amulet_phoenix.png", "name": "Phoenix Amulet", "slot": "AMULET", "rarity": "legendary", "modifiers": {"pv": 20, "dmg": 3, "def_melee": 2, "def_ranged": 2, "def_magic": 2, "moral": 2, "luck": 2}},
+  {"id": 6, "image": "items/helm_insight.png", "name": "Helm of Insight", "slot": "HEAD", "rarity": "rare", "modifiers": {"wisdom": 1}},
+  {"id": 7, "image": "items/boots_speed.png", "name": "Boots of Speed", "slot": "LEGS", "rarity": "uncommon", "modifiers": {"spd": 1}}
+]

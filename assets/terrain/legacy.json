@@ -1,0 +1,12 @@
+[
+  {"id": "grass", "image": "terrain/grass.png"},
+  {"id": "forest", "image": "terrain/forest.png"},
+  {"id": "desert", "image": "terrain/desert.png"},
+  {"id": "mountain", "image": "terrain/mountain.png"},
+  {"id": "hills", "image": "terrain/hills.png"},
+  {"id": "swamp", "image": "terrain/swamp.png"},
+  {"id": "jungle", "image": "terrain/jungle.png"},
+  {"id": "ice", "image": "terrain/ice.png"},
+  {"id": "ocean", "image": "terrain/ocean.png"},
+  {"id": "coast", "image": "terrain/coast.png"}
+]

@@ -1,0 +1,7 @@
+[
+  {
+    "id": "default_hero",
+    "portrait": "hero/portrait_hero.png",
+    "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
+  }
+]
