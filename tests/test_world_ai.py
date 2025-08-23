@@ -101,3 +101,10 @@ def test_enemy_targets_hero_after_building_capture():
     assert world.grid[0][1].building.owner == 1
     step = exploration_ai.compute_enemy_step(game, enemy)
     assert step == (2, 0)
+
+
+def test_free_tiles_updates_when_tile_occupied():
+    game, enemy = _create_game_with_enemy()
+    assert (1, 0) in game.free_tiles
+    Game.move_enemy_heroes(game)
+    assert (1, 0) not in game.free_tiles

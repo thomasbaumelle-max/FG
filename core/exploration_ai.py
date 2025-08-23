@@ -74,14 +74,9 @@ def compute_enemy_step(game, enemy, difficulty: str = "Intermédiaire") -> Optio
     if best_path:
         return best_path[0]
 
-    # Fallback: wander towards a random passable tile using pathfinding rather
-    # than a single random step.  This keeps enemy movement deterministic and
-    # still utilises weighted path search.
-    candidates: List[Tuple[int, int]] = []
-    for y, row in enumerate(game.world.grid):
-        for x, tile in enumerate(row):
-            if tile.is_passable() and tile.enemy_units is None and not (x == enemy.x and y == enemy.y):
-                candidates.append((x, y))
+    # Fallback: wander towards a random free tile using the precomputed cache
+    # on the game instance.  This avoids scanning the whole grid each turn.
+    candidates: List[Tuple[int, int]] = list(getattr(game, "free_tiles", []))
     random.shuffle(candidates)
     for target in candidates:
         path = game.compute_path(start, target, avoid_enemies=params["avoid_enemies"])

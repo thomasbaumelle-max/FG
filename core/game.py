@@ -1448,6 +1448,31 @@ class Game:
         for res in ("wood", "stone", "crystal"):
             self.hero.resources[res] = pe.resources.get(res, 0)
 
+    def _is_tile_free(self, x: int, y: int) -> bool:
+        """Return ``True`` if tile ``(x, y)`` has no blocking features or units."""
+        if not hasattr(self, "world"):
+            return False
+        tile = self.world.grid[y][x]
+        if not tile.is_passable():
+            return False
+        if (
+            tile.obstacle
+            or tile.treasure is not None
+            or tile.enemy_units is not None
+            or tile.resource is not None
+            or tile.building is not None
+        ):
+            return False
+        if hasattr(self, "hero") and (self.hero.x, self.hero.y) == (x, y):
+            return False
+        for enemy in getattr(self, "enemy_heroes", []):
+            if (enemy.x, enemy.y) == (x, y):
+                return False
+        for army in getattr(getattr(self, "world", None), "player_armies", []):
+            if (army.x, army.y) == (x, y):
+                return False
+        return True
+
     def _update_caches_for_tile(self, x: int, y: int) -> None:
         """Update cached tile lists after a change at ``(x, y)``."""
         if not hasattr(self, "world"):
@@ -1474,11 +1499,19 @@ class Game:
         else:
             self.neutral_buildings.discard((x, y))
 
+        if not hasattr(self, "free_tiles"):
+            self.free_tiles = set()
+        if self._is_tile_free(x, y):
+            self.free_tiles.add((x, y))
+        else:
+            self.free_tiles.discard((x, y))
+
     def _rebuild_world_caches(self) -> None:
-        """Recompute lists of resources, treasures and neutral buildings."""
+        """Recompute lists of resources, treasures, buildings and free tiles."""
         self.resource_tiles: Set[Tuple[int, int]] = set()
         self.neutral_buildings: Set[Tuple[int, int]] = set()
         self.treasure_tiles: Set[Tuple[int, int]] = set()
+        self.free_tiles: Set[Tuple[int, int]] = set()
         if not hasattr(self, "world"):
             return
         for y, row in enumerate(self.world.grid):
@@ -1811,6 +1844,9 @@ class Game:
         self.hero.x = nx
         self.hero.y = ny
         audio.play_sound('move')
+        # Update free tile cache for old and new positions
+        self._update_caches_for_tile(prev_x, prev_y)
+        self._update_caches_for_tile(self.hero.x, self.hero.y)
         # Consume action points based on terrain or road
         self.hero.ap -= step_cost
         # Check enemy hero encounter
@@ -2474,6 +2510,7 @@ class Game:
                     army = create_random_enemy_army()
                     hero = EnemyHero(sx, sy, army)
                     self.ai_player.heroes.append(hero)
+                    self._update_caches_for_tile(sx, sy)
                     break
         else:
             # Periodically recruit units from owned buildings' garrisons
@@ -2536,7 +2573,10 @@ class Game:
                     except Exception:
                         pass
                 continue
+            old_x, old_y = enemy.x, enemy.y
             enemy.x, enemy.y = sx, sy
+            self._update_caches_for_tile(old_x, old_y)
+            self._update_caches_for_tile(enemy.x, enemy.y)
             tile = self.world.grid[enemy.y][enemy.x]
             # Capture uncontrolled buildings
             if tile.building and getattr(tile.building, "owner", None) != 1:
@@ -2586,6 +2626,7 @@ class Game:
                 if hero_wins:
                     if enemy in self.enemy_heroes:
                         self.enemy_heroes.remove(enemy)
+                        self._update_caches_for_tile(enemy.x, enemy.y)
                     self._notify("You defeated the enemy hero!")
                     EVENT_BUS.publish(ON_ENEMY_DEFEATED, ["EnemyHero"])
                 else:
@@ -2632,6 +2673,7 @@ class Game:
         if hero_wins:
             if enemy in self.enemy_heroes:
                 self.enemy_heroes.remove(enemy)
+                self._update_caches_for_tile(enemy.x, enemy.y)
             self._notify("You defeated the enemy hero!")
             EVENT_BUS.publish(ON_ENEMY_DEFEATED, ["EnemyHero"])
         else:
