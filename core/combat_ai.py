@@ -36,6 +36,61 @@ def choose_target(combat, unit: Unit, enemies: List[Unit]) -> Unit:
     return min(enemies, key=score)
 
 
+def select_spell(unit: Unit, enemies: List[Unit], combat) -> Optional[Tuple[str, object]]:
+    """Return ``(spell_id, target)`` for the best spell to cast or ``None``.
+
+    ``target`` is either a ``(x, y)`` tuple for offensive spells or a ``Unit``
+    instance for ally-targeted spells like ``heal``.  The heuristic favours
+    spells that hit the most enemies while respecting mana and range limits.
+    """
+
+    best: Optional[Tuple[str, object]] = None
+    best_score = 0
+    book = combat.spellbooks.get(unit, {})
+    if not book:
+        return None
+
+    # Allies are needed when considering healing spells
+    allies = combat.hero_units if unit.side == "hero" else combat.enemy_units
+    for sid, spell_def in book.items():
+        if unit.mana < spell_def.cost_mana:
+            continue
+        # Healing spell: select ally with most missing HP
+        if sid == "heal":
+            for ally in allies:
+                if not ally.is_alive or ally.current_hp == ally.stats.max_hp:
+                    continue
+                dist = abs(ally.x - unit.x) + abs(ally.y - unit.y)
+                if dist > spell_def.range:
+                    continue
+                missing = ally.stats.max_hp - ally.current_hp
+                if missing > best_score:
+                    best_score = missing
+                    best = (sid, ally)
+            continue
+
+        # Offensive spell: evaluate each enemy position
+        for enemy in enemies:
+            if not enemy.is_alive:
+                continue
+            dist = abs(enemy.x - unit.x) + abs(enemy.y - unit.y)
+            if dist > spell_def.range:
+                continue
+            score = 1
+            radius = spell_def.data.get("area_radius")
+            if radius is not None:
+                cnt = 0
+                for e in enemies:
+                    if (e.x - enemy.x) ** 2 + (e.y - enemy.y) ** 2 <= radius ** 2:
+                        cnt += 1
+                score = cnt
+            if score > best_score:
+                best_score = score
+                best = (sid, (enemy.x, enemy.y))
+
+    return best
+
+
 def _a_star(
     start: Tuple[int, int],
     goal: Tuple[int, int],
@@ -95,14 +150,19 @@ def ai_take_turn(combat, unit: Unit, enemies: List[Unit]) -> None:
     target = choose_target(combat, unit, enemies)
     dist = abs(target.x - unit.x) + abs(target.y - unit.y)
 
-    # Attempt spell usage for very basic casters
-    if getattr(unit.stats, "name", "") == "Mage" and dist > unit.stats.attack_range:
-        # Mages lob a fireball at the target's position when available
-        try:
-            combat.spell_fireball(unit, (target.x, target.y), 1)
-            return
-        except Exception:
-            pass
+    # Consider spell casting before moving or attacking
+    spell_choice = select_spell(unit, enemies, combat)
+    if spell_choice:
+        sid, tgt = spell_choice
+        cast = getattr(combat, f"spell_{sid}", None)
+        spell_def = combat.spellbooks.get(unit, {}).get(sid)
+        if cast and spell_def:
+            try:
+                cast(unit, tgt, 1)
+                unit.mana -= spell_def.cost_mana
+                return
+            except Exception:
+                pass
 
     if dist <= 1:
         attack_type = "melee"

@@ -5,6 +5,7 @@ os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
 
 import pygame
 
+from dataclasses import replace
 from core.entities import (
     Unit,
     SWORDSMAN_STATS,
@@ -35,7 +36,8 @@ def test_unit_stats_have_abilities():
 
 def test_multi_shot_double_damage():
     hero = Unit(SWORDSMAN_STATS, 1, 'hero')
-    dragon = Unit(DRAGON_STATS, 1, 'enemy')
+    dragon_stats = replace(DRAGON_STATS, abilities=[a for a in DRAGON_STATS.abilities if a != 'dragon_breath'])
+    dragon = Unit(dragon_stats, 1, 'enemy')
     combat = _create_combat([hero], [dragon])
     hero = combat.hero_units[0]
     dragon = combat.enemy_units[0]
