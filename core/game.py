@@ -2014,6 +2014,7 @@ class Game:
                 self.world.collectibles.pop(pos, None)
             if prop in self.world.flora_props:
                 self.world.flora_props.remove(prop)
+                self.world.invalidate_prop_chunk(prop)
         # Check treasure
         if tile.treasure is not None:
             treasure = tile.treasure
@@ -3055,6 +3056,7 @@ class Game:
                     for yy in range(y, y + fh):
                         for xx in range(x, x + fw):
                             world.collectibles[(xx, yy)] = prop
+            world._build_flora_prop_index()
         self.hero = hero
         self.world = world
         self.map_size = data.get("map_size", constants.DEFAULT_MAP_SIZE)

@@ -49,6 +49,7 @@ def test_collect_flora_adds_item_and_removes_prop(monkeypatch):
     )
     game.world.flora_props = [prop]
     game.world.collectibles = {(1, 0): prop}
+    game.world.invalidate_prop_chunk(prop)
 
     game._try_move_hero(1, 0)
 
