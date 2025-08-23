@@ -174,7 +174,8 @@ def _scenario_config(screen: pygame.Surface, scenario: str) -> Tuple[Optional[di
     # Precompute option lists for the various fields displayed on the screen.
     sizes = list(constants.MAP_SIZE_PRESETS.items())
     size_labels = [f"{k} ({w}x{h})" for k, (w, h) in sizes]
-    ai_labels = list(constants.AI_DIFFICULTIES)
+    ai_keys = list(constants.AI_DIFFICULTIES)
+    ai_labels = [constants.DIFFICULTY_LABELS[k] for k in ai_keys]
     colour_labels = [MENU_TEXTS["blue"], MENU_TEXTS["red"]]
     colour_values = [constants.BLUE, constants.RED]
     faction_opts = [Faction.RED_KNIGHTS, None]
@@ -226,7 +227,7 @@ def _scenario_config(screen: pygame.Surface, scenario: str) -> Tuple[Optional[di
                     if row_idx == 0:
                         idx_size = (idx_size - 1) % len(size_labels)
                     elif row_idx == 1:
-                        idx_diff = (idx_diff - 1) % len(ai_labels)
+                        idx_diff = (idx_diff - 1) % len(ai_keys)
                     elif row_idx == 2:
                         idx_total = max(0, idx_total - 1)
                         _clamp_humans()
@@ -241,7 +242,7 @@ def _scenario_config(screen: pygame.Surface, scenario: str) -> Tuple[Optional[di
                     if row_idx == 0:
                         idx_size = (idx_size + 1) % len(size_labels)
                     elif row_idx == 1:
-                        idx_diff = (idx_diff + 1) % len(ai_labels)
+                        idx_diff = (idx_diff + 1) % len(ai_keys)
                     elif row_idx == 2:
                         idx_total = min(len(total_players_opts) - 1, idx_total + 1)
                         _clamp_humans()
@@ -271,7 +272,7 @@ def _scenario_config(screen: pygame.Surface, scenario: str) -> Tuple[Optional[di
                         return (
                             {
                                 "map_size": sizes[idx_size][0],
-                                "difficulty": ai_labels[idx_diff],
+                                "difficulty": ai_keys[idx_diff],
                                 "scenario": scenario,
                                 "total_players": total_players,
                                 "human_players": human_players,

@@ -16,6 +16,9 @@ import json
 import os
 from typing import Dict, List
 
+import settings
+from loaders.i18n import load_locale
+
 """
 Default screen settings.  When a custom map file is loaded, the actual
 window size will be determined dynamically based on the map dimensions.
@@ -31,11 +34,14 @@ UI_HEIGHT = 120
 FPS = 30
 
 # Difficulty levels for AI behaviour and default selection
-# The value can be changed via the options menu and influences how
-# aggressive enemy units are both on the world map and during combat.
-#
-# Renamed to more descriptive French labels matching the in‑game menu.
+# The list contains the canonical difficulty identifiers used internally.
+# ``DIFFICULTY_LABELS`` provides human readable, translated labels for
+# display purposes.  When a translation is missing the English text is used
+# as a fallback.
 AI_DIFFICULTIES = ["Novice", "Intermédiaire", "Avancé"]
+
+_LOCALE_STRINGS = load_locale(settings.LANGUAGE)
+DIFFICULTY_LABELS = {d: _LOCALE_STRINGS.get(d, d) for d in AI_DIFFICULTIES}
 AI_DIFFICULTY = "Intermédiaire"
 
 # Predefined world sizes exposed to the user when starting a new game.
