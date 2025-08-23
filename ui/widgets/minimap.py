@@ -10,8 +10,9 @@ it.  Allied towns are marked with coloured points and an optional fog of war
 overlay can be applied.
 """
 
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
+import math
 import pygame
 
 import constants
@@ -47,33 +48,73 @@ class Minimap:
         self.city_points: List[Tuple[int, int]] = []
         self.fog_rects: List[pygame.Rect] = []
         self._dragging = False
-        # Track whether the cached minimap surface needs regenerating
-        self._dirty = True
+
+        # Divide the minimap into cacheable blocks
+        self.block_size = 64
+        self._cols = (self.size + self.block_size - 1) // self.block_size
+        self._rows = (self.size + self.block_size - 1) // self.block_size
+        self._block_cache: Dict[Tuple[int, int], pygame.Surface] = {}
+        self._dirty_blocks = {
+            (bx, by) for bx in range(self._cols) for by in range(self._rows)
+        }
         self.generate()
 
     # ------------------------------------------------------------------
     def generate(self) -> None:
-        """Generate the base minimap surface from the world if needed."""
-        if not self._dirty:
+        """Regenerate cached block surfaces and compose the minimap."""
+        if not self._dirty_blocks:
             return
-        self._dirty = False
+
         tile_w = self.size / self.world.width
         tile_h = self.size / self.world.height
-        surf = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
-        surf.fill(constants.BLACK)
+
+        # Recompute city locations every time as they are few in number
         self.city_points.clear()
         for y in range(self.world.height):
             for x in range(self.world.width):
                 tile = self.world.grid[y][x]
-                colour = BIOME_IMAGES.get(
-                    tile.biome, BIOME_IMAGES["scarletia_echo_plain"]
-                )[1]
-                rect = pygame.Rect(int(x * tile_w), int(y * tile_h), int(tile_w + 1), int(tile_h + 1))
-                surf.fill(colour, rect)
                 if isinstance(tile.building, Town) and tile.building.owner == 0:
                     cx = int((x + 0.5) * tile_w)
                     cy = int((y + 0.5) * tile_h)
                     self.city_points.append((cx, cy))
+
+        surf = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
+        surf.fill(constants.BLACK)
+
+        for by in range(self._rows):
+            for bx in range(self._cols):
+                bw = min(self.block_size, self.size - bx * self.block_size)
+                bh = min(self.block_size, self.size - by * self.block_size)
+                if (bx, by) in self._dirty_blocks:
+                    block = pygame.Surface((bw, bh), pygame.SRCALPHA)
+                    block.fill(constants.BLACK)
+                    px0 = bx * self.block_size
+                    py0 = by * self.block_size
+                    px1 = px0 + bw
+                    py1 = py0 + bh
+                    tx0 = int(px0 / tile_w)
+                    ty0 = int(py0 / tile_h)
+                    tx1 = int(min(self.world.width, math.ceil(px1 / tile_w)))
+                    ty1 = int(min(self.world.height, math.ceil(py1 / tile_h)))
+                    for ty in range(ty0, ty1):
+                        for tx in range(tx0, tx1):
+                            tile = self.world.grid[ty][tx]
+                            colour = BIOME_IMAGES.get(
+                                tile.biome, BIOME_IMAGES["scarletia_echo_plain"]
+                            )[1]
+                            rect = pygame.Rect(
+                                int(tx * tile_w - px0),
+                                int(ty * tile_h - py0),
+                                int(tile_w + 1),
+                                int(tile_h + 1),
+                            )
+                            block.fill(colour, rect)
+                    try:
+                        self._block_cache[(bx, by)] = block.convert_alpha()
+                    except Exception:  # pragma: no cover
+                        self._block_cache[(bx, by)] = block
+                surf.blit(self._block_cache[(bx, by)], (bx * self.block_size, by * self.block_size))
+
         try:
             self.surface = surf.convert_alpha()
         except Exception:  # pragma: no cover
@@ -81,11 +122,36 @@ class Minimap:
         if getattr(self.surface, "get_width", lambda: self.size)() != self.size:
             self.surface.get_width = lambda: self.size  # type: ignore[attr-defined]
             self.surface.get_height = lambda: self.size  # type: ignore[attr-defined]
+        self._dirty_blocks.clear()
 
     # ------------------------------------------------------------------
     def invalidate(self) -> None:
-        """Mark the cached surface so it is regenerated on the next call to ``generate``."""
-        self._dirty = True
+        """Invalidate the entire minimap cache."""
+        self._dirty_blocks.update(
+            (bx, by) for bx in range(self._cols) for by in range(self._rows)
+        )
+
+    # ------------------------------------------------------------------
+    def invalidate_region(self, x0: int, y0: int, x1: int, y1: int) -> None:
+        """Invalidate a region of world tiles.
+
+        ``(x0, y0)`` and ``(x1, y1)`` specify the bounds in world tile
+        coordinates (inclusive). Only blocks intersecting this region will be
+        regenerated on the next call to :meth:`generate`.
+        """
+        tile_w = self.size / self.world.width
+        tile_h = self.size / self.world.height
+        px0 = int(x0 * tile_w)
+        py0 = int(y0 * tile_h)
+        px1 = int((x1 + 1) * tile_w)
+        py1 = int((y1 + 1) * tile_h)
+        bx0 = max(0, px0 // self.block_size)
+        by0 = max(0, py0 // self.block_size)
+        bx1 = min(self._cols - 1, (max(px1 - 1, 0)) // self.block_size)
+        by1 = min(self._rows - 1, (max(py1 - 1, 0)) // self.block_size)
+        for bx in range(bx0, bx1 + 1):
+            for by in range(by0, by1 + 1):
+                self._dirty_blocks.add((bx, by))
 
     # ------------------------------------------------------------------
     def set_fog(self, fog: Optional[List[List[bool]]]) -> None:
