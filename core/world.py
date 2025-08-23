@@ -43,7 +43,12 @@ except Exception:  # pragma: no cover
     FloraLoader = PropInstance = None  # type: ignore
 from loaders.biomes import BiomeCatalog
 from .vision import compute_vision
-from core.ai.creature_ai import CreatureAI
+from core.ai.creature_ai import (
+    CreatureAI,
+    CreatureBehavior,
+    GuardianAI,
+    RoamingAI,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -80,12 +85,15 @@ def _reset_town_counter() -> None:
     Town._counter = 0
 
 
-def _load_creatures_by_biome() -> Dict[str, List[str]]:
-    """Load biome → creature mappings from ``assets/units/creatures.json``.
-    Each entry in the manifest declares the list of biomes it inhabits under
-    the ``biomes`` field.  Returns a dictionary mapping biome identifiers to
-    creature ids.  Falls back to a default mapping if the manifest is missing or
-    malformed.
+def _load_creatures_by_biome() -> Tuple[
+    Dict[str, List[str]], Dict[str, Tuple[CreatureBehavior, int]]
+]:
+    """Load creature spawn data from ``assets/units/creatures.json``.
+
+    Each entry provides the list of ``biomes`` it inhabits as well as optional
+    ``behavior`` and ``guard_range`` fields.  Returns a tuple of two mappings:
+    biome → creature ids and creature id → (behaviour, guard_range).
+    Falls back to a default mapping if the manifest is missing or malformed.
     """
 
     path = os.path.abspath(
@@ -94,6 +102,7 @@ def _load_creatures_by_biome() -> Dict[str, List[str]]:
         )
     )
     mapping: Dict[str, List[str]] = {}
+    behaviour: Dict[str, Tuple[CreatureBehavior, int]] = {}
     try:
         with open(path, "r", encoding="utf-8") as fh:
             data = json.load(fh)
@@ -103,21 +112,36 @@ def _load_creatures_by_biome() -> Dict[str, List[str]]:
                     cid = entry["id"]
                     for biome in entry.get("biomes", []):
                         mapping.setdefault(str(biome), []).append(cid)
+                    beh = entry.get("behavior", "roamer")
+                    try:
+                        mode = CreatureBehavior(beh)
+                    except ValueError:
+                        mode = CreatureBehavior.ROAMER
+                    guard = int(entry.get("guard_range", 3))
+                    behaviour[cid] = (mode, guard)
                 except Exception:
                     continue
     except Exception as exc:  # pragma: no cover - simple logging
         logger.warning("Failed to load creature manifest from %s: %s", path, exc)
     if mapping:
-        return mapping
-    return {
-        "scarletia_echo_plain": ["boar_raven"],
-        "scarletia_crimson_forest": ["shadowleaf_wolf", "hurlombe"],
-        "mountain": ["hurlombe", "boar_raven"],
-        "scarletia_volcanic": ["fumet_lizard"],
-    }
+        return mapping, behaviour
+    return (
+        {
+            "scarletia_echo_plain": ["boar_raven"],
+            "scarletia_crimson_forest": ["shadowleaf_wolf", "hurlombe"],
+            "mountain": ["hurlombe", "boar_raven"],
+            "scarletia_volcanic": ["fumet_lizard"],
+        },
+        {
+            "boar_raven": (CreatureBehavior.ROAMER, 2),
+            "shadowleaf_wolf": (CreatureBehavior.ROAMER, 3),
+            "fumet_lizard": (CreatureBehavior.ROAMER, 3),
+            "hurlombe": (CreatureBehavior.GUARDIAN, 2),
+        },
+    )
 
 
-CREATURES_BY_BIOME: Dict[str, List[str]] = _load_creatures_by_biome()
+CREATURES_BY_BIOME, CREATURE_BEHAVIOUR = _load_creatures_by_biome()
 DEFAULT_ENEMY_UNITS: List[str] = [
     FUMEROLLE_LIZARD_STATS.name,
     SHADOWLEAF_WOLF_STATS.name,
@@ -416,13 +440,13 @@ class WorldMap:
             self._assign_biomes(biome_weights)
             self._place_obstacles(num_obstacles)
             self._place_treasures(num_treasures)
-            self._place_enemies(num_enemies)
+            self._generate_clusters(random, num_enemies)
             if self.resource_density > 0:
-                self.place_random_resources(random)
+                self._scatter_resources(random)
             self._place_buildings(num_buildings)
         else:
             if self.resource_density > 0:
-                self.place_random_resources(random)
+                self._scatter_resources(random)
             if num_buildings:
                 self._place_resources()
 
@@ -824,43 +848,91 @@ class WorldMap:
             units.append(Unit(stats, count, side="enemy"))
         return units
 
-    def _place_enemies(self, count: int) -> None:
-        """Place enemy armies with biome-dependent probabilities and types."""
-        if count <= 0:
+    def _generate_clusters(self, rng: random.Random, enemy_count: int) -> None:
+        """Generate resource/building clusters and attach creature guards."""
+
+        if enemy_count <= 0:
             return
-        chances = {
-            "scarletia_echo_plain": 0.15,
-            "scarletia_crimson_forest": 0.25,
-            "mountain": 0.35,
-            "scarletia_volcanic": 0.2,
-            "ocean": 0.0,
-        }
-
-        candidates = self._empty_land_tiles()
-        random.shuffle(candidates)
-        placed = 0
-        for x, y in candidates:
+        # approximate Poisson-disc sampling by enforcing minimum distance
+        radius = max(4, min(self.width, self.height) // 5)
+        points: List[Tuple[int, int]] = []
+        attempts = 0
+        while len(points) < max(1, enemy_count // 2) and attempts < 2000:
+            x = rng.randrange(self.width)
+            y = rng.randrange(self.height)
+            if any(abs(px - x) + abs(py - y) < radius for px, py in points):
+                attempts += 1
+                continue
             tile = self.grid[y][x]
-            if random.random() < chances.get(tile.biome, 0.1):
-                units = self._create_enemy_army_for_biome(tile.biome)
-                tile.enemy_units = units
-                ai = CreatureAI(x, y, units, patrol_radius=random.randint(1, 3))
-                self.creatures.append(ai)
-                placed += 1
-                if placed >= count:
-                    break
+            if tile.biome in constants.IMPASSABLE_BIOMES or not tile.is_passable():
+                attempts += 1
+                continue
+            points.append((x, y))
+            attempts += 1
 
+        for x, y in points:
+            tile = self.grid[y][x]
+            # scatter a small cluster of resources around the centre
+            resources = [
+                ("wood", 5),
+                ("stone", 5),
+                ("crystal", 2),
+                ("gold", 1),
+            ]
+            ids, weights = zip(*resources)
+            for dx in range(-1, 2):
+                for dy in range(-1, 2):
+                    tx, ty = x + dx, y + dy
+                    if not self.in_bounds(tx, ty):
+                        continue
+                    ttile = self.grid[ty][tx]
+                    if ttile.is_passable() and ttile.resource is None and ttile.building is None:
+                        if rng.random() < 0.5:
+                            ttile.resource = rng.choices(ids, weights)[0]
 
-    def place_random_resources(self, rng: random.Random) -> None:
-        """Scatter loose resource piles across the map using ``rng``.
+            # attempt to place a small building at the centre
+            building_ids = ["sawmill", "mine", "crystal_mine"]
+            b = create_building(rng.choice(building_ids))
+            if self._can_place_building(x, y, b):
+                self._stamp_building(x, y, b)
 
-        Each empty land tile has a small chance of containing a collectable
-        resource.  When a resource is placed, its type is chosen based on a
-        weighted rarity where common materials such as wood and stone appear
-        more frequently than rarer finds like crystal, gold or treasure.
-        Tiles already occupied by obstacles, buildings, treasures or enemies
-        are skipped.
-        """
+            # guardian stack at cluster centre
+            units = self._create_enemy_army_for_biome(tile.biome)
+            tile.enemy_units = units
+            cid = units[0].stats.name
+            mode, guard = CREATURE_BEHAVIOUR.get(cid, (CreatureBehavior.ROAMER, 3))
+            if mode is CreatureBehavior.GUARDIAN:
+                ai = GuardianAI(x, y, units, guard)
+            else:
+                ai = RoamingAI(x, y, units, guard)
+            self.creatures.append(ai)
+
+        # spawn roaming stacks near frontiers
+        edge_tiles = [
+            (x, y)
+            for y in range(self.height)
+            for x in range(self.width)
+            if x < 2 or y < 2 or x >= self.width - 2 or y >= self.height - 2
+        ]
+        rng.shuffle(edge_tiles)
+        needed = max(0, enemy_count - len(points))
+        placed = 0
+        for x, y in edge_tiles:
+            tile = self.grid[y][x]
+            if not tile.is_passable() or tile.enemy_units is not None:
+                continue
+            units = self._create_enemy_army_for_biome(tile.biome)
+            tile.enemy_units = units
+            cid = units[0].stats.name
+            _, guard = CREATURE_BEHAVIOUR.get(cid, (CreatureBehavior.ROAMER, 3))
+            ai = RoamingAI(x, y, units, guard)
+            self.creatures.append(ai)
+            placed += 1
+            if placed >= needed:
+                break
+
+    def _scatter_resources(self, rng: random.Random) -> None:
+        """Lightweight pass to sprinkle solo resource piles."""
 
         resources = [
             ("wood", 5),
@@ -883,7 +955,6 @@ class WorldMap:
                     or tile.resource is not None
                 ):
                     continue
-                # Chance to spawn a resource based on configured density
                 chance = self.resource_density / 100.0
                 if rng.random() < chance:
                     tile.resource = rng.choices(ids, weights)[0]

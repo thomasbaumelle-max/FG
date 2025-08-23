@@ -242,7 +242,7 @@ class Game:
             treasure_count = max(1, land_tiles // 18)
             enemy_count = max(1, land_tiles // 18)
             self.world._place_treasures(treasure_count)
-            self.world._place_enemies(enemy_count)
+            self.world._generate_clusters(random, enemy_count)
 
         # Apply scenario specific data such as pre-placed units or objectives
         if self.scenario:
