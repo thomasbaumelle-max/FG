@@ -3,6 +3,9 @@ from __future__ import annotations
 import logging
 import math
 import sys
+import queue
+import threading
+from collections import OrderedDict
 import pygame
 from typing import Dict, Optional, Tuple, Set, List, Sequence
 
@@ -19,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 # Number of tiles per cached biome chunk
 BIOME_CHUNK_TILES = 32
+BIOME_CACHE_SIZE = 64
 
 
 class WorldRenderer:
@@ -55,7 +59,15 @@ class WorldRenderer:
         self.surface: Optional[pygame.Surface] = None
         self.world: Optional[WorldMap] = None
         # Cached biome surfaces per chunk (cx, cy) -> surface
-        self._biome_chunks: Dict[Tuple[int, int], pygame.Surface] = {}
+        self._biome_chunks: "OrderedDict[Tuple[int, int], pygame.Surface]" = OrderedDict()
+        self._biome_lock = threading.Lock()
+        self._pending_chunks: Set[Tuple[int, int]] = set()
+        self._prefetch_queue: "queue.Queue[Tuple[int, int, int]]" = queue.Queue()
+        self._prefetch_set: Set[Tuple[int, int]] = set()
+        self._prefetch_thread = threading.Thread(
+            target=self._prefetch_worker, daemon=True
+        )
+        self._prefetch_thread.start()
         # Masks used for biome-to-biome transitions (edges & corners)
         self._transition_masks = {
             "edge": {d: assets.get(f"mask_{d}") for d in ("n", "e", "s", "w")},
@@ -66,8 +78,13 @@ class WorldRenderer:
     # ------------------------------------------------------------------
     # Cached biome chunk helpers
     def _render_biome_chunk(self, cx: int, cy: int) -> None:
-        """(Re)render the biome chunk at coordinates ``(cx, cy)``."""
-        assert self.world
+        """Ensure the biome chunk at ``(cx, cy)`` exists in the cache."""
+        if not self.world:
+            return
+        with self._biome_lock:
+            if (cx, cy) in self._biome_chunks or (cx, cy) in self._pending_chunks:
+                return
+            self._pending_chunks.add((cx, cy))
         world = self.world
         tile_size = constants.TILE_SIZE
         chunk = BIOME_CHUNK_TILES
@@ -94,20 +111,27 @@ class WorldRenderer:
                     px = (x - start_x) * tile_size
                     py = (y - start_y) * tile_size
                     surf.blit(self._river_img, (px, py))
-        self._biome_chunks[(cx, cy)] = surf
+        with self._biome_lock:
+            self._pending_chunks.discard((cx, cy))
+            self._biome_chunks[(cx, cy)] = surf
+            self._biome_chunks.move_to_end((cx, cy))
+            if len(self._biome_chunks) > BIOME_CACHE_SIZE:
+                self._biome_chunks.popitem(last=False)
 
     def _generate_biome_chunks(self) -> None:
-        """Generate cached surfaces for all biome chunks."""
+        """Reset biome chunk cache; chunks will be generated lazily."""
         if not self.world:
             return
-        self._biome_chunks.clear()
-        world = self.world
-        chunk = BIOME_CHUNK_TILES
-        chunks_x = math.ceil(world.width / chunk)
-        chunks_y = math.ceil(world.height / chunk)
-        for cy in range(chunks_y):
-            for cx in range(chunks_x):
-                self._render_biome_chunk(cx, cy)
+        with self._biome_lock:
+            self._biome_chunks.clear()
+        self._pending_chunks.clear()
+        self._prefetch_set.clear()
+        while not self._prefetch_queue.empty():
+            try:
+                self._prefetch_queue.get_nowait()
+                self._prefetch_queue.task_done()
+            except queue.Empty:
+                break
 
     def invalidate_biome(self, x: int, y: int) -> None:
         """Invalidate the cached chunk containing tile ``(x, y)``."""
@@ -115,8 +139,54 @@ class WorldRenderer:
             return
         cx = x // BIOME_CHUNK_TILES
         cy = y // BIOME_CHUNK_TILES
-        if (cx, cy) in self._biome_chunks:
-            self._render_biome_chunk(cx, cy)
+        with self._biome_lock:
+            self._biome_chunks.pop((cx, cy), None)
+            self._prefetch_set.discard((cx, cy))
+            self._pending_chunks.discard((cx, cy))
+
+    def _prefetch_worker(self) -> None:
+        while True:
+            cx, cy, world_id = self._prefetch_queue.get()
+            if world_id != id(self.world):
+                with self._biome_lock:
+                    self._prefetch_set.discard((cx, cy))
+                self._prefetch_queue.task_done()
+                continue
+            try:
+                self._render_biome_chunk(cx, cy)
+            finally:
+                with self._biome_lock:
+                    self._prefetch_set.discard((cx, cy))
+                self._prefetch_queue.task_done()
+
+    def _queue_prefetch(self, cx: int, cy: int) -> None:
+        if not self.world:
+            return
+        with self._biome_lock:
+            if (
+                (cx, cy) in self._biome_chunks
+                or (cx, cy) in self._prefetch_set
+                or (cx, cy) in self._pending_chunks
+            ):
+                return
+            self._prefetch_set.add((cx, cy))
+        self._prefetch_queue.put((cx, cy, id(self.world)))
+
+    def _prefetch_chunks(
+        self, start_cx: int, end_cx: int, start_cy: int, end_cy: int
+    ) -> None:
+        if not self.world:
+            return
+        chunk = BIOME_CHUNK_TILES
+        world = self.world
+        chunks_x = math.ceil(world.width / chunk)
+        chunks_y = math.ceil(world.height / chunk)
+        radius = 1
+        for cy in range(max(0, start_cy - radius), min(chunks_y, end_cy + radius)):
+            for cx in range(max(0, start_cx - radius), min(chunks_x, end_cx + radius)):
+                if start_cx <= cx < end_cx and start_cy <= cy < end_cy:
+                    continue
+                self._queue_prefetch(cx, cy)
 
     # ------------------------------------------------------------------
     # Camera helpers
@@ -248,13 +318,20 @@ class WorldRenderer:
         chunk_end_y = math.ceil(end_y / chunk)
         for cy in range(chunk_start_y, chunk_end_y):
             for cx in range(chunk_start_x, chunk_end_x):
-                surf = self._biome_chunks.get((cx, cy))
+                with self._biome_lock:
+                    surf = self._biome_chunks.get((cx, cy))
+                    if surf:
+                        self._biome_chunks.move_to_end((cx, cy))
                 if surf is None:
                     self._render_biome_chunk(cx, cy)
-                    surf = self._biome_chunks[(cx, cy)]
+                    with self._biome_lock:
+                        surf = self._biome_chunks.get((cx, cy))
+                if surf is None:
+                    continue
                 px = cx * chunk * tile_size - self.cam_x
                 py = cy * chunk * tile_size - self.cam_y
                 layers[constants.LAYER_BIOME].blit(surf, (int(px), int(py)))
+        self._prefetch_chunks(chunk_start_x, chunk_end_x, chunk_start_y, chunk_end_y)
 
         # Roads layer
         for y in range(start_y, end_y):
