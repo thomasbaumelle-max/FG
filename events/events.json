@@ -12,5 +12,19 @@
     "difficulty": "Intermédiaire",
     "params": {"enemy": "Bandit"},
     "reward": {"artifact": "Bandit's Charm"}
+  },
+  {
+    "id": "explore_mysterious_tile",
+    "type": "explore_tile",
+    "difficulty": "Novice",
+    "params": {"x": 2, "y": 3, "radius": 0},
+    "reward": {"gold": 50}
+  },
+  {
+    "id": "recruit_swordsmen",
+    "type": "recruit_unit",
+    "difficulty": "Novice",
+    "params": {"unit": "Swordsman", "count": 2},
+    "reward": {"gold": 20}
   }
 ]
