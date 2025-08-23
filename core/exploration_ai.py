@@ -42,16 +42,20 @@ def compute_enemy_step(game, enemy, difficulty: str = "Intermédiaire") -> Optio
 
     # Gather potential targets (resources, treasures, neutral buildings)
     targets: List[Tuple[Tuple[int, int], float]] = []
-    for y, row in enumerate(game.world.grid):
-        for x, tile in enumerate(row):
-            if tile.treasure is not None:
-                value = sum(v[1] for v in tile.treasure.values()) if isinstance(tile.treasure, dict) else 0
-                weight = params["resource_weight"] + value / 100
-                targets.append(((x, y), weight))
-            elif tile.resource is not None:
-                targets.append(((x, y), params["resource_weight"]))
-            elif tile.building and getattr(tile.building, "owner", None) != 1:
-                targets.append(((x, y), params["building_weight"]))
+    for x, y in getattr(game, "treasure_tiles", []):
+        tile = game.world.grid[y][x]
+        if tile.treasure is not None:
+            value = sum(v[1] for v in tile.treasure.values()) if isinstance(tile.treasure, dict) else 0
+            weight = params["resource_weight"] + value / 100
+            targets.append(((x, y), weight))
+    for x, y in getattr(game, "resource_tiles", []):
+        tile = game.world.grid[y][x]
+        if tile.resource is not None:
+            targets.append(((x, y), params["resource_weight"]))
+    for x, y in getattr(game, "neutral_buildings", []):
+        tile = game.world.grid[y][x]
+        if tile.building and getattr(tile.building, "owner", None) != 1:
+            targets.append(((x, y), params["building_weight"]))
 
     hero_target = ((game.hero.x, game.hero.y), params["hero_weight"])
 

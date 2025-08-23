@@ -1,8 +1,9 @@
 from core.world import WorldMap
 from core.entities import Hero, EnemyHero, Unit, SWORDSMAN_STATS
-from core.buildings import Town
+from core.buildings import Town, Building
 from core.game import Game
 import core.exploration_ai as exploration_ai
+import constants
 
 
 def _make_world(width, height):
@@ -24,6 +25,7 @@ def _create_game_with_enemy():
     game.world = world
     game.hero = hero
     game.enemy_heroes = [enemy]
+    game._rebuild_world_caches()
     return game, enemy
 
 
@@ -36,6 +38,7 @@ def _create_game_with_resource():
     game.world = world
     game.hero = hero
     game.enemy_heroes = [enemy]
+    game._rebuild_world_caches()
     return game, enemy
 
 
@@ -54,8 +57,8 @@ def test_enemy_target_weighted_by_difficulty():
 
 
 def test_enemy_captures_town_from_adjacent():
-    world = _make_world(3, 1)
-    hero = Hero(2, 0, [Unit(SWORDSMAN_STATS, 1, 'hero')])
+    world = _make_world(3, 2)
+    hero = Hero(2, 1, [Unit(SWORDSMAN_STATS, 1, 'hero')])
     enemy = EnemyHero(0, 0, [Unit(SWORDSMAN_STATS, 1, 'enemy')])
     town = Town()
     town.owner = 0
@@ -64,8 +67,37 @@ def test_enemy_captures_town_from_adjacent():
     game.world = world
     game.hero = hero
     game.enemy_heroes = [enemy]
+    game._rebuild_world_caches()
     start_ap = enemy.ap
     Game.move_enemy_heroes(game)
     assert (enemy.x, enemy.y) == (0, 0)
     assert town.owner == 1
     assert enemy.ap == start_ap - 1
+
+
+def test_enemy_targets_hero_after_resource_collected():
+    constants.AI_DIFFICULTY = "Novice"
+    game, enemy = _create_game_with_resource()
+    Game.move_enemy_heroes(game)
+    assert (enemy.x, enemy.y) == (0, 1)
+    step = exploration_ai.compute_enemy_step(game, enemy)
+    assert step in [(0, 0), (1, 1)]
+
+
+def test_enemy_targets_hero_after_building_capture():
+    constants.AI_DIFFICULTY = "Intermédiaire"
+    world = _make_world(3, 1)
+    hero = Hero(2, 0, [Unit(SWORDSMAN_STATS, 1, 'hero')])
+    enemy = EnemyHero(0, 0, [Unit(SWORDSMAN_STATS, 1, 'enemy')])
+    b = Building()
+    b.passable = True
+    world.grid[0][1].building = b
+    game = Game.__new__(Game)
+    game.world = world
+    game.hero = hero
+    game.enemy_heroes = [enemy]
+    game._rebuild_world_caches()
+    Game.move_enemy_heroes(game)
+    assert world.grid[0][1].building.owner == 1
+    step = exploration_ai.compute_enemy_step(game, enemy)
+    assert step == (2, 0)
