@@ -61,6 +61,7 @@ class WorldRenderer:
             "edge": {d: assets.get(f"mask_{d}") for d in ("n", "e", "s", "w")},
             "corner": {c: assets.get(f"mask_{c}") for c in ("ne", "nw", "se", "sw")},
         }
+        self._river_img = assets.get("terrain/river.png")
 
     # ------------------------------------------------------------------
     # Cached biome chunk helpers
@@ -89,6 +90,10 @@ class WorldRenderer:
                     constants.BIOME_PRIORITY,
                     self._transition_masks,
                 )
+                if world.biome_grid[y][x] == "river" and self._river_img:
+                    px = (x - start_x) * tile_size
+                    py = (y - start_y) * tile_size
+                    surf.blit(self._river_img, (px, py))
         self._biome_chunks[(cx, cy)] = surf
 
     def _generate_biome_chunks(self) -> None:

@@ -259,6 +259,7 @@ BIOME_CHAR_MAP = {
     "S": "swamp",
     "J": "jungle",
     "I": "ice",
+    "R": "river",
     "W": "ocean",
     "O": "ocean",  # backward compatibility
 }
@@ -428,7 +429,7 @@ class WorldMap:
     def _build_render_maps(self) -> None:
         """Prepare biome and water lookup grids for the renderer."""
         self.biome_grid = [[tile.biome for tile in row] for row in self.grid]
-        self.water_map = [[tile.biome == "ocean" for tile in row] for row in self.grid]
+        self.water_map = [[tile.biome in {"ocean", "river"} for tile in row] for row in self.grid]
 
     # ------------------------------------------------------------------
     #def populate_flora(self, loader: "FloraLoader", rng_seed: Optional[int] = None) -> None:
