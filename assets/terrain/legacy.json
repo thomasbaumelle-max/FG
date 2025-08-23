@@ -7,6 +7,7 @@
   {"id": "swamp", "image": "terrain/swamp.png"},
   {"id": "jungle", "image": "terrain/jungle.png"},
   {"id": "ice", "image": "terrain/ice.png"},
+  {"id": "river", "image": "terrain/river.png"},
   {"id": "ocean", "image": "terrain/ocean.png"},
   {"id": "coast", "image": "terrain/coast.png"}
 ]

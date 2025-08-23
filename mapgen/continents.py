@@ -70,15 +70,62 @@ def _remove_small_continents(grid: List[List[bool]], min_size: int) -> None:
                 grid[y][x] = False
 
 
+def _generate_rivers(grid: List[List[bool]], biome_map: Dict[Cell, str]) -> None:
+    """Carve simple rivers by replacing paths from mountains to oceans."""
+    height = len(grid)
+    width = len(grid[0]) if height else 0
+
+    # Precompute distance from every cell to the nearest water cell
+    dist = [[-1 for _ in range(width)] for _ in range(height)]
+    q: deque[Cell] = deque()
+    for y in range(height):
+        for x in range(width):
+            if not grid[y][x]:  # water
+                dist[y][x] = 0
+                q.append((x, y))
+    while q:
+        x, y = q.popleft()
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < width and 0 <= ny < height and grid[ny][nx] and dist[ny][nx] == -1:
+                dist[ny][nx] = dist[y][x] + 1
+                q.append((nx, ny))
+
+    mountains = [cell for cell, b in biome_map.items() if b == "M"]
+    if not mountains:
+        return
+
+    mountains.sort(key=lambda c: dist[c[1]][c[0]], reverse=True)
+    num_rivers = max(1, len(mountains) // 4)
+    for sx, sy in mountains[:num_rivers]:
+        x, y = sx, sy
+        while grid[y][x]:
+            grid[y][x] = False
+            biome_map[(x, y)] = "R"
+            if dist[y][x] <= 1:
+                break
+            neighbours = []
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < width and 0 <= ny < height and dist[ny][nx] != -1:
+                    neighbours.append((dist[ny][nx], nx, ny))
+            if not neighbours:
+                break
+            min_d = min(n[0] for n in neighbours)
+            candidates = [(nx, ny) for d, nx, ny in neighbours if d == min_d]
+            x, y = random.choice(candidates)
+
+
 DEFAULT_BIOME_COMPATIBILITY: Dict[str, set[str]] = {
-    "G": {"G", "F", "D", "M", "H", "S", "J", "I"},  # scarletia echo plain
-    "F": {"G", "F", "H", "S", "J"},  # scarletia crimson forest
-    "D": {"G", "D", "M", "H"},  # scarletia volcanic cannot touch ice
-    "M": {"G", "M", "D", "H", "I"},  # mountains allow ice
-    "H": {"G", "F", "D", "M", "H", "S", "I"},
-    "S": {"S", "G", "F", "H"},
-    "J": {"J", "F", "G", "H"},
-    "I": {"G", "M", "H", "I"},  # ice cannot touch scarletia volcanic
+    "G": {"G", "F", "D", "M", "H", "S", "J", "I", "R"},  # scarletia echo plain
+    "F": {"G", "F", "H", "S", "J", "R"},  # scarletia crimson forest
+    "D": {"G", "D", "M", "H", "R"},  # scarletia volcanic cannot touch ice
+    "M": {"G", "M", "D", "H", "I", "R"},  # mountains allow ice
+    "H": {"G", "F", "D", "M", "H", "S", "I", "R"},
+    "S": {"S", "G", "F", "H", "R"},
+    "J": {"J", "F", "G", "H", "R"},
+    "I": {"G", "M", "H", "I", "R"},  # ice cannot touch scarletia volcanic
+    "R": {"G", "F", "D", "M", "H", "S", "J", "I", "R"},
 }
 
 
@@ -158,12 +205,17 @@ def generate_continent_map(
     if biome_compatibility is None:
         biome_compatibility = DEFAULT_BIOME_COMPATIBILITY
     biome_map = _assign_biomes(grid, continents, biome_chars, biome_compatibility)
+    _generate_rivers(grid, biome_map)
     rows: List[str] = []
     for y in range(height):
         row_chars: List[str] = []
         for x in range(width):
             if not grid[y][x]:
-                row_chars.extend([ocean_char, "."])
+                char = biome_map.get((x, y))
+                if char == "R":
+                    row_chars.extend(["R", "."])
+                else:
+                    row_chars.extend([ocean_char, "."])
             else:
                 char = biome_map.get((x, y), biome_chars[0])
                 row_chars.extend([char, "."])

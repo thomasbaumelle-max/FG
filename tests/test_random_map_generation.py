@@ -2,6 +2,7 @@ import random
 
 from core.world import WorldMap
 import constants
+from mapgen.continents import generate_continent_map
 
 
 def test_random_size_and_weights():
@@ -50,3 +51,21 @@ def test_resource_and_building_placement():
         tile.building.image for row in wm_bld.grid for tile in row if tile.building
     ]
     assert buildings == ["buildings/mine/mine_0.png"]
+
+
+def test_river_generation_and_shoreline():
+    random.seed(0)
+    rows = generate_continent_map(30, 20, seed=0, biome_chars="GM")
+    grid = [[row[i] for i in range(0, len(row), 2)] for row in rows]
+    assert any("R" in row for row in grid)
+    height = len(grid)
+    width = len(grid[0]) if height else 0
+    river_cells = [(x, y) for y in range(height) for x in range(width) if grid[y][x] == "R"]
+    assert river_cells
+    assert any(
+        any(
+            0 <= (nx := x + dx) < width and 0 <= (ny := y + dy) < height and grid[ny][nx] == "W"
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
+        )
+        for x, y in river_cells
+    )

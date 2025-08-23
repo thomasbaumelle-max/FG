@@ -88,12 +88,13 @@ BIOME_PRIORITY = {
     "scarletia_volcanic": 5,
     "ice": 6,
     "mountain": 7,
-    "ocean": 8,
+    "river": 8,
+    "ocean": 9,
 }
 
 # Biomes that are inherently impassable regardless of the ``obstacle`` flag on a
 # tile.  Units may never enter these terrains.
-IMPASSABLE_BIOMES = {"mountain", "ocean"}
+IMPASSABLE_BIOMES = {"mountain", "ocean", "river"}
 ROAD_COST = 1  # AP cost when moving along a road
 TILE_SIZE = 64  # pixel size of each square on the exploration map
 # Rendering layers – lower indices are drawn first
@@ -227,6 +228,7 @@ BIOME_BASE_IMAGES: Dict[str, List[str]] = {
     "swamp": ["terrain/swamp.png"],
     "jungle": ["terrain/jungle.png"],
     "ice": ["terrain/ice.png"],
+    "river": ["terrain/river.png"],
     "ocean": ["terrain/ocean.png"],
     # Fallbacks for the core Scarletiа biomes used in tests
     "scarletia_echo_plain": ["terrain/grass.png"],
