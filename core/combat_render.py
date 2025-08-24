@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Tuple
 
+import os
+import math
 import pygame
 import constants
 import theme
@@ -28,7 +30,8 @@ def draw(combat, frame: int = 0) -> None:
         (screen_w - right_min - margin * 3) / combat.grid_pixel_width,
         (screen_h - bottom_min - margin * 3) / combat.grid_pixel_height,
     )
-    tile = int(constants.COMBAT_TILE_SIZE * combat.zoom)
+    tile_w = int(constants.COMBAT_HEX_SIZE * combat.zoom)
+    tile_h = int(constants.COMBAT_HEX_SIZE * combat.zoom * math.sqrt(3) / 2)
     grid_w = int(combat.grid_pixel_width * combat.zoom)
     grid_h = int(combat.grid_pixel_height * combat.zoom)
     combat.offset_x = margin
@@ -42,45 +45,41 @@ def draw(combat, frame: int = 0) -> None:
     bottom_w = grid_w
     bottom_h = screen_h - bottom_y - margin
 
-    shadow_surf = pygame.Surface((tile, tile), pygame.SRCALPHA)
+    shadow_surf = pygame.Surface((tile_w, tile_h), pygame.SRCALPHA)
     pygame.draw.ellipse(shadow_surf, (0, 0, 0, 100), shadow_surf.get_rect())
     overlay = pygame.Surface(combat.screen.get_size(), pygame.SRCALPHA)
 
-    # Draw background grid using biome-specific tiles
-    for y, row in enumerate(combat.combat_map):
-        for x, biome in enumerate(row):
+    # Draw battlefield background
+    bg = getattr(combat, "_battlefield_bg", None)
+    if bg is None:
+        path = os.path.join("assets", "battlefields", f"{combat.biome}.png")
+        try:
+            bg = pygame.image.load(path).convert_alpha()
+        except Exception:
+            bg = None
+        combat._battlefield_bg = bg
+    if bg:
+        if bg.get_size() != (grid_w, grid_h):
+            bg = pygame.transform.scale(bg, (grid_w, grid_h))
+        combat.screen.blit(bg, (combat.offset_x, combat.offset_y))
+    else:
+        combat.screen.fill(
+            constants.GREEN, pygame.Rect(combat.offset_x, combat.offset_y, grid_w, grid_h)
+        )
+
+    # Hex grid overlay
+    for x in range(constants.COMBAT_GRID_WIDTH):
+        for y in range(constants.COMBAT_GRID_HEIGHT):
             rect = combat.cell_rect(x, y)
-            tileset = combat.biome_tilesets.get(biome) if combat.biome_tilesets else None
-            if tileset:
-                variant = tileset.variant_for(x, y)
-                base = tileset.surface_for(variant)
-            else:
-                key_list = constants.BIOME_BASE_IMAGES.get(
-                    biome, constants.BIOME_BASE_IMAGES.get("grass", [""])
-                )
-                key = key_list[0] if isinstance(key_list, list) else key_list
-                base = combat.assets.get(key)
-                if not base:
-                    base = pygame.Surface(
-                        (constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE),
-                        pygame.SRCALPHA,
-                    )
-                    base.fill(constants.GREEN)
-                if base.get_size() != (
-                    constants.COMBAT_TILE_SIZE,
-                    constants.COMBAT_TILE_SIZE,
-                ):
-                    base = pygame.transform.scale(
-                        base,
-                        (constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE),
-                    )
-            img_tile = (
-                base
-                if rect.size == base.get_size()
-                else pygame.transform.scale(base, rect.size)
-            )
-            combat.screen.blit(img_tile, rect.topleft)
-            pygame.draw.rect(combat.screen, constants.BLACK, rect, 1)
+            points = [
+                (rect.x + rect.w * 0.25, rect.y),
+                (rect.x + rect.w * 0.75, rect.y),
+                (rect.x + rect.w, rect.y + rect.h / 2),
+                (rect.x + rect.w * 0.75, rect.y + rect.h),
+                (rect.x + rect.w * 0.25, rect.y + rect.h),
+                (rect.x, rect.y + rect.h / 2),
+            ]
+            pygame.draw.polygon(overlay, (255, 255, 255, 40), points, 1)
 
     # Draw decorative flora if any
     if combat.flora_loader and combat.flora_props:
