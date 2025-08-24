@@ -452,7 +452,9 @@ class WorldMap:
             self._assign_biomes(biome_weights)
             self._place_obstacles(num_obstacles)
             self._place_treasures(num_treasures)
-            self._generate_clusters(random, num_enemies)
+            guardian = max(0, num_enemies - num_enemies // 3)
+            roamer = num_enemies - guardian
+            self._generate_clusters(random, guardian, roamer)
             if self.resource_density > 0:
                 self._scatter_resources(random)
             self._place_buildings(num_buildings)
@@ -925,16 +927,19 @@ class WorldMap:
             units.append(Unit(stats, count, side="enemy"))
         return units
 
-    def _generate_clusters(self, rng: random.Random, enemy_count: int) -> None:
-        """Generate resource/building clusters and attach creature guards."""
+    def _generate_clusters(
+        self, rng: random.Random, guardian_count: int, roamer_count: int
+    ) -> None:
+        """Generate resource clusters with guardians and roaming stacks."""
 
-        if enemy_count <= 0:
+        if guardian_count <= 0 and roamer_count <= 0:
             return
+
         # approximate Poisson-disc sampling by enforcing minimum distance
         radius = max(4, min(self.width, self.height) // 5)
         points: List[Tuple[int, int]] = []
         attempts = 0
-        while len(points) < max(1, enemy_count // 2) and attempts < 2000:
+        while len(points) < max(1, guardian_count) and attempts < 2000:
             x = rng.randrange(self.width)
             y = rng.randrange(self.height)
             if any(abs(px - x) + abs(py - y) < radius for px, py in points):
@@ -973,15 +978,12 @@ class WorldMap:
             if self._can_place_building(x, y, b):
                 self._stamp_building(x, y, b)
 
-            # guardian stack at cluster centre
+            # always place a guardian stack at cluster centre
             units = self._create_enemy_army_for_biome(tile.biome)
             tile.enemy_units = units
             cid = units[0].stats.name
-            mode, guard = CREATURE_BEHAVIOUR.get(cid, (CreatureBehavior.ROAMER, 3))
-            if mode is CreatureBehavior.GUARDIAN:
-                ai = GuardianAI(x, y, units, guard)
-            else:
-                ai = RoamingAI(x, y, units, guard)
+            _, guard = CREATURE_BEHAVIOUR.get(cid, (CreatureBehavior.GUARDIAN, 3))
+            ai = GuardianAI(x, y, units, guard)
             self.creatures.append(ai)
 
         # spawn roaming stacks near frontiers
@@ -992,9 +994,10 @@ class WorldMap:
             if x < 2 or y < 2 or x >= self.width - 2 or y >= self.height - 2
         ]
         rng.shuffle(edge_tiles)
-        needed = max(0, enemy_count - len(points))
         placed = 0
         for x, y in edge_tiles:
+            if placed >= roamer_count:
+                break
             tile = self.grid[y][x]
             if not tile.is_passable() or tile.enemy_units is not None:
                 continue
@@ -1005,8 +1008,6 @@ class WorldMap:
             ai = RoamingAI(x, y, units, guard)
             self.creatures.append(ai)
             placed += 1
-            if placed >= needed:
-                break
 
     def _scatter_resources(self, rng: random.Random) -> None:
         """Lightweight pass to sprinkle solo resource piles."""
