@@ -787,6 +787,25 @@ class Game:
                 overlay_files = [e.get("image") for e in entries if e.get("image")]
                 if overlay_files:
                     self.load_additional_assets(overlay_files)
+                scale_ids = {
+                    "highlight",
+                    "active_unit",
+                    "melee_range",
+                    "ranged_range",
+                    "move_overlay",
+                    "enemy_overlay",
+                    "melee_overlay",
+                    "ranged_overlay",
+                    "spell_overlay",
+                    "select_overlay",
+                    "blocked_overlay",
+                    "ally_buff_overlay",
+                    "enemy_debuff_overlay",
+                    "danger_overlay",
+                    "path_overlay",
+                    "obstacle_overlay",
+                    "summon_overlay",
+                }
                 for entry in entries:
                     oid = entry.get("id")
                     img = entry.get("image")
@@ -794,12 +813,7 @@ class Game:
                         continue
                     surf = self.assets.get(img)
                     if surf:
-                        if oid in {
-                            "highlight",
-                            "active_unit",
-                            "melee_range",
-                            "ranged_range",
-                        }:
+                        if oid in scale_ids:
                             surf = scale_surface(
                                 surf,
                                 (
