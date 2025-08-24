@@ -1,26 +1,28 @@
 {
+  "sheet": "red_knights_skills.png",
   "logistics": {
-    "N": {"id": "logistics_N", "name": "Crimson Surge", "desc": "", "cost": 1, "effects": [], "icon": "crimson_surge", "coords": [2, 2]},
-    "A": {"id": "logistics_A", "name": "Valiant Charge", "desc": "", "cost": 1, "effects": [], "icon": "valiant_charge", "coords": [3, 0]},
-    "E": {"id": "logistics_E", "name": "Rally on the Road", "desc": "", "cost": 1, "effects": [], "icon": "rally", "coords": [0, 0]},
-    "M": {"id": "logistics_M", "name": "Sapper’s Path", "desc": "", "cost": 1, "effects": [], "icon": "sapper_charge", "coords": [0, 3]}
+    "N": {"id": "logistics_N", "name": "Crimson Surge", "desc": "", "cost": 1, "effects": [], "coords": [2, 2]},
+    "A": {"id": "logistics_A", "name": "Valiant Charge", "desc": "", "cost": 1, "effects": [], "coords": [3, 0]},
+    "E": {"id": "logistics_E", "name": "Rally on the Road", "desc": "", "cost": 1, "effects": [], "coords": [0, 0]},
+    "M": {"id": "logistics_M", "name": "Sapper’s Path", "desc": "", "cost": 1, "effects": [], "coords": [0, 3]}
   },
   "tactics": {
-    "N": {"id": "tactics_N", "name": "Guard Order", "desc": "", "cost": 1, "effects": [], "icon": "guard_order", "coords": [1, 0]},
-    "A": {"id": "tactics_A", "name": "Deploy Stakes", "desc": "", "cost": 1, "effects": [], "icon": "deploy_stakes", "coords": [3, 2]},
-    "E": {"id": "tactics_E", "name": "Aegis Wedge", "desc": "", "cost": 1, "effects": [], "icon": "aegis", "coords": [1, 1]},
-    "M": {"id": "tactics_M", "name": "Mass Bless", "desc": "", "cost": 1, "effects": [], "icon": "mass_bless", "coords": [0, 1]}
+    "N": {"id": "tactics_N", "name": "Guard Order", "desc": "", "cost": 1, "effects": [], "coords": [1, 0]},
+    "A": {"id": "tactics_A", "name": "Deploy Stakes", "desc": "", "cost": 1, "effects": [], "coords": [3, 2]},
+    "E": {"id": "tactics_E", "name": "Aegis Wedge", "desc": "", "cost": 1, "effects": [], "coords": [1, 1]},
+    "M": {"id": "tactics_M", "name": "Mass Bless", "desc": "", "cost": 1, "effects": [], "coords": [0, 1]}
   },
   "marksmanship": {
-    "N": {"id": "marksmanship_N", "name": "Firebolt Drills", "desc": "", "cost": 1, "effects": [], "icon": "firebolt", "coords": [1, 3]},
-    "A": {"id": "marksmanship_A", "name": "Volley", "desc": "", "cost": 1, "effects": [], "icon": "volley", "coords": [2, 0]},
-    "E": {"id": "marksmanship_E", "name": "Armor Traverse", "desc": "", "cost": 1, "effects": [], "icon": "fireball", "coords": [2, 3]},
-    "M": {"id": "marksmanship_M", "name": "Deadeye", "desc": "", "cost": 1, "effects": [], "icon": "deadeye", "coords": [2, 1]}
+    "N": {"id": "marksmanship_N", "name": "Firebolt Drills", "desc": "", "cost": 1, "effects": [], "coords": [1, 3]},
+    "A": {"id": "marksmanship_A", "name": "Volley", "desc": "", "cost": 1, "effects": [], "coords": [2, 0]},
+    "E": {"id": "marksmanship_E", "name": "Armor Traverse", "desc": "", "cost": 1, "effects": [], "coords": [2, 3]},
+    "M": {"id": "marksmanship_M", "name": "Deadeye", "desc": "", "cost": 1, "effects": [], "coords": [2, 1]}
   },
   "weaponsmithing": {
-    "N": {"id": "weaponsmithing_N", "name": "Intimidate", "desc": "", "cost": 1, "effects": [], "icon": "intimidate", "coords": [1, 2]},
-    "A": {"id": "weaponsmithing_A", "name": "Sharpen", "desc": "", "cost": 1, "effects": [], "icon": "sharpen", "coords": [3, 1]},
-    "E": {"id": "weaponsmithing_E", "name": "Steel Discipline", "desc": "", "cost": 1, "effects": [], "icon": "flame_alt", "coords": [3, 3]},
-    "M": {"id": "weaponsmithing_M", "name": "Overrun", "desc": "", "cost": 1, "effects": [], "icon": "overrun", "coords": [0, 2]}
+    "N": {"id": "weaponsmithing_N", "name": "Intimidate", "desc": "", "cost": 1, "effects": [], "coords": [1, 2]},
+    "A": {"id": "weaponsmithing_A", "name": "Sharpen", "desc": "", "cost": 1, "effects": [], "coords": [3, 1]},
+    "E": {"id": "weaponsmithing_E", "name": "Steel Discipline", "desc": "", "cost": 1, "effects": [], "coords": [3, 3]},
+    "M": {"id": "weaponsmithing_M", "name": "Overrun", "desc": "", "cost": 1, "effects": [], "coords": [0, 2]}
   }
 }
+
