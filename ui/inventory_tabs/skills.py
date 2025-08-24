@@ -29,7 +29,9 @@ def draw(screen: "InventoryScreen") -> None:
         t = screen.font.render(name.title(), True, COLOR_TEXT)
         screen.screen.blit(t, (rect.x + (rect.width - t.get_width()) // 2, rect.y + 4))
 
-    pts = screen.font.render(f"Skill Points: {screen.hero.skill_points}", True, COLOR_TEXT)
+    pts = screen.font.render(
+        f"Skill Points: {screen.hero.skill_points}", True, COLOR_TEXT
+    )
     screen.screen.blit(pts, (screen.center_rect.x + 14, screen.center_rect.y + 90))
 
     nodes = screen.skill_trees.get(screen.active_skill_tab, [])
@@ -37,10 +39,11 @@ def draw(screen: "InventoryScreen") -> None:
 
     # Grid & connectors (single column, four ranks)
     cols, rows = 1, 4
-    cell = 110
+    gy = screen.center_rect.y + 110
+    available_h = screen.center_rect.bottom - 40 - gy
+    cell = min(100, available_h // rows)
     grid_w = cols * cell
     gx = screen.center_rect.x + (screen.center_rect.width - grid_w) // 2
-    gy = screen.center_rect.y + 130
 
     # Draw links first
     def node_center(nid: str) -> Tuple[int, int]:
@@ -61,20 +64,32 @@ def draw(screen: "InventoryScreen") -> None:
         c, r = positions[node.id]
         rect = pygame.Rect(gx + c * cell + 8, gy + r * cell + 8, cell - 16, cell - 16)
         learned = node.id in learned_set
-        available = (screen.hero.skill_points >= node.cost) and all(req in learned_set for req in node.requires)
+        available = (screen.hero.skill_points >= node.cost) and all(
+            req in learned_set for req in node.requires
+        )
 
-        state_col = COLOR_OK if learned else ((60, 120, 200) if available else COLOR_DISABLED)
+        state_col = (
+            COLOR_OK if learned else ((60, 120, 200) if available else COLOR_DISABLED)
+        )
         pygame.draw.rect(screen.screen, COLOR_SLOT_BG, rect, border_radius=8)
         pygame.draw.rect(screen.screen, state_col, rect, 3, border_radius=8)
 
         # branch icon
         icon = screen.assets.get(node.icon)
         if icon:
-            icon = pygame.transform.smoothscale(icon, (rect.width - 12, rect.height - 46))
+            icon = pygame.transform.smoothscale(
+                icon, (rect.width - 12, rect.height - 46)
+            )
             screen.screen.blit(icon, (rect.x + 6, rect.y + 6))
 
         label = screen.font_small.render(node.rank, True, COLOR_TEXT)
-        screen.screen.blit(label, (rect.centerx - label.get_width() // 2, rect.bottom - label.get_height() - 6))
+        screen.screen.blit(
+            label,
+            (
+                rect.centerx - label.get_width() // 2,
+                rect.bottom - label.get_height() - 6,
+            ),
+        )
 
         screen.skill_rects[node.id] = rect
 
@@ -82,10 +97,14 @@ def draw(screen: "InventoryScreen") -> None:
     hint = screen.font_small.render(
         "Left-click: Learn • Right-click: Refund (if no dependents)", True, COLOR_ACCENT
     )
-    screen.screen.blit(hint, (screen.center_rect.x + 14, screen.center_rect.bottom - 26))
+    screen.screen.blit(
+        hint, (screen.center_rect.x + 14, screen.center_rect.bottom - 26)
+    )
 
 
-def skill_tooltip(screen: "InventoryScreen", node: SkillNode) -> List[Tuple[str, Tuple[int, int, int]]]:
+def skill_tooltip(
+    screen: "InventoryScreen", node: SkillNode
+) -> List[Tuple[str, Tuple[int, int, int]]]:
     """Return tooltip lines for a skill node."""
     lines: List[Tuple[str, Tuple[int, int, int]]] = [
         (node.name, COLOR_TEXT),
@@ -98,8 +117,12 @@ def skill_tooltip(screen: "InventoryScreen", node: SkillNode) -> List[Tuple[str,
     if node.id in learned:
         lines.append(("Learned", COLOR_OK))
     else:
-        ok = screen.hero.skill_points >= node.cost and all(req in learned for req in node.requires)
-        lines.append(("Available" if ok else "Locked", COLOR_OK if ok else COLOR_DISABLED))
+        ok = screen.hero.skill_points >= node.cost and all(
+            req in learned for req in node.requires
+        )
+        lines.append(
+            ("Available" if ok else "Locked", COLOR_OK if ok else COLOR_DISABLED)
+        )
     return lines
 
 
