@@ -353,17 +353,22 @@ class Game:
             Unit(DRAGON_STATS, 5, 'hero'),
             Unit(PRIEST_STATS, 15, 'hero'),
         ]
+        hero_asset = self.assets.get("default_hero")
+        portrait = None
+        battlefield = None
+        if isinstance(hero_asset, dict):
+            portrait = hero_asset.get("portrait")
+            battlefield = hero_asset.get("battlefield")
         self.hero = Hero(
             hx,
             hy,
             starting_army,
+            portrait=portrait,
+            battlefield_image=battlefield,
             name=self.player_name,
             colour=self.player_colour,
             faction=self.faction,
         )
-        hero_asset = self.assets.get("default_hero")
-        if isinstance(hero_asset, dict):
-            self.hero.portrait = hero_asset.get("portrait")
         self.hero.inventory.extend(STARTING_ARTIFACTS)
         # Quest system
         self.quest_manager = QuestManager(self)
@@ -687,22 +692,24 @@ class Game:
             try:
                 with open(heroes_path, "r", encoding="utf-8") as f:
                     entries = json.load(f)
-                for entry in entries:
-                    try:
-                        portrait = self.assets.get(entry.get("portrait", ""))
-                        icon_info = entry.get("icon", {})
-                        icon_surf = self.assets.get(icon_info.get("image", ""))
-                        size = icon_info.get("scale", constants.TILE_SIZE)
-                        icon_surf = scale_surface(icon_surf, (size, size), smooth=True)
-                        self.assets[entry["id"]] = {
-                            "portrait": portrait,
-                            "icon": {
-                                "surface": icon_surf,
-                                "anchor": tuple(icon_info.get("anchor", (0, 0))),
-                            },
-                        }
-                    except Exception:
-                        continue
+                    for entry in entries:
+                        try:
+                            portrait = self.assets.get(entry.get("portrait", ""))
+                            battlefield = self.assets.get(entry.get("battlefield", ""))
+                            icon_info = entry.get("icon", {})
+                            icon_surf = self.assets.get(icon_info.get("image", ""))
+                            size = icon_info.get("scale", constants.TILE_SIZE)
+                            icon_surf = scale_surface(icon_surf, (size, size), smooth=True)
+                            self.assets[entry["id"]] = {
+                                "portrait": portrait,
+                                "battlefield": battlefield,
+                                "icon": {
+                                    "surface": icon_surf,
+                                    "anchor": tuple(icon_info.get("anchor", (0, 0))),
+                                },
+                            }
+                        except Exception:
+                            continue
             except Exception:
                 pass
 
