@@ -150,8 +150,8 @@ MARKET_RATES = {
 # Battlefield dimensions for tactical combat
 # ``COMBAT_HEX_SIZE`` represents the width of a single hex cell in pixels.
 COMBAT_HEX_SIZE = 64
-COMBAT_GRID_WIDTH = 10
-COMBAT_GRID_HEIGHT = 10
+COMBAT_GRID_WIDTH = 11
+COMBAT_GRID_HEIGHT = 7
 COMBAT_TILE_SIZE = 64
 # Hero sprite height relative to a combat hex
 HERO_HEX_FACTOR = 1.5
