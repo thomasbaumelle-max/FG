@@ -249,6 +249,14 @@ class WorldRenderer:
                     tile = self.world.grid[wy][wx]
                     if (
                         self.game
+                        and getattr(tile, "boat", None)
+                        and hasattr(self.game, "embark")
+                    ):
+                        hero = getattr(self.game, "hero", None)
+                        if hero and abs(hero.x - wx) + abs(hero.y - wy) == 1:
+                            self.game.embark(hero, tile.boat)
+                    elif (
+                        self.game
                         and isinstance(getattr(tile, "building", None), Town)
                         and tile.building.owner == 0
                         and hasattr(self.game, "open_town")
@@ -535,6 +543,25 @@ class WorldRenderer:
         for y in range(start_y, end_y):
             for x in range(start_x, end_x):
                 tile = world.grid[y][x]
+                if getattr(tile, "boat", None):
+                    boat_obj = tile.boat
+                    boat_id = boat_obj.id
+                    path = boat_id
+                    if getattr(self.game, "boat_defs", None):
+                        boat_def = self.game.boat_defs.get(boat_id)
+                        if boat_def:
+                            path = boat_def.path
+                    img = self.assets.get(path)
+                    if img:
+                        if img.get_size() != (tile_size, tile_size):
+                            try:
+                                img = pygame.transform.smoothscale(img, (tile_size, tile_size))
+                            except Exception:
+                                pass
+                        layers[constants.LAYER_UNITS].blit(
+                            img,
+                            ((x - start_x) * tile_size + offset_x, (y - start_y) * tile_size + offset_y),
+                        )
                 if tile.enemy_units:
                     strongest = max(tile.enemy_units, key=lambda u: u.stats.max_hp)
                     img_name = ENEMY_UNIT_IMAGES.get(strongest.stats.name)

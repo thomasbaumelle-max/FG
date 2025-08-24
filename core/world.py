@@ -314,6 +314,8 @@ class Tile:
     resource: Optional[str] = None
     # Optional building such as a mine or sawmill
     building: Optional['Building'] = None
+    # Optional boat anchored on this water tile
+    boat: Optional["Boat"] = None
     owner: Optional[int] = None
 
     @property
