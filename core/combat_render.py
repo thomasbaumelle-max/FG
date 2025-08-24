@@ -51,23 +51,16 @@ def draw(combat, frame: int = 0) -> None:
     combat.screen.fill(theme.PALETTE["panel"])
 
     screen_w, screen_h = combat.screen.get_size()
-    margin = HUD_MARGIN
-    right_min = PANEL_W
     bottom_min = BUTTON_H + 8
-    available_w = screen_w - right_min - margin * 3
-    available_h = screen_h - bottom_min - margin * 2
-    combat.zoom = min(
-        available_w / combat.grid_pixel_width,
-        available_h / combat.grid_pixel_height,
-    )
+    combat.zoom = 1.0
     tile_w = int(combat.hex_width * combat.zoom)
     tile_h = int(combat.hex_height * combat.zoom)
     grid_w = int(combat.grid_pixel_width * combat.zoom)
     grid_h = int(combat.grid_pixel_height * combat.zoom)
-    extra_w = available_w - grid_w
-    side_margin = int(margin + extra_w / 2)
-    combat.offset_x = side_margin
-    combat.offset_y = margin
+    side_margin = 64
+    top_margin = 128
+    combat.offset_x = HUD_MARGIN + side_margin
+    combat.offset_y = screen_h - bottom_min - HUD_MARGIN - grid_h
     shadow_surf = pygame.Surface((tile_w, tile_h), pygame.SRCALPHA)
     pygame.draw.ellipse(shadow_surf, (0, 0, 0, 100), shadow_surf.get_rect())
     overlay = pygame.Surface(combat.screen.get_size(), pygame.SRCALPHA)
@@ -85,13 +78,22 @@ def draw(combat, frame: int = 0) -> None:
             bg = None
         combat._battlefield_bg = bg
     if bg:
-        if bg.get_size() != (grid_w, grid_h):
-            bg = pygame.transform.scale(bg, (grid_w, grid_h))
-        combat.screen.blit(bg, (combat.offset_x, combat.offset_y))
+        if bg.get_size() != (grid_w + 2 * side_margin, grid_h + top_margin):
+            bg = pygame.transform.scale(
+                bg, (grid_w + 2 * side_margin, grid_h + top_margin)
+            )
+        combat.screen.blit(
+            bg, (combat.offset_x - side_margin, combat.offset_y - top_margin)
+        )
     else:
         combat.screen.fill(
             constants.GREEN,
-            pygame.Rect(combat.offset_x, combat.offset_y, grid_w, grid_h),
+            pygame.Rect(
+                combat.offset_x - side_margin,
+                combat.offset_y - top_margin,
+                grid_w + 2 * side_margin,
+                grid_h + top_margin,
+            ),
         )
 
     if getattr(combat, "hero", None):
