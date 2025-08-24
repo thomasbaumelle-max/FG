@@ -239,18 +239,7 @@ class Combat:
 
         cols = constants.COMBAT_GRID_WIDTH
         rows = constants.COMBAT_GRID_HEIGHT
-        if self._battlefield_bg:
-            img_w, img_h = self._battlefield_bg.get_size()
-            ratio_w = 0.9
-            ratio_h = 1.0
-            hex_w = min(
-                img_w * ratio_w / (1 + (cols - 1) * 0.75),
-                img_h * ratio_h / (rows + 0.5) * 2 / math.sqrt(3),
-            )
-            self.hex_width = int(hex_w)
-        else:
-            self.hex_width = constants.COMBAT_HEX_SIZE
-
+        self.hex_width = constants.COMBAT_HEX_SIZE
         self.hex_height = int(self.hex_width * math.sqrt(3) / 2)
         self.grid_pixel_width = int(
             self.hex_width + (cols - 1) * self.hex_width * 3 / 4
@@ -258,7 +247,6 @@ class Combat:
         self.grid_pixel_height = int(
             self.hex_height * rows + self.hex_height / 2
         )
-        constants.COMBAT_HEX_SIZE = self.hex_width
         # Offset and zoom/pan state
         self.offset_x = 10
         self.offset_y = 10
