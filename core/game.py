@@ -1919,6 +1919,13 @@ class Game:
                     if self._capture_tile(nx, ny, tile, self.hero, 0, econ_state, econ_b):
                         self._publish_resources()
             return
+        if (
+            tile.biome in constants.WATER_BIOMES
+            and getattr(tile, "boat", None)
+            and not has_boat
+        ):
+            if self.embark(self.hero, tile.boat):
+                return
         if not tile.is_passable(has_boat=has_boat):
             if tile.biome in constants.WATER_BIOMES and not has_boat:
                 self._notify("A boat is required to embark.")
@@ -2140,11 +2147,24 @@ class Game:
         # otherwise just move
 
     def embark(self, hero: Hero, boat: Boat) -> bool:
-        """Embark ``hero`` onto ``boat`` if adjacent."""
+        """Embark ``hero`` onto ``boat`` if adjacent and at shore."""
         if abs(hero.x - boat.x) + abs(hero.y - boat.y) != 1:
+            return False
+        # Hero must be on land and not already embarked
+        if getattr(hero, "naval_unit", None) is not None:
+            return False
+        hero_tile = self.world.grid[hero.y][hero.x]
+        if hero_tile.biome in constants.WATER_BIOMES:
             return False
         tile = self.world.grid[boat.y][boat.x]
         if tile.boat is not boat or hero.ap <= 0:
+            return False
+        # Boat must be adjacent to at least one land tile
+        if all(
+            not self.world.in_bounds(boat.x + dx, boat.y + dy)
+            or self.world.grid[boat.y + dy][boat.x + dx].biome in constants.WATER_BIOMES
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
+        ):
             return False
         prev_x, prev_y = hero.x, hero.y
         hero.ap -= 1
@@ -2162,6 +2182,13 @@ class Game:
         """Leave the boat on water tile ``(x, y)`` and remove naval status."""
         boat_id = getattr(hero, "naval_unit", None)
         if not boat_id:
+            return
+        # Ensure the disembark location is adjacent to land
+        if all(
+            not self.world.in_bounds(x + dx, y + dy)
+            or self.world.grid[y + dy][x + dx].biome in constants.WATER_BIOMES
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
+        ):
             return
         bdef = self.boat_defs.get(boat_id) if hasattr(self, "boat_defs") else None
         movement = bdef.movement if bdef else 0
