@@ -2709,15 +2709,21 @@ class Game:
                     self._notify("You have been defeated!")
                     self.hero.army = []
                 return True
-        from core.combat import Combat
+        from core.combat import Combat, water_battlefield_template
         tile = self.world.grid[self.hero.y][self.hero.x]
-        combat_map, flora = generate_combat_map(
-            self.world,
-            self.hero.x,
-            self.hero.y,
-            constants.COMBAT_GRID_WIDTH,
-            constants.COMBAT_GRID_HEIGHT,
-        )
+        if getattr(self.hero, "naval_unit", None) is not None:
+            combat_map = water_battlefield_template()
+            flora: List["PropInstance"] = []
+            obstacles = 0
+        else:
+            combat_map, flora = generate_combat_map(
+                self.world,
+                self.hero.x,
+                self.hero.y,
+                constants.COMBAT_GRID_WIDTH,
+                constants.COMBAT_GRID_HEIGHT,
+            )
+            obstacles = random.randint(1, 3)
         combat = Combat(
             self.screen,
             self.assets,
@@ -2730,7 +2736,7 @@ class Game:
             flora_loader=self.world.flora_loader,
             biome_tilesets=self.biome_tilesets,
             biome=tile.biome,
-            num_obstacles=random.randint(1, 3),
+            num_obstacles=obstacles,
             unit_shadow_baked=self.unit_shadow_baked,
             hero=self.hero,
             hero_faction=self.hero.faction,
