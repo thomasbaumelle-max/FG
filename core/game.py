@@ -29,6 +29,7 @@ from loaders.flora_loader import FloraLoader, PropInstance
 from loaders.resources_loader import load_resources, ResourceDef
 from loaders.biomes import BiomeCatalog, BiomeTileset, load_tileset
 from loaders import units_loader
+from loaders.boat_loader import load_boats, BoatDef
 from loaders.scenario_loader import load_scenario
 from tools.artifact_manifest import load_artifact_manifest
 from tools.load_manifest import load_manifest
@@ -207,6 +208,10 @@ class Game:
             self.unit_defs = units_loader.load_units(self.ctx, "units/units.json")
         except Exception:
             self.unit_defs = {}
+        try:
+            self.boat_defs: Dict[str, BoatDef] = load_boats(self.ctx, "boats.json")
+        except Exception:
+            self.boat_defs = {}
         # Initialise audio system and load sound effects
         audio.init()
         try:
@@ -2973,7 +2978,10 @@ class Game:
             hero_info.get("colour", getattr(self, "player_colour", constants.BLUE))
         )
         faction_val = hero_info.get("faction", "red_knights")
-        faction = self.factions.get(faction_val, FactionDef(faction_val, faction_val.title()))
+        factions = getattr(self, "factions", {})
+        faction = factions.get(
+            faction_val, FactionDef(faction_val, faction_val.title())
+        )
         hero = Hero(
             hero_info["x"],
             hero_info["y"],
