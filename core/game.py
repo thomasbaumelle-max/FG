@@ -74,6 +74,7 @@ from state.event_bus import (
     ON_CAMERA_CHANGED,
     ON_ENEMY_DEFEATED,
     ON_INFO_MESSAGE,
+    ON_SEA_CHAIN_PROGRESS,
 )
 from state.game_state import PlayerResources, GameState
 from state.quests import QuestManager
@@ -354,6 +355,8 @@ class Game:
         self.hero.inventory.extend(STARTING_ARTIFACTS)
         # Quest system
         self.quest_manager = QuestManager(self)
+        # Sea quest chain data
+        self._load_sea_chain()
         # Initialise vision for the starting player
         self._update_player_visibility()
         # Remember the player's starting town to detect loss later
@@ -504,6 +507,41 @@ class Game:
         """Log ``message`` and publish it to the UI event bus."""
         logger.info(message)
         EVENT_BUS.publish(ON_INFO_MESSAGE, message)
+
+    def _load_sea_chain(self) -> None:
+        """Load sea quest chain definition from assets."""
+        path = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),
+            "assets",
+            "quests",
+            "sea_chains.json",
+        )
+        try:
+            with open(path, "r", encoding="utf-8") as fh:
+                data = json.load(fh)
+        except Exception:
+            data = {}
+        self.sea_chain = data.get("sea_chain", [])
+        self.sea_chain_index = 0
+
+    def _check_sea_chain(self) -> None:
+        """Advance sea quest chain if hero reaches next waypoint."""
+        chain = getattr(self, "sea_chain", None)
+        if not chain:
+            return
+        idx = getattr(self, "sea_chain_index", 0)
+        if idx >= len(chain):
+            return
+        if getattr(self.hero, "naval_unit", None) is None:
+            return
+        wp = chain[idx]
+        if self.hero.x == wp.get("x") and self.hero.y == wp.get("y"):
+            reward = wp.get("reward", {})
+            self.hero.gold += int(reward.get("gold", 0))
+            for res in constants.RESOURCES:
+                self.hero.resources[res] += int(reward.get(res, 0))
+            self.sea_chain_index += 1
+            EVENT_BUS.publish(ON_SEA_CHAIN_PROGRESS, self.sea_chain_index, len(chain))
 
     # ------------------------------------------------------------------ events
     def process_event_queue(self) -> None:
@@ -2081,6 +2119,8 @@ class Game:
             self._notify(f"You gather some {res}.")
             self._update_caches_for_tile(self.hero.x, self.hero.y)
             self._publish_resources()
+        # Sea quest chain progression
+        self._check_sea_chain()
         # Update fog of war after movement
         self._update_player_visibility(self.hero)
         # otherwise just move
