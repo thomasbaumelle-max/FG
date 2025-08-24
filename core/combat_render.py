@@ -303,8 +303,8 @@ def handle_button_click(combat, current_unit, pos: Tuple[int, int]) -> bool:
 
     for action, rect in combat.action_buttons.items():
         if rect.collidepoint(mx, my):
-            if combat.selected_action == "spell":
-                if action == "back":
+            if combat.selected_action in ("spell", "spellbook"):
+                if action in ("back", "spellbook"):
                     combat.selected_action = None
                     break
                 combat.start_spell(current_unit, action)

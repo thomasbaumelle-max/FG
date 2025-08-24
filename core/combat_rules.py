@@ -90,9 +90,10 @@ def compute_damage(attacker: UnitView, defender: UnitView, *,
 
     # Pénalités/bonus
     min_range = getattr(attacker.stats, "min_range", 1)
-    if attack_type == "ranged" and distance < max(2, min_range):
-        dmg = int(round(dmg * 0.75))  # pénalité tir trop proche
+    if attack_type == "ranged":
         defence = defender.stats.defence_ranged
+        if distance < max(2, min_range):
+            dmg = int(round(dmg * 0.75))  # pénalité tir trop proche
     elif attack_type == "magic":
         defence = defender.stats.defence_magic
     else:
