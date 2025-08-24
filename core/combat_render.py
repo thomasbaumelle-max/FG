@@ -52,10 +52,13 @@ def draw(combat, frame: int = 0) -> None:
     # Draw battlefield background
     bg = getattr(combat, "_battlefield_bg", None)
     if bg is None:
-        path = os.path.join("assets", "battlefields", f"{combat.biome}.png")
-        try:
-            bg = pygame.image.load(path).convert_alpha()
-        except Exception:
+        path = getattr(combat.battlefield, "image", "")
+        if path:
+            try:
+                bg = pygame.image.load(path).convert_alpha()
+            except Exception:
+                bg = None
+        else:
             bg = None
         combat._battlefield_bg = bg
     if bg:
@@ -74,7 +77,10 @@ def draw(combat, frame: int = 0) -> None:
             if combat.zoom != 1:
                 img = pygame.transform.scale(img, (int(w * combat.zoom), int(h * combat.zoom)))
                 w, h = img.get_size()
-            combat.screen.blit(img, (combat.offset_x, combat.offset_y - h))
+            hx, hy = getattr(combat.battlefield, "hero_pos", (0, 0))
+            x = combat.offset_x + int(hx * combat.zoom)
+            y = combat.offset_y + int(hy * combat.zoom)
+            combat.screen.blit(img, (x, y))
 
     # Hex grid overlay
     for x in range(constants.COMBAT_GRID_WIDTH):
