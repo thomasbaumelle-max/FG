@@ -364,6 +364,7 @@ class Hero:
         army: Optional[List[Unit]] = None,
         base_stats: Optional[HeroStats] = None,
         portrait: Any | None = None,
+        battlefield_image: Any | None = None,
         name: str = "Hero",
         colour: Tuple[int, int, int] = constants.BLUE,
         faction: FactionDef | None = None,
@@ -371,6 +372,7 @@ class Hero:
         self.x = x
         self.y = y
         self.portrait = portrait
+        self.battlefield_image = battlefield_image
         self.name = name
         self.colour = colour
         self.faction = faction

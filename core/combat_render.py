@@ -67,6 +67,15 @@ def draw(combat, frame: int = 0) -> None:
             constants.GREEN, pygame.Rect(combat.offset_x, combat.offset_y, grid_w, grid_h)
         )
 
+    if getattr(combat, "hero", None):
+        img = getattr(combat.hero, "battlefield_image", None)
+        if isinstance(img, pygame.Surface):
+            w, h = img.get_size()
+            if combat.zoom != 1:
+                img = pygame.transform.scale(img, (int(w * combat.zoom), int(h * combat.zoom)))
+                w, h = img.get_size()
+            combat.screen.blit(img, (combat.offset_x, combat.offset_y - h))
+
     # Hex grid overlay
     for x in range(constants.COMBAT_GRID_WIDTH):
         for y in range(constants.COMBAT_GRID_HEIGHT):
