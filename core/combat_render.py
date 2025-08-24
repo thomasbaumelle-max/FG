@@ -223,6 +223,7 @@ def draw(combat, frame: int = 0) -> None:
     combat.fx_queue.update_and_draw(combat.screen)
 
     # Draw units
+    combat.units.sort(key=lambda u: (u.y, u.x))
     for unit in combat.units:
         if not unit.is_alive:
             continue
