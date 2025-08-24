@@ -182,6 +182,7 @@ def generate_continent_map(
     coast_char: str = "C",
     min_continent_size: Optional[int] = None,
     biome_compatibility: Optional[Dict[str, set[str]]] = None,
+    num_players: int = 2,
 ) -> List[str]:
     """Generate map data with continents and biome regions.
 
@@ -194,7 +195,9 @@ def generate_continent_map(
     higher level code will place obstacles and items afterwards.
     ``map_type`` controls the overall ratio of land to water and defaults to
     ``"plaine"`` for land‑heavy maps.  Passing ``"marine"`` yields mostly
-    water with a few larger islands preserved for starting areas.
+    water with a few larger islands preserved for starting areas.  When
+    generating marine maps ``num_players`` landmasses are retained to host the
+    starting areas for each player; all other continents are flooded.
     """
     if seed is not None:
         random.seed(seed)
@@ -217,11 +220,15 @@ def generate_continent_map(
 
     if map_type == "marine":
         continents = _label_continents(grid)
-        largest = sorted(continents.values(), key=len, reverse=True)
-        for cells in largest[2:]:
+        for cells in continents.values():
             if len(cells) < min_continent_size:
                 for x, y in cells:
                     grid[y][x] = False
+        continents = _label_continents(grid)
+        largest = sorted(continents.values(), key=len, reverse=True)
+        for cells in largest[num_players:]:
+            for x, y in cells:
+                grid[y][x] = False
         continents = _label_continents(grid)
     else:
         _remove_small_continents(grid, min_continent_size)
