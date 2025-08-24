@@ -9,6 +9,7 @@ import math
 import pygame
 import constants
 import theme
+from .combat_screen import PANEL_W, BUTTON_H, MARGIN as HUD_MARGIN
 
 
 def draw_hex(surface: pygame.Surface, rect: pygame.Rect, colour: Tuple[int, int, int], alpha: int, width: int = 0) -> None:
@@ -41,9 +42,9 @@ def draw(combat, frame: int = 0) -> None:
     combat.screen.fill(constants.BLACK)
 
     screen_w, screen_h = combat.screen.get_size()
-    margin = 10
-    right_min = 200
-    bottom_min = 60
+    margin = HUD_MARGIN
+    right_min = PANEL_W
+    bottom_min = BUTTON_H + 8
     combat.zoom = min(
         (screen_w - right_min - margin * 3) / combat.grid_pixel_width,
         (screen_h - bottom_min - margin * 3) / combat.grid_pixel_height,
@@ -93,11 +94,19 @@ def draw(combat, frame: int = 0) -> None:
         if isinstance(img, pygame.Surface):
             w, h = img.get_size()
             if combat.zoom != 1:
-                img = pygame.transform.scale(img, (int(w * combat.zoom), int(h * combat.zoom)))
+                img = pygame.transform.scale(
+                    img, (int(w * combat.zoom), int(h * combat.zoom))
+                )
                 w, h = img.get_size()
             hx, hy = getattr(combat.battlefield, "hero_pos", (0, 0))
-            x = combat.offset_x + int(hx * combat.zoom)
-            y = combat.offset_y + int(hy * combat.zoom)
+            if 0 <= hx <= 1 and 0 <= hy <= 1:
+                hx *= grid_w
+                hy *= grid_h
+            else:
+                hx *= combat.zoom
+                hy *= combat.zoom
+            x = combat.offset_x + int(hx)
+            y = combat.offset_y + int(hy)
             combat.screen.blit(img, (x, y))
 
     # Hex grid overlay
