@@ -134,15 +134,6 @@ class CombatHUD:
 
             # Buttons below the turn order
             y += 10
-            if combat.hero_spells:
-                r = pygame.Rect(right.x + 10, y, right.width - 20, BUTTON_H)
-                pygame.draw.rect(screen, (52, 55, 63), r)
-                pygame.draw.rect(screen, LINE, r, 1)
-                txt = self.small.render("Spellbook", True, theme.PALETTE["text"])
-                screen.blit(txt, txt.get_rect(center=r.center))
-                action_buttons["spellbook"] = r
-                y = r.bottom + 6
-
             auto_button = pygame.Rect(right.x + 10, y, right.width - 20, BUTTON_H)
             pygame.draw.rect(screen, (52, 55, 63), auto_button)
             pygame.draw.rect(screen, LINE, auto_button, 1)
@@ -152,6 +143,15 @@ class CombatHUD:
                 theme.PALETTE["text"],
             )
             screen.blit(lab, lab.get_rect(center=auto_button.center))
+            y = auto_button.bottom + 6
+
+            if combat.hero_spells:
+                r = pygame.Rect(right.x + 10, y, right.width - 20, BUTTON_H)
+                pygame.draw.rect(screen, (52, 55, 63), r)
+                pygame.draw.rect(screen, LINE, r, 1)
+                txt = self.small.render("Spellbook", True, theme.PALETTE["text"])
+                screen.blit(txt, txt.get_rect(center=r.center))
+                action_buttons["spellbook"] = r
         # ---- Action bar (bottom) ----
         x = bottom.x + 8
 

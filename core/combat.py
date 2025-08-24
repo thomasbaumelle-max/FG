@@ -375,6 +375,25 @@ class Combat:
         self.damage_stats[attacker]["dealt"] += dmg
         self.damage_stats[defender]["taken"] += dmg
 
+    def show_spellbook(self) -> None:
+        """Display the hero's spellbook overlay."""
+        try:  # pragma: no cover - allow running without package context
+            from ui.spellbook_overlay import SpellbookOverlay
+        except ImportError:  # pragma: no cover
+            from .ui.spellbook_overlay import SpellbookOverlay  # type: ignore
+
+        overlay = SpellbookOverlay(self.screen, self)
+        clock = pygame.time.Clock()
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if overlay.handle_event(event):
+                    running = False
+                    break
+            overlay.draw()
+            pygame.display.flip()
+            clock.tick(constants.FPS)
+
     def show_stats(self) -> None:
         """Display a summary of combat damage for all units."""
         heading_font = theme.get_font(36) or pygame.font.SysFont(None, 36)
@@ -1064,6 +1083,8 @@ class Combat:
                             return False, self.experience_gained()
                         elif event.key == pygame.K_h:
                             self.auto_mode = False
+                        elif event.key == pygame.K_s:
+                            self.show_spellbook()
                     elif event.type == pygame.MOUSEBUTTONDOWN:
                         if (
                             event.button == 1
@@ -1115,6 +1136,8 @@ class Combat:
                             self.screen.get_width() // 2,
                             self.screen.get_height() // 2,
                         ))
+                    elif event.key == pygame.K_s:
+                        self.show_spellbook()
                     elif current_unit.side == 'hero':
                         if event.key == pygame.K_SPACE:
                             current_unit.acted = True
