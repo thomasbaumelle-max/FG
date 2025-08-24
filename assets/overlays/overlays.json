@@ -1,8 +1,8 @@
 [
-  {"id": "mask_n",  "image": "overlays/mask_n.png"},
-  {"id": "mask_e",  "image": "overlays/mask_e.png"},
-  {"id": "mask_s",  "image": "overlays/mask_s.png"},
-  {"id": "mask_w",  "image": "overlays/mask_w.png"},
+  {"id": "mask_n", "image": "overlays/mask_n.png"},
+  {"id": "mask_e", "image": "overlays/mask_e.png"},
+  {"id": "mask_s", "image": "overlays/mask_s.png"},
+  {"id": "mask_w", "image": "overlays/mask_w.png"},
   {"id": "mask_ne", "image": "overlays/mask_ne.png"},
   {"id": "mask_nw", "image": "overlays/mask_nw.png"},
   {"id": "mask_se", "image": "overlays/mask_se.png"},
@@ -11,6 +11,19 @@
   {"id": "active_unit", "image": "overlays/active_unit_overlay.png"},
   {"id": "melee_range", "image": "overlays/melee_range_overlay.png"},
   {"id": "ranged_range", "image": "overlays/ranged_range_overlay.png"},
-  {"id": "move_arrow", "image": "overlays/move_arrow.png"}
-  {"id": "hero_flag", "image": "overlays/hero_flag.png"}
+  {"id": "move_arrow", "image": "overlays/move_arrow.png"},
+  {"id": "hero_flag", "image": "overlays/hero_flag.png"},
+  {"id": "move_overlay", "image": "overlays/move_overlay.png"},
+  {"id": "enemy_overlay", "image": "overlays/enemy_overlay.png"},
+  {"id": "melee_overlay", "image": "overlays/melee_overlay.png"},
+  {"id": "ranged_overlay", "image": "overlays/ranged_overlay.png"},
+  {"id": "spell_overlay", "image": "overlays/spell_overlay.png"},
+  {"id": "select_overlay", "image": "overlays/select_overlay.png"},
+  {"id": "blocked_overlay", "image": "overlays/blocked_overlay.png"},
+  {"id": "ally_buff_overlay", "image": "overlays/ally_buff_overlay.png"},
+  {"id": "enemy_debuff_overlay", "image": "overlays/enemy_debuff_overlay.png"},
+  {"id": "danger_overlay", "image": "overlays/danger_overlay.png"},
+  {"id": "path_overlay", "image": "overlays/path_overlay.png"},
+  {"id": "obstacle_overlay", "image": "overlays/obstacle_overlay.png"},
+  {"id": "summon_overlay", "image": "overlays/summon_overlay.png"}
 ]

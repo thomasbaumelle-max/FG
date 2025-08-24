@@ -19,15 +19,19 @@ def draw_hex(surface: pygame.Surface, rect: pygame.Rect, colour: Tuple[int, int,
     ``alpha`` controls the transparency of the drawn shape.
     """
 
+    w = rect.width
+    h = rect.height
     points = [
-        (rect.x + rect.w * 0.25, rect.y),
-        (rect.x + rect.w * 0.75, rect.y),
-        (rect.x + rect.w, rect.y + rect.h / 2),
-        (rect.x + rect.w * 0.75, rect.y + rect.h),
-        (rect.x + rect.w * 0.25, rect.y + rect.h),
-        (rect.x, rect.y + rect.h / 2),
+        (rect.x + w * 0.25, rect.y),
+        (rect.x + w * 0.75, rect.y),
+        (rect.x + w, rect.y + h / 2),
+        (rect.x + w * 0.75, rect.y + h),
+        (rect.x + w * 0.25, rect.y + h),
+        (rect.x, rect.y + h / 2),
     ]
-    pygame.draw.polygon(surface, (*colour, alpha), points, width)
+    draw = getattr(pygame, "draw", None)
+    if draw and hasattr(draw, "polygon"):
+        draw.polygon(surface, (*colour, alpha), points, width)
 
 
 def draw(combat, frame: int = 0) -> None:
@@ -149,7 +153,7 @@ def draw(combat, frame: int = 0) -> None:
         and combat.selected_action == "move"
     ):
         reachable = combat.reachable_squares(combat.selected_unit)
-        highlight_img = combat.assets.get("move_overlay") or combat.assets.get("highlight")
+        highlight_img = combat.assets.get("move_overlay")
         for (cx, cy) in reachable:
             rect = combat.cell_rect(cx, cy)
             if highlight_img:
@@ -188,7 +192,7 @@ def draw(combat, frame: int = 0) -> None:
                     for x in range(constants.COMBAT_GRID_WIDTH)
                     if combat.grid[y][x] is None and (x, y) not in combat.obstacles
                 ]
-        highlight_img = combat.assets.get("spell_overlay") or combat.assets.get("highlight")
+        highlight_img = combat.assets.get("spell_overlay")
         for (cx, cy) in targets:
             rect = combat.cell_rect(cx, cy)
             if highlight_img:
