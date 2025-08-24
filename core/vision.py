@@ -29,6 +29,7 @@ def compute_vision(
     if biome is not None:
         bonus += getattr(biome, "vision_bonus", 0)
     radius += bonus
+    has_boat = getattr(actor, "naval_unit", None) is not None
 
     visible: Set[Tuple[int, int]] = set()
     start = (actor.x, actor.y)
@@ -58,7 +59,7 @@ def compute_vision(
             if new_cost > radius:
                 continue
             # Impassable terrain stops vision but can still be seen
-            if not tile.is_passable():
+            if not tile.is_passable(has_boat=has_boat):
                 visible.add((nx, ny))
                 continue
             heapq.heappush(queue, (new_cost, (nx, ny)))

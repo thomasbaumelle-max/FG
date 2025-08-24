@@ -89,9 +89,32 @@ class Building:
         return True
 
 
+class Shipyard(Building):
+    """Allows heroes to acquire and upgrade boats for naval travel."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        path = os.path.join(os.path.dirname(__file__), "..", "assets", "boats.json")
+        try:
+            with open(path, "r", encoding="utf-8") as fh:
+                data = json.load(fh)
+            self.boats = [entry.get("id", "") for entry in data if isinstance(entry, dict)]
+        except Exception:
+            self.boats = ["barge"]
+
+    def interact(self, hero: "Hero") -> None:
+        if hero.naval_unit is None and getattr(self, "boats", None):
+            index = min(self.level - 1, len(self.boats) - 1)
+            hero.naval_unit = self.boats[index]
+
+
 def create_building(bid: str, defs: Optional[Dict[str, BuildingAsset]] = None) -> Building:
     asset = (defs or building_loader.BUILDINGS)[bid]
-    b = Building()
+    b: Building
+    if bid == "shipyard":
+        b = Shipyard()
+    else:
+        b = Building()
     b.name = asset.id.replace("_", " ").title()
     files = asset.file_list()
     b.image = files[0] if files else asset.id

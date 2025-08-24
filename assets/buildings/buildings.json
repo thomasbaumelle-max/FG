@@ -51,6 +51,16 @@
     "growth_per_week": {"Archer": 5}
   },
   {
+    "id": "shipyard",
+    "footprint": [1, 1],
+    "anchor_px": [512, 1020],
+    "passable": false,
+    "occludes": true,
+    "path": "buildings/mine/mine_0.png",
+    "variants": 1,
+    "upgrade_cost": {"wood": 5}
+  },
+  {
     "id": "town",
     "footprint": [2, 2],
     "anchor_px": [512, 1020],
