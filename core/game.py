@@ -252,11 +252,21 @@ class Game:
             self.world = WorldMap(map_data=map_rows)
 
             # Populate the world with additional features scaled to available land
-            land_tiles = len(self.world._empty_land_tiles())
-            treasure_count = max(1, land_tiles // 18)
-            enemy_count = max(1, land_tiles // 18)
+            free_land = len(self.world._empty_land_tiles())
+            total_tiles = max(1, self.world.width * self.world.height)
+            land_tiles = sum(
+                1
+                for row in self.world.grid
+                for t in row
+                if t.biome not in constants.WATER_BIOMES
+            )
+            land_ratio = land_tiles / total_tiles
+            treasure_count = max(1, free_land // 18)
+            base_enemies = max(1, free_land // (30 if land_ratio < 0.5 else 18))
+            roamer_count = base_enemies // 3
+            guardian_count = base_enemies - roamer_count
             self.world._place_treasures(treasure_count)
-            self.world._generate_clusters(random, enemy_count)
+            self.world._generate_clusters(random, guardian_count, roamer_count)
 
         # Apply scenario specific data such as pre-placed units or objectives
         if self.scenario:

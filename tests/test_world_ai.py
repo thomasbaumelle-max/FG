@@ -5,6 +5,8 @@ from core.game import Game
 import core.exploration_ai as exploration_ai
 import constants
 from core.ai.creature_ai import GuardianAI, RoamingAI
+import random
+from mapgen.continents import generate_continent_map
 
 
 def _make_world(width, height):
@@ -134,3 +136,56 @@ def test_roamer_patrols():
             moved = True
             break
     assert moved
+
+
+def test_marine_maps_have_guardian_clusters_and_fewer_roamers():
+    random.seed(0)
+    rows_marine = generate_continent_map(30, 30, seed=0, map_type="marine")
+    world_marine = WorldMap(map_data=rows_marine)
+    for row in world_marine.grid:
+        for tile in row:
+            tile.enemy_units = None
+    world_marine.creatures.clear()
+    free_land = len(world_marine._empty_land_tiles())
+    total_tiles = world_marine.width * world_marine.height
+    land_tiles = sum(
+        1 for row in world_marine.grid for t in row if t.biome not in constants.WATER_BIOMES
+    )
+    land_ratio = land_tiles / total_tiles
+    base = max(1, free_land // (30 if land_ratio < 0.5 else 18))
+    roamer_count = base // 3
+    guardian_count = base - roamer_count
+    world_marine._generate_clusters(random, guardian_count, roamer_count)
+    guardians = [c for c in world_marine.creatures if isinstance(c, GuardianAI)]
+    roamers = [c for c in world_marine.creatures if isinstance(c, RoamingAI)]
+    for g in guardians:
+        assert any(
+            0 <= g.x + dx < world_marine.width
+            and 0 <= g.y + dy < world_marine.height
+            and (
+                world_marine.grid[g.y + dy][g.x + dx].resource
+                or world_marine.grid[g.y + dy][g.x + dx].building
+            )
+            for dx in (-1, 0, 1)
+            for dy in (-1, 0, 1)
+        )
+
+    random.seed(0)
+    rows_plaine = generate_continent_map(30, 30, seed=0, map_type="plaine")
+    world_plaine = WorldMap(map_data=rows_plaine)
+    for row in world_plaine.grid:
+        for tile in row:
+            tile.enemy_units = None
+    world_plaine.creatures.clear()
+    free_land_p = len(world_plaine._empty_land_tiles())
+    total_tiles_p = world_plaine.width * world_plaine.height
+    land_tiles_p = sum(
+        1 for row in world_plaine.grid for t in row if t.biome not in constants.WATER_BIOMES
+    )
+    land_ratio_p = land_tiles_p / total_tiles_p
+    base_p = max(1, free_land_p // (30 if land_ratio_p < 0.5 else 18))
+    roamer_count_p = base_p // 3
+    guardian_count_p = base_p - roamer_count_p
+    world_plaine._generate_clusters(random, guardian_count_p, roamer_count_p)
+    roamers_plain = [c for c in world_plaine.creatures if isinstance(c, RoamingAI)]
+    assert len(roamers) < len(roamers_plain)
