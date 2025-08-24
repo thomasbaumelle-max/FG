@@ -64,6 +64,7 @@ from core.ai.creature_ai import CreatureAI
 from core.buildings import Building, Town, Shipyard, create_building
 from loaders.building_loader import BUILDINGS, get_surface
 from loaders.faction_loader import load_factions
+from loaders.battlefield_loader import load_battlefields, BattlefieldDef
 from ui.main_screen import MainScreen
 from ui import dialogs
 from state.event_bus import (
@@ -195,6 +196,13 @@ class Game:
         BiomeCatalog.load(self.ctx, "biomes/biomes.json")
         init_biome_images()
         self.load_assets()
+
+        battlefield_manifest = os.path.join(
+            repo_root, "assets", "battlefields", "battlefields.json"
+        )
+        self.battlefields: Dict[str, BattlefieldDef] = load_battlefields(
+            battlefield_manifest, self.assets
+        )
 
         self.biome_tilesets: Dict[str, BiomeTileset] = {
             b.id: load_tileset(self.ctx, b, tile_size=constants.COMBAT_TILE_SIZE)
@@ -1708,6 +1716,12 @@ class Game:
                         constants.COMBAT_GRID_WIDTH,
                         constants.COMBAT_GRID_HEIGHT,
                     )
+                    bf_id = getattr(tile, "biome", "default")
+                    bf_dict = getattr(self, "battlefields", {})
+                    battlefield = bf_dict.get(
+                        bf_id,
+                        bf_dict.get("default", BattlefieldDef("default", "", (0, 0))),
+                    )
                     combat = Combat(
                         self.screen,
                         self.assets,
@@ -1719,7 +1733,7 @@ class Game:
                         flora_props=flora,
                         flora_loader=self.world.flora_loader,
                         biome_tilesets=self.biome_tilesets,
-                        biome=tile.biome,
+                        battlefield=battlefield,
                         num_obstacles=random.randint(1, 3),
                         unit_shadow_baked=self.unit_shadow_baked,
                         hero=None,
@@ -2016,6 +2030,12 @@ class Game:
                     constants.COMBAT_GRID_WIDTH,
                     constants.COMBAT_GRID_HEIGHT,
                 )
+                bf_id = getattr(tile, "biome", "default")
+                bf_dict = getattr(self, "battlefields", {})
+                battlefield = bf_dict.get(
+                    bf_id,
+                    bf_dict.get("default", BattlefieldDef("default", "", (0, 0))),
+                )
                 combat = Combat(
                     self.screen,
                     self.assets,
@@ -2027,7 +2047,7 @@ class Game:
                     flora_props=flora,
                     flora_loader=self.world.flora_loader,
                     biome_tilesets=self.biome_tilesets,
-                    biome=tile.biome,
+                    battlefield=battlefield,
                     num_obstacles=random.randint(1, 3),
                     unit_shadow_baked=self.unit_shadow_baked,
                     hero=self.hero,
@@ -2812,6 +2832,11 @@ class Game:
                 constants.COMBAT_GRID_HEIGHT,
             )
             obstacles = random.randint(1, 3)
+        bf_id = getattr(tile, "biome", "default")
+        bf_dict = getattr(self, "battlefields", {})
+        battlefield = bf_dict.get(
+            bf_id, bf_dict.get("default", BattlefieldDef("default", "", (0, 0)))
+        )
         combat = Combat(
             self.screen,
             self.assets,
@@ -2823,7 +2848,7 @@ class Game:
             flora_props=flora,
             flora_loader=self.world.flora_loader,
             biome_tilesets=self.biome_tilesets,
-            biome=tile.biome,
+            battlefield=battlefield,
             num_obstacles=obstacles,
             unit_shadow_baked=self.unit_shadow_baked,
             hero=self.hero,

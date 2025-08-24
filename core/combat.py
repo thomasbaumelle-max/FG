@@ -37,6 +37,8 @@ try:  # flora support optional in tests
 except Exception:  # pragma: no cover
     FloraLoader = PropInstance = None  # type: ignore
 from loaders.biomes import BiomeTileset
+# Battlefield definitions for background images and hero placement
+from loaders.battlefield_loader import BattlefieldDef
 # en haut de combat.py
 from core.combat_screen import CombatHUD
 from core.abilities import AbilityEngine, parse_abilities
@@ -114,7 +116,7 @@ class Combat:
         flora_props: Optional[List["PropInstance"]] = None,
         flora_loader: Optional["FloraLoader"] = None,
         biome_tilesets: Optional[Dict[str, BiomeTileset]] = None,
-        biome: str = "scarletia_echo_plain",
+        battlefield: Optional[BattlefieldDef] = None,
         num_obstacles: int = 0,
         unit_shadow_baked: Optional[Dict[str, bool]] = None,
         hero: Optional["Hero"] = None,
@@ -192,9 +194,10 @@ class Combat:
         self.teleport_unit: Optional[Unit] = None
         self.hero_mana: int = hero_mana
         self.hero_spells: Dict[str, int] = hero_spells or {}
-        self.biome = biome
+        # Battlefield definition provides background image and hero placement
+        self.battlefield = battlefield or BattlefieldDef("default", "", (0, 0))
         self.combat_map: List[List[str]] = combat_map or [
-            [biome for _ in range(constants.COMBAT_GRID_WIDTH)]
+            [self.battlefield.id for _ in range(constants.COMBAT_GRID_WIDTH)]
             for _ in range(constants.COMBAT_GRID_HEIGHT)
         ]
         # --- Siege mechanics ---

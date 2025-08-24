@@ -1,0 +1,17 @@
+[
+  {
+    "id": "default",
+    "image": "",
+    "hero_pos": [0, 0]
+  },
+  {
+    "id": "ocean",
+    "image": "assets/battlefields/ocean.png",
+    "hero_pos": [0, 0]
+  },
+  {
+    "id": "scarletia_echo_plain",
+    "image": "assets/battlefields/scarletia_echo_plain.png",
+    "hero_pos": [0, 0]
+  }
+]
