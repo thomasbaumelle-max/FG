@@ -853,6 +853,16 @@ class WorldMap:
                 continents.append(cells)
         return continents
 
+    def _is_marine_map(self) -> bool:
+        """Heuristically determine if the map is marine-dominated."""
+        water_tiles = sum(
+            1
+            for row in self.grid
+            for tile in row
+            if tile.biome in constants.WATER_BIOMES
+        )
+        return water_tiles / max(1, self.width * self.height) > 0.5
+
     def init_renderer(
         self,
         assets: Dict[str, pygame.Surface],
@@ -1055,22 +1065,24 @@ class WorldMap:
                     town.owner = owner
                     if owner == 0:
                         self.hero_town = (tx, ty)
-                        spawn = self._adjacent_free_tile(tx, ty)
-                        if spawn:
-                            self.hero_start = spawn
-                        else:
-                            self.hero_start = (tx, ty)
-                            logger.error("No free tile around player town at %s,%s", tx, ty)
                     else:
                         self.enemy_town = (tx, ty)
-                        spawn = self._adjacent_free_tile(tx, ty)
-                        if spawn:
-                            self.enemy_start = spawn
-                        else:
-                            self.enemy_start = (tx, ty)
-                            logger.error("No free tile around enemy town at %s,%s", tx, ty)
-                    # Place a shipyard if water is nearby
-                    self._place_shipyard_near(tx, ty, owner)
+                    # Place a shipyard if water is nearby; otherwise create one
+                    if not self._place_shipyard_near(tx, ty, owner):
+                        candidates = []
+                        for yy in range(y0 - 1, y0 + size + 1):
+                            for xx in range(x0 - 1, x0 + size + 1):
+                                if x0 <= xx < x0 + size and y0 <= yy < y0 + size:
+                                    continue
+                                if not self.in_bounds(xx, yy):
+                                    continue
+                                if self.grid[yy][xx].building is None:
+                                    dist = abs(xx - tx) + abs(yy - ty)
+                                    candidates.append((dist, xx, yy))
+                        for _, xx, yy in sorted(candidates):
+                            self.grid[yy][xx].biome = "ocean"
+                            if self._place_shipyard_adjacent_to_water(xx, yy, owner):
+                                break
                     placed = True
                     break
             if not placed:
@@ -1083,22 +1095,23 @@ class WorldMap:
                     town.owner = owner
                     if owner == 0:
                         self.hero_town = (tx, ty)
-                        spawn = self._adjacent_free_tile(tx, ty)
-                        if spawn:
-                            self.hero_start = spawn
-                        else:
-                            self.hero_start = (tx, ty)
-                            logger.error("No free tile around player town at %s,%s", tx, ty)
                     else:
                         self.enemy_town = (tx, ty)
-                        spawn = self._adjacent_free_tile(tx, ty)
-                        if spawn:
-                            self.enemy_start = spawn
-                        else:
-                            self.enemy_start = (tx, ty)
-                            logger.error("No free tile around enemy town at %s,%s", tx, ty)
-                    # Place a shipyard if water is nearby
-                    self._place_shipyard_near(tx, ty, owner)
+                    if not self._place_shipyard_near(tx, ty, owner):
+                        candidates = []
+                        for yy in range(y0 - 1, y0 + size + 1):
+                            for xx in range(x0 - 1, x0 + size + 1):
+                                if x0 <= xx < x0 + size and y0 <= yy < y0 + size:
+                                    continue
+                                if not self.in_bounds(xx, yy):
+                                    continue
+                                if self.grid[yy][xx].building is None:
+                                    dist = abs(xx - tx) + abs(yy - ty)
+                                    candidates.append((dist, xx, yy))
+                        for _, xx, yy in sorted(candidates):
+                            self.grid[yy][xx].biome = "ocean"
+                            if self._place_shipyard_adjacent_to_water(xx, yy, owner):
+                                break
                 coords = [
                     c for c in area_coords if self.grid[c[1]][c[0]].building is None
                 ]
@@ -1115,41 +1128,73 @@ class WorldMap:
                                 biome
                             )
                         break
+            spawn = self._adjacent_free_tile(tx, ty)
+            if owner == 0:
+                if spawn:
+                    self.hero_start = spawn
+                else:
+                    self.hero_start = (tx, ty)
+                    logger.error("No free tile around player town at %s,%s", tx, ty)
+            else:
+                if spawn:
+                    self.enemy_start = spawn
+                else:
+                    self.enemy_start = (tx, ty)
+                    logger.error("No free tile around enemy town at %s,%s", tx, ty)
 
-        # Player 0 starting area on largest continent
         continents = self._find_continents()
-        if continents:
-            largest = max(continents, key=len)
-            xs = [x for x, _ in largest]
-            ys = [y for _, y in largest]
-            min_x, max_x = min(xs), max(xs)
-            min_y, max_y = min(ys), max(ys)
-            max_size = min(max_x - min_x + 1, max_y - min_y + 1)
-            size = random.randint(5, min(10, max_size)) if max_size >= 5 else max_size
-            x0 = random.randint(min_x, max_x - size + 1)
-            y0 = random.randint(min_y, max_y - size + 1)
+        if self._is_marine_map() and len(continents) >= 2:
+            continents.sort(key=len, reverse=True)
+            for owner, cells in enumerate(continents[:2]):
+                xs = [x for x, _ in cells]
+                ys = [y for _, y in cells]
+                min_x, max_x = min(xs), max(xs)
+                min_y, max_y = min(ys), max(ys)
+                max_size = min(max_x - min_x + 1, max_y - min_y + 1)
+                size = random.randint(5, min(10, max_size)) if max_size >= 5 else max_size
+                if size * size < 4:
+                    continue
+                x0 = random.randint(min_x, max_x - size + 1)
+                y0 = random.randint(min_y, max_y - size + 1)
+                carve_area(x0, y0, size, owner)
+                if owner == 0:
+                    self.starting_area = (x0, y0, size)
+                elif owner == 1:
+                    self.enemy_starting_area = (x0, y0, size)
         else:
-            size = random.randint(5, 10)
-            x0, y0 = 0, 0
-            size = min(size, self.width, self.height)
-        if size * size < 4:
-            return
+            # Player 0 starting area on largest continent
+            if continents:
+                largest = max(continents, key=len)
+                xs = [x for x, _ in largest]
+                ys = [y for _, y in largest]
+                min_x, max_x = min(xs), max(xs)
+                min_y, max_y = min(ys), max(ys)
+                max_size = min(max_x - min_x + 1, max_y - min_y + 1)
+                size = random.randint(5, min(10, max_size)) if max_size >= 5 else max_size
+                x0 = random.randint(min_x, max_x - size + 1)
+                y0 = random.randint(min_y, max_y - size + 1)
+            else:
+                size = random.randint(5, 10)
+                x0, y0 = 0, 0
+                size = min(size, self.width, self.height)
+            if size * size < 4:
+                return
 
-        carve_area(x0, y0, size, owner=0)
-        self.starting_area = (x0, y0, size)
+            carve_area(x0, y0, size, owner=0)
+            self.starting_area = (x0, y0, size)
 
-        # Enemy area placed away from player start
-        min_dist = size + 5
-        for _ in range(100):
-            ex = random.randint(0, max(0, self.width - size))
-            ey = random.randint(0, max(0, self.height - size))
-            if abs(ex - x0) >= min_dist or abs(ey - y0) >= min_dist:
-                break
-        else:
-            ex, ey = (max(0, self.width - size), max(0, self.height - size))
+            # Enemy area placed away from player start
+            min_dist = size + 5
+            for _ in range(100):
+                ex = random.randint(0, max(0, self.width - size))
+                ey = random.randint(0, max(0, self.height - size))
+                if abs(ex - x0) >= min_dist or abs(ey - y0) >= min_dist:
+                    break
+            else:
+                ex, ey = (max(0, self.width - size), max(0, self.height - size))
 
-        carve_area(ex, ey, size, owner=1)
-        self.enemy_starting_area = (ex, ey, size)
+            carve_area(ex, ey, size, owner=1)
+            self.enemy_starting_area = (ex, ey, size)
 
         # Ensure every continent has at least one shipyard
         continents = self._find_continents()

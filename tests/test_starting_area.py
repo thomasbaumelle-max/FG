@@ -119,10 +119,24 @@ def test_building_images_loaded():
         sys.modules.pop("pygame.draw", None)
 
 
-def test_marine_map_has_two_starting_areas():
+def test_marine_islands_have_required_buildings():
     random.seed(0)
     rows = generate_continent_map(30, 30, seed=0, map_type="marine")
     world = WorldMap(map_data=rows)
     assert world.starting_area is not None
     assert world.enemy_starting_area is not None
+    continents = world._find_continents()
+    assert len(continents) == 2
+    for continent in continents:
+        buildings = [
+            world.grid[y][x].building
+            for x, y in continent
+            if world.grid[y][x].building is not None
+        ]
+        names = {b.name for b in buildings}
+        assert any(name.startswith("Town") for name in names)
+        assert any(
+            n in {"Mine", "Crystal Mine", "Sawmill"} for n in names
+        )
+        assert "Shipyard" in names
 
