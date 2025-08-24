@@ -132,24 +132,27 @@ class CombatHUD:
                 screen.blit(name, (r.x + r.width + 6, y + 8))
                 y += sw + 6
 
-        # ---- Action bar (bottom) ----
-        # Auto button
-        auto_button = pygame.Rect(
-            bottom.x + bottom.width - 80,
-            bottom.y + 4,
-            70,
-            bottom.height - 8,
-        )
-        pygame.draw.rect(screen, (52, 55, 63), auto_button)
-        pygame.draw.rect(screen, LINE, auto_button, 1)
-        lab = self.small.render(
-            "AUTO" if not combat.auto_mode else "HUMAN",
-            True,
-            theme.PALETTE["text"],
-        )
-        screen.blit(lab, lab.get_rect(center=auto_button.center))
+            # Buttons below the turn order
+            y += 10
+            if combat.hero_spells:
+                r = pygame.Rect(right.x + 10, y, right.width - 20, BUTTON_H)
+                pygame.draw.rect(screen, (52, 55, 63), r)
+                pygame.draw.rect(screen, LINE, r, 1)
+                txt = self.small.render("Spellbook", True, theme.PALETTE["text"])
+                screen.blit(txt, txt.get_rect(center=r.center))
+                action_buttons["spellbook"] = r
+                y = r.bottom + 6
 
-        # Line of action buttons
+            auto_button = pygame.Rect(right.x + 10, y, right.width - 20, BUTTON_H)
+            pygame.draw.rect(screen, (52, 55, 63), auto_button)
+            pygame.draw.rect(screen, LINE, auto_button, 1)
+            lab = self.small.render(
+                "AUTO" if not combat.auto_mode else "HUMAN",
+                True,
+                theme.PALETTE["text"],
+            )
+            screen.blit(lab, lab.get_rect(center=auto_button.center))
+        # ---- Action bar (bottom) ----
         x = bottom.x + 8
 
         def add_btn(key: str, label: str) -> None:
