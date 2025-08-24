@@ -684,6 +684,19 @@ class WorldMap:
                 or tile.building is not None
             ):
                 return False
+
+        if getattr(building, "id", "") == "shipyard":
+            touches_water = False
+            for dx, dy in building.footprint:
+                xx, yy = x + dx, y + dy
+                for nx, ny in ((xx - 1, yy), (xx + 1, yy), (xx, yy - 1), (xx, yy + 1)):
+                    if self.in_bounds(nx, ny) and self.grid[ny][nx].biome in constants.WATER_BIOMES:
+                        touches_water = True
+                        break
+                if touches_water:
+                    break
+            if not touches_water:
+                return False
         return True
 
     def _stamp_building(self, x: int, y: int, building: "Building") -> None:

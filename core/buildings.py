@@ -27,6 +27,7 @@ class Caravan:
 class Building:
     """Base class for world map buildings (resource nodes, towns…)."""
 
+    id: str = ""
     name: str = "Building"
     image: str = ""
     income: Dict[str, int] = {}
@@ -35,6 +36,7 @@ class Building:
     production_per_level: Dict[str, int] = {}
 
     def __init__(self) -> None:
+        self.id = ""
         self.owner: Optional[int] = None
         self.footprint: List[Tuple[int, int]] = [(0, 0)]
         self.anchor: Tuple[int, int] = (constants.TILE_SIZE // 2, constants.TILE_SIZE)
@@ -115,6 +117,7 @@ def create_building(bid: str, defs: Optional[Dict[str, BuildingAsset]] = None) -
         b = Shipyard()
     else:
         b = Building()
+    b.id = asset.id
     b.name = asset.id.replace("_", " ").title()
     files = asset.file_list()
     b.image = files[0] if files else asset.id
