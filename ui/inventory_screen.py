@@ -18,7 +18,6 @@ from core.entities import (
     EquipmentSlot,
     Hero,
     Item,
-    Modifier,
     SkillNode,
     Unit,
     SKILL_CATALOG,
@@ -50,11 +49,12 @@ COLOR_LINK = (120, 120, 150)
 RARITY_ORDER = {"common": 0, "uncommon": 1, "rare": 2, "epic": 3, "legendary": 4}
 DOUBLECLICK_MS = 300
 
-from .inventory_tabs import stats as stats_tab
-from .inventory_tabs import inventory as inv_tab
-from .inventory_tabs import skills as skills_tab
+from .inventory_tabs import stats as stats_tab  # noqa: E402
+from .inventory_tabs import inventory as inv_tab  # noqa: E402
+from .inventory_tabs import skills as skills_tab  # noqa: E402
 
 # --------------------------------------------------------------------------- #
+
 
 class InventoryScreen:
     TAB_NAMES = ["stats", "inventory", "skills"]
@@ -99,6 +99,8 @@ class InventoryScreen:
         # Inventory state
         self.inventory_offset = 0
         self.item_rects: List[Tuple[Optional[int], pygame.Rect]] = []
+        self.inventory_grid_origin: Tuple[int, int] = (0, 0)
+        self.inventory_cell_size: int = 0
         self.drag_item: Optional[Item] = None
         self.drag_origin: Optional[int] = None
         self.drag_icon_size: Optional[Tuple[int, int]] = None
@@ -158,10 +160,16 @@ class InventoryScreen:
             if not node or branch not in self.skill_trees:
                 continue
             self.skill_trees[branch].append(node)
-            row = rank_order.index(entry.get("rank", "N")) if entry.get("rank", "N") in rank_order else 0
+            row = (
+                rank_order.index(entry.get("rank", "N"))
+                if entry.get("rank", "N") in rank_order
+                else 0
+            )
             self.skill_positions[branch][nid] = (0, row)
         for branch in self.skill_trees:
-            self.skill_trees[branch].sort(key=lambda n: rank_order.index(n.rank) if n.rank in rank_order else 0)
+            self.skill_trees[branch].sort(
+                key=lambda n: rank_order.index(n.rank) if n.rank in rank_order else 0
+            )
 
     # ------------------------------------------------------------------ Layout
     def _recalc_layout(self) -> None:
@@ -190,7 +198,9 @@ class InventoryScreen:
         # Equipment slot grid (silhouette)
         cols, rows = 3, 4
         if self.font_big:
-            title_h = self.font_big.render("Equipment", True, COLOR_TEXT).get_height() + 16
+            title_h = (
+                self.font_big.render("Equipment", True, COLOR_TEXT).get_height() + 16
+            )
         else:  # pragma: no cover - fallback when font unavailable
             title_h = 32
         cell_w = self.equip_rect.width // cols
@@ -220,16 +230,28 @@ class InventoryScreen:
         filter_y = 50
         self.filter_rects: Dict[str, pygame.Rect] = {}
         for i, name in enumerate(self.filter_options):
-            self.filter_rects[name] = pygame.Rect(self.center_rect.x + base_x + i * 90,
-                                                  self.center_rect.y + filter_y, 80, 25)
+            self.filter_rects[name] = pygame.Rect(
+                self.center_rect.x + base_x + i * 90,
+                self.center_rect.y + filter_y,
+                80,
+                25,
+            )
         sort_y = filter_y + 35
         self.sort_rects: Dict[str, pygame.Rect] = {}
         for i, name in enumerate(self.sort_options):
-            self.sort_rects[name] = pygame.Rect(self.center_rect.x + base_x + i * 90,
-                                                self.center_rect.y + sort_y, 80, 25)
-        self.search_rect = pygame.Rect(self.center_rect.x + base_x,
-                                       self.center_rect.y + sort_y + 35, 220, 26)
-        self.grid_origin = (self.center_rect.x + base_x, self.center_rect.y + sort_y + 35 + 40)
+            self.sort_rects[name] = pygame.Rect(
+                self.center_rect.x + base_x + i * 90,
+                self.center_rect.y + sort_y,
+                80,
+                25,
+            )
+        self.search_rect = pygame.Rect(
+            self.center_rect.x + base_x, self.center_rect.y + sort_y + 35, 220, 26
+        )
+        self.grid_origin = (
+            self.center_rect.x + base_x,
+            self.center_rect.y + sort_y + 35 + 40,
+        )
 
         # Skill school tab buttons (top of skills panel)
         self.skill_tab_buttons: Dict[str, pygame.Rect] = {}
@@ -273,7 +295,9 @@ class InventoryScreen:
             self.error_message = None
         if self.error_message:
             txt = self.font.render(self.error_message, True, COLOR_WARN)
-            self.screen.blit(txt, (10, self.screen.get_height() - RESBAR_H - txt.get_height() - 6))
+            self.screen.blit(
+                txt, (10, self.screen.get_height() - RESBAR_H - txt.get_height() - 6)
+            )
 
         # drag visuals
         if self.drag_item:
@@ -282,14 +306,23 @@ class InventoryScreen:
                 if self.drag_icon_size:
                     try:
                         icon = pygame.transform.scale(icon, self.drag_icon_size)
-                    except AttributeError:  # pragma: no cover - transform missing in stub
+                    except (
+                        AttributeError
+                    ):  # pragma: no cover - transform missing in stub
                         pass
                 pos = self._mouse_pos()
-                self.screen.blit(icon, (pos[0] - icon.get_width() // 2, pos[1] - icon.get_height() // 2))
+                self.screen.blit(
+                    icon,
+                    (pos[0] - icon.get_width() // 2, pos[1] - icon.get_height() // 2),
+                )
         if self.drag_unit:
-            txt = self.font.render(f"{self.drag_unit.stats.name} x{self.drag_unit.count}", True, COLOR_TEXT)
+            txt = self.font.render(
+                f"{self.drag_unit.stats.name} x{self.drag_unit.count}", True, COLOR_TEXT
+            )
             pos = self._mouse_pos()
-            self.screen.blit(txt, (pos[0] - txt.get_width() // 2, pos[1] - txt.get_height() // 2))
+            self.screen.blit(
+                txt, (pos[0] - txt.get_width() // 2, pos[1] - txt.get_height() // 2)
+            )
 
         # tooltips last
         self._draw_tooltip()
@@ -318,10 +351,20 @@ class InventoryScreen:
         pygame.draw.rect(self.screen, (20, 20, 24), self.resbar_rect)
         x = self.resbar_rect.x + 12
         items = [("Gold", getattr(self.hero, "gold", 0))]
-        items += [(res.title(), self.hero.resources.get(res, 0)) for res in constants.RESOURCES]
+        items += [
+            (res.title(), self.hero.resources.get(res, 0))
+            for res in constants.RESOURCES
+        ]
         for name, val in items:
             t = self.font.render(f"{name}: {val}", True, COLOR_TEXT)
-            self.screen.blit(t, (x, self.resbar_rect.y + (self.resbar_rect.height - t.get_height()) // 2))
+            self.screen.blit(
+                t,
+                (
+                    x,
+                    self.resbar_rect.y
+                    + (self.resbar_rect.height - t.get_height()) // 2,
+                ),
+            )
             x += t.get_width() + 28
 
     # Backwards compatibility for older tests expecting this name
@@ -340,7 +383,9 @@ class InventoryScreen:
             colour = COLOR_SLOT_BD
             item = self.hero.equipment.get(slot)
             if self.drag_item and rect.collidepoint(mouse_pos):
-                colour = constants.GREEN if self.drag_item.slot == slot else constants.RED
+                colour = (
+                    constants.GREEN if self.drag_item.slot == slot else constants.RED
+                )
             elif item:
                 colour = constants.RARITY_COLOURS.get(item.rarity, COLOR_SLOT_BD)
 
@@ -392,15 +437,14 @@ class InventoryScreen:
     def _draw_skills_content(self) -> None:
         skills_tab.draw(self)
 
-
     # ------------------------------------------------------------------ Tooltips
-    def _item_tooltip(self, item: Item, equip: bool = True) -> List[Tuple[str, Tuple[int, int, int]]]:
+    def _item_tooltip(
+        self, item: Item, equip: bool = True
+    ) -> List[Tuple[str, Tuple[int, int, int]]]:
         return inv_tab.item_tooltip(self, item, equip)
-
 
     def _skill_tooltip(self, node: SkillNode) -> List[Tuple[str, Tuple[int, int, int]]]:
         return skills_tab.skill_tooltip(self, node)
-
 
     def _draw_tooltip(self) -> None:
         if self.drag_item:
@@ -438,11 +482,14 @@ class InventoryScreen:
         tip.fill((*constants.BLACK, 220))
         y = 5
         for t in texts:
-            tip.blit(t, (5, y)); y += t.get_height()
+            tip.blit(t, (5, y))
+            y += t.get_height()
         sx, sy = mouse
         sw, sh = self.screen.get_size()
-        if sx + w > sw: sx -= w
-        if sy + h > sh: sy -= h
+        if sx + w > sw:
+            sx -= w
+        if sy + h > sh:
+            sy -= h
         self.screen.blit(tip, (sx, sy))
 
     # ------------------------------------------------------------------ Events
@@ -500,7 +547,10 @@ class InventoryScreen:
                                 break
                         else:
                             # No tab clicked
-                            if self.active_tab == "skills" and self._check_skill_tab_click(pos):
+                            if (
+                                self.active_tab == "skills"
+                                and self._check_skill_tab_click(pos)
+                            ):
                                 pass
                             else:
                                 self._on_lmb_down(pos)
@@ -514,16 +564,20 @@ class InventoryScreen:
                                 self.context_menu = {
                                     "index": idx,
                                     "options": opts,
-                                    "rect": pygame.Rect(pos[0], pos[1], 96, 24 * len(opts)),
+                                    "rect": pygame.Rect(
+                                        pos[0], pos[1], 96, 24 * len(opts)
+                                    ),
                                 }
                                 break
                     elif e.button in (4, 5) and self.active_tab == "inventory":
                         items = self._filtered_inventory()
                         if e.button == 4:
-                            self.inventory_offset = max(0, self.inventory_offset - 5)
+                            self.inventory_offset = max(0, self.inventory_offset - 6)
                         else:
-                            max_off = max(0, len(items) - 25)
-                            self.inventory_offset = min(max_off, self.inventory_offset + 5)
+                            max_off = max(0, len(items) - 36)
+                            self.inventory_offset = min(
+                                max_off, self.inventory_offset + 6
+                            )
 
                 elif e.type == pygame.MOUSEBUTTONUP and e.button == 1:
                     pos = (e.pos[0] - panel_rect.x, e.pos[1] - panel_rect.y)
@@ -535,7 +589,9 @@ class InventoryScreen:
             orig_screen.blit(dim, (0, 0))
             self.draw(flip=False)
             orig_screen.blit(self.screen, panel_rect.topleft)
-            pygame.draw.rect(orig_screen, theme.PALETTE["accent"], panel_rect, theme.FRAME_WIDTH)
+            pygame.draw.rect(
+                orig_screen, theme.PALETTE["accent"], panel_rect, theme.FRAME_WIDTH
+            )
             pygame.display.flip()
             self.clock.tick(constants.FPS)
 
@@ -546,7 +602,6 @@ class InventoryScreen:
 
     def _check_skill_tab_click(self, pos: Tuple[int, int]) -> bool:
         return skills_tab.check_tab_click(self, pos)
-
 
     def _on_lmb_down(self, pos: Tuple[int, int]) -> None:
         # Context menu selection?
@@ -571,11 +626,19 @@ class InventoryScreen:
                     half = item.qty // 2
                     if half > 0:
                         item.qty -= half
-                        self.hero.inventory.append(Item(
-                            id=item.id, name=item.name, slot=item.slot, rarity=item.rarity,
-                            icon=item.icon, stackable=item.stackable, qty=half,
-                            modifiers=item.modifiers, locked=item.locked,
-                        ))
+                        self.hero.inventory.append(
+                            Item(
+                                id=item.id,
+                                name=item.name,
+                                slot=item.slot,
+                                rarity=item.rarity,
+                                icon=item.icon,
+                                stackable=item.stackable,
+                                qty=half,
+                                modifiers=item.modifiers,
+                                locked=item.locked,
+                            )
+                        )
                 self.context_menu = None
                 return
             else:
@@ -583,7 +646,9 @@ class InventoryScreen:
 
         if self.active_tab == "inventory":
             # Controls
-            if hasattr(self.search_rect, "collidepoint") and self.search_rect.collidepoint(pos):
+            if hasattr(
+                self.search_rect, "collidepoint"
+            ) and self.search_rect.collidepoint(pos):
                 self.search_active = True
                 return
             self.search_active = False
@@ -597,15 +662,25 @@ class InventoryScreen:
                     self.sort_mode = name
                     self.inventory_offset = 0
                     return
-            # Start drag from bag or from equipment
-            for idx, r in self.item_rects:
-                if idx is not None and r.collidepoint(pos):
-                    key = ("bag", idx)
+            # Start drag from bag grid
+            gx, gy = self.inventory_grid_origin
+            size = self.inventory_cell_size
+            if size and gx <= pos[0] < gx + size * 6 and gy <= pos[1] < gy + size * 6:
+                col = (pos[0] - gx) // size
+                row = (pos[1] - gy) // size
+                slot = row * 6 + col
+                items = self._filtered_inventory()
+                idx = self.inventory_offset + slot
+                if idx < len(items):
+                    inv_idx, item = items[idx]
+                    key = ("bag", inv_idx)
                     now = pygame.time.get_ticks()
-                    if self._last_click_slot == key and now - self._last_click_time < DOUBLECLICK_MS:
-                        item = self.hero.inventory[idx]
+                    if (
+                        self._last_click_slot == key
+                        and now - self._last_click_time < DOUBLECLICK_MS
+                    ):
                         InventoryInterface(self.hero).equip(item)
-                        del self.hero.inventory[idx]
+                        del self.hero.inventory[inv_idx]
                         self.drag_item = None
                         self.drag_origin = None
                         self.drag_icon_size = None
@@ -614,16 +689,23 @@ class InventoryScreen:
                         return
                     self._last_click_slot = key
                     self._last_click_time = now
-                    self.drag_item = self.hero.inventory[idx]
-                    self.drag_origin = idx
-                    self.drag_icon_size = (r.width - 4, r.height - 4)
+                    self.drag_item = self.hero.inventory[inv_idx]
+                    self.drag_origin = inv_idx
+                    self.drag_icon_size = (size - 4, size - 4)
                     return
             for slot, r in self.slot_rects.items():
                 if r.collidepoint(pos):
                     key = ("equip", slot)
                     now = pygame.time.get_ticks()
-                    if self._last_click_slot == key and now - self._last_click_time < DOUBLECLICK_MS:
-                        if self.drag_item and self.drag_origin is None and self.hero.equipment.get(slot) is None:
+                    if (
+                        self._last_click_slot == key
+                        and now - self._last_click_time < DOUBLECLICK_MS
+                    ):
+                        if (
+                            self.drag_item
+                            and self.drag_origin is None
+                            and self.hero.equipment.get(slot) is None
+                        ):
                             self.hero.equipment[slot] = self.drag_item
                         InventoryInterface(self.hero).unequip(slot)
                         self.drag_item = None
@@ -654,7 +736,8 @@ class InventoryScreen:
                     return
 
         elif self.active_tab == "skills":
-            # Left-click learn, Right-click refund handled in mouse down/up split (simpler here)
+            # Left-click learn; right-click refund handled in mouse
+            # down/up split (simpler here)
             for node in self.skill_trees.get(self.active_skill_tab, []):
                 rect = self.skill_rects.get(node.id)
                 if rect and rect.collidepoint(pos):
@@ -688,12 +771,14 @@ class InventoryScreen:
             target = None
             for idx, rect in self.army_rects:
                 if rect.collidepoint(pos):
-                    target = idx; break
+                    target = idx
+                    break
             if target is None:
                 target = self.drag_unit_origin
             if target is not None and self.drag_unit_origin is not None:
                 self.army_grid[self.drag_unit_origin], self.army_grid[target] = (
-                    self.army_grid[target], self.army_grid[self.drag_unit_origin]
+                    self.army_grid[target],
+                    self.army_grid[self.drag_unit_origin],
                 )
                 self.hero.army = [u for u in self.army_grid if u]
             self.drag_unit = None
@@ -720,7 +805,5 @@ class InventoryScreen:
     def _dependents_of(self, tree: str, nid: str) -> Set[str]:
         return skills_tab.dependents_of(self, tree, nid)
 
-
     def _can_refund(self, nid: str) -> bool:
         return skills_tab.can_refund(self, nid)
-
