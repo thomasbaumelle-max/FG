@@ -17,8 +17,9 @@ import random
 import sys
 import copy
 import math
+from collections import deque
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Deque, Dict, List, Optional, Tuple, Union
 
 import pygame
 import audio
@@ -1279,6 +1280,23 @@ class Combat:
         r = y - (x - (x & 1)) // 2
         return q, r
 
+    @staticmethod
+    def axial_to_offset(q: int, r: int) -> Tuple[int, int]:
+        x = q
+        y = r + (q - (q & 1)) // 2
+        return x, y
+
+    def hex_neighbors(self, x: int, y: int) -> List[Tuple[int, int]]:
+        q, r = self.offset_to_axial(x, y)
+        directions = [(1, 0), (1, -1), (0, -1), (-1, 0), (-1, 1), (0, 1)]
+        neighbors: List[Tuple[int, int]] = []
+        for dq, dr in directions:
+            nq, nr = q + dq, r + dr
+            nx, ny = self.axial_to_offset(nq, nr)
+            if 0 <= nx < constants.COMBAT_GRID_WIDTH and 0 <= ny < constants.COMBAT_GRID_HEIGHT:
+                neighbors.append((nx, ny))
+        return neighbors
+
     def hex_distance(self, a: Tuple[int, int], b: Tuple[int, int]) -> int:
         aq, ar = self.offset_to_axial(*a)
         bq, br = self.offset_to_axial(*b)
@@ -1296,15 +1314,41 @@ class Combat:
 
     def has_line_of_sight(self, x1: int, y1: int, x2: int, y2: int) -> bool:
         """Return ``True`` if no obstacles block the path between two cells."""
-        dx = x2 - x1
-        dy = y2 - y1
-        steps = max(abs(dx), abs(dy))
+        start = self.offset_to_axial(x1, y1)
+        end = self.offset_to_axial(x2, y2)
+        steps = self.hex_distance((x1, y1), (x2, y2))
         if steps == 0:
             return True
+
+        def axial_to_cube(q: int, r: int) -> Tuple[int, int, int]:
+            return q, r, -q - r
+
+        def cube_lerp(a: Tuple[float, float, float], b: Tuple[float, float, float], t: float) -> Tuple[float, float, float]:
+            return (
+                a[0] + (b[0] - a[0]) * t,
+                a[1] + (b[1] - a[1]) * t,
+                a[2] + (b[2] - a[2]) * t,
+            )
+
+        def cube_round(c: Tuple[float, float, float]) -> Tuple[int, int, int]:
+            rx, ry, rz = round(c[0]), round(c[1]), round(c[2])
+            x_diff, y_diff, z_diff = abs(rx - c[0]), abs(ry - c[1]), abs(rz - c[2])
+            if x_diff > y_diff and x_diff > z_diff:
+                rx = -ry - rz
+            elif y_diff > z_diff:
+                ry = -rx - rz
+            else:
+                rz = -rx - ry
+            return rx, ry, rz
+
+        a_cube = axial_to_cube(*start)
+        b_cube = axial_to_cube(*end)
         for i in range(1, steps):
-            ix = x1 + round(dx * i / steps)
-            iy = y1 + round(dy * i / steps)
-            if (ix, iy) in self.obstacles or (ix, iy) in self.ice_walls:
+            t = i / steps
+            cube = cube_round(cube_lerp(a_cube, b_cube, t))
+            q, r, _ = cube
+            ox, oy = self.axial_to_offset(q, r)
+            if (ox, oy) in self.obstacles or (ox, oy) in self.ice_walls:
                 return False
         return True
 
@@ -1445,34 +1489,47 @@ class Combat:
                     ):
                         reachable.append((x, y))
             return reachable
+
         move_speed = unit.stats.speed
         if "charge" in unit.stats.abilities:
             move_speed *= 2
-        for y in range(constants.COMBAT_GRID_HEIGHT):
-            for x in range(constants.COMBAT_GRID_WIDTH):
-                if (
-                    self.grid[y][x] is None
-                    and (x, y) not in self.ice_walls
-                    and (x, y) not in self.obstacles
-                ):
-                    dist = self.hex_distance((unit.x, unit.y), (x, y))
-                    if dist <= move_speed:
-                        reachable.append((x, y))
+
+        start = (unit.x, unit.y)
+        queue: Deque[Tuple[Tuple[int, int], int]] = deque([(start, 0)])
+        visited = {start}
+        while queue:
+            (cx, cy), dist = queue.popleft()
+            for nx, ny in self.hex_neighbors(cx, cy):
+                if (nx, ny) in visited:
+                    continue
+                if self.grid[ny][nx] is not None:
+                    continue
+                if (nx, ny) in self.obstacles or (nx, ny) in self.ice_walls:
+                    continue
+                ndist = dist + 1
+                if ndist <= move_speed:
+                    reachable.append((nx, ny))
+                    visited.add((nx, ny))
+                    queue.append(((nx, ny), ndist))
         return reachable
 
     def attackable_squares(self, unit: Unit, action: str) -> List[Tuple[int, int]]:
         """Return cells that could be targeted with the given attack action."""
         squares: List[Tuple[int, int]] = []
+        if action == "melee":
+            for nx, ny in self.hex_neighbors(unit.x, unit.y):
+                if (nx, ny) not in self.obstacles and (nx, ny) not in self.ice_walls:
+                    squares.append((nx, ny))
+            return squares
+
         for y in range(constants.COMBAT_GRID_HEIGHT):
             for x in range(constants.COMBAT_GRID_WIDTH):
-                dist = abs(x - unit.x) + abs(y - unit.y)
-                if action == 'melee':
-                    if dist == 1 and (x, y) not in self.obstacles:
-                        squares.append((x, y))
-                else:  # ranged
-                    if (
-                        unit.stats.min_range <= dist <= unit.stats.attack_range
-                        and self.has_line_of_sight(unit.x, unit.y, x, y)
-                    ):
-                        squares.append((x, y))
+                if (x, y) in self.obstacles or (x, y) in self.ice_walls:
+                    continue
+                dist = self.hex_distance((unit.x, unit.y), (x, y))
+                if (
+                    unit.stats.min_range <= dist <= unit.stats.attack_range
+                    and self.has_line_of_sight(unit.x, unit.y, x, y)
+                ):
+                    squares.append((x, y))
         return squares
