@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import Tuple
 
-import os
 import math
 import pygame
 import constants
@@ -12,7 +11,13 @@ import theme
 from .combat_screen import PANEL_W, BUTTON_H, MARGIN as HUD_MARGIN
 
 
-def draw_hex(surface: pygame.Surface, rect: pygame.Rect, colour: Tuple[int, int, int], alpha: int, width: int = 0) -> None:
+def draw_hex(
+    surface: pygame.Surface,
+    rect: pygame.Rect,
+    colour: Tuple[int, int, int],
+    alpha: int,
+    width: int = 0,
+) -> None:
     """Draw a hexagon inside ``rect`` on ``surface``.
 
     The hexagon can be rendered filled or as an outline by adjusting ``width``.
@@ -64,15 +69,6 @@ def draw(combat, frame: int = 0) -> None:
     side_margin = int(margin + extra_w / 2)
     combat.offset_x = side_margin
     combat.offset_y = margin
-    panel_x = combat.offset_x + grid_w + side_margin
-    panel_y = combat.offset_y
-    panel_w = screen_w - panel_x - margin
-    panel_h = grid_h
-    bottom_x = combat.offset_x
-    bottom_y = combat.offset_y + grid_h
-    bottom_w = grid_w
-    bottom_h = screen_h - bottom_y - margin
-
     shadow_surf = pygame.Surface((tile_w, tile_h), pygame.SRCALPHA)
     pygame.draw.ellipse(shadow_surf, (0, 0, 0, 100), shadow_surf.get_rect())
     overlay = pygame.Surface(combat.screen.get_size(), pygame.SRCALPHA)
@@ -95,7 +91,8 @@ def draw(combat, frame: int = 0) -> None:
         combat.screen.blit(bg, (combat.offset_x, combat.offset_y))
     else:
         combat.screen.fill(
-            constants.GREEN, pygame.Rect(combat.offset_x, combat.offset_y, grid_w, grid_h)
+            constants.GREEN,
+            pygame.Rect(combat.offset_x, combat.offset_y, grid_w, grid_h),
         )
 
     if getattr(combat, "hero", None):
@@ -190,12 +187,20 @@ def draw(combat, frame: int = 0) -> None:
         and not combat.casting_spell
         and combat.selected_action in ("melee", "ranged")
     ):
-        targets = combat.attackable_squares(combat.selected_unit, combat.selected_action)
+        targets = combat.attackable_squares(
+            combat.selected_unit, combat.selected_action
+        )
         if combat.selected_action == "melee":
-            highlight_img = combat.assets.get("melee_overlay") or combat.assets.get("melee_range")
+            highlight_img = (
+                combat.assets.get("melee_overlay")
+                or combat.assets.get("melee_range")
+            )
             colour = constants.RED
         else:
-            highlight_img = combat.assets.get("ranged_overlay") or combat.assets.get("ranged_range")
+            highlight_img = (
+                combat.assets.get("ranged_overlay")
+                or combat.assets.get("ranged_range")
+            )
             colour = constants.YELLOW
         for (cx, cy) in targets:
             rect = combat.cell_rect(cx, cy)
@@ -304,7 +309,7 @@ def draw(combat, frame: int = 0) -> None:
         current = combat.turn_order[combat.current_index]
         # --- HUD (panneau + barre actions) ---
         combat.action_buttons, combat.auto_button = combat.hud.draw(
-            combat.screen, combat, frame
+            combat.screen, combat
         )
 
 
@@ -320,8 +325,8 @@ def handle_button_click(combat, current_unit, pos: Tuple[int, int]) -> bool:
 
     for action, rect in combat.action_buttons.items():
         if rect.collidepoint(mx, my):
-            if combat.selected_action in ("spell", "spellbook"):
-                if action in ("back", "spellbook"):
+            if combat.selected_action == "spell":
+                if action == "back":
                     combat.selected_action = None
                     break
                 combat.start_spell(current_unit, action)
@@ -334,4 +339,3 @@ def handle_button_click(combat, current_unit, pos: Tuple[int, int]) -> bool:
                 combat.selected_action = action
             return True
     return False
-
