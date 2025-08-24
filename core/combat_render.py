@@ -45,17 +45,25 @@ def draw(combat, frame: int = 0) -> None:
     margin = HUD_MARGIN
     right_min = PANEL_W
     bottom_min = BUTTON_H + 8
+    top_decoration = int(screen_h * 0.2)
+    # 20% of the screen height is reserved for decorations.
+    # Example: on a 1536×1024 display, top_decoration becomes 204 px and
+    # available_h evaluates to ``1024 - 204 - bottom_min - margin*3``.
+    available_w = screen_w - right_min - margin * 3
+    available_h = screen_h - top_decoration - bottom_min - margin * 3
     combat.zoom = min(
-        (screen_w - right_min - margin * 3) / combat.grid_pixel_width,
-        (screen_h - bottom_min - margin * 3) / combat.grid_pixel_height,
+        available_w / combat.grid_pixel_width,
+        available_h / combat.grid_pixel_height,
     )
     tile_w = int(constants.COMBAT_HEX_SIZE * combat.zoom)
     tile_h = int(constants.COMBAT_HEX_SIZE * combat.zoom * math.sqrt(3) / 2)
     grid_w = int(combat.grid_pixel_width * combat.zoom)
     grid_h = int(combat.grid_pixel_height * combat.zoom)
-    combat.offset_x = margin
-    combat.offset_y = margin
-    panel_x = combat.offset_x + grid_w + margin
+    extra_w = available_w - grid_w
+    side_margin = int(margin + extra_w / 2)
+    combat.offset_x = side_margin
+    combat.offset_y = margin + top_decoration
+    panel_x = combat.offset_x + grid_w + side_margin
     panel_y = combat.offset_y
     panel_w = screen_w - panel_x - margin
     panel_h = grid_h
