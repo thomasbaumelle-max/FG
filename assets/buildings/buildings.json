@@ -56,7 +56,7 @@
     "anchor_px": [512, 1020],
     "passable": false,
     "occludes": true,
-    "path": "buildings/mine/mine_0.png",
+    "path": "buildings/shipyard.png",
     "variants": 1,
     "upgrade_cost": {"wood": 5}
   },
