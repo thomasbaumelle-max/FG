@@ -51,6 +51,16 @@ def test_embark_disembark_cost(monkeypatch):
     assert game.world.grid[0][1].boat is not None
 
 
+def test_move_requires_boat_notifies(monkeypatch):
+    game = setup_water_game(monkeypatch)
+    monkeypatch.setattr(audio, "play_sound", lambda *a, **k: None)
+    notices = []
+    game._notify = lambda msg: notices.append(msg)
+    game.try_move_hero(1, 0)
+    assert notices == ["A boat is required to embark."]
+    assert (game.hero.x, game.hero.y) == (0, 0)
+
+
 def _generate_world(map_type: str) -> WorldMap:
     random.seed(0)
     rows = generate_continent_map(30, 30, seed=0, map_type=map_type)
