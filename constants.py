@@ -153,6 +153,8 @@ COMBAT_HEX_SIZE = 64
 COMBAT_GRID_WIDTH = 10
 COMBAT_GRID_HEIGHT = 10
 COMBAT_TILE_SIZE = 64
+# Hero sprite height relative to a combat hex
+HERO_HEX_FACTOR = 1.5
 
 # Colours (RGB)
 WHITE = (255, 255, 255)
