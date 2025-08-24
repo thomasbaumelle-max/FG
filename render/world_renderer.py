@@ -561,7 +561,13 @@ class WorldRenderer:
 
             # Draw boat beneath heroes that possess one
             if is_hero and getattr(actor, "naval_unit", None):
-                boat = self.assets.get(getattr(actor, "naval_unit"))
+                boat_id = getattr(actor, "naval_unit")
+                path = boat_id
+                if getattr(self.game, "boat_defs", None):
+                    boat_def = self.game.boat_defs.get(boat_id)
+                    if boat_def:
+                        path = boat_def.path
+                boat = self.assets.get(path)
                 if isinstance(boat, pygame.Surface):
                     try:
                         if boat.get_size() != (tile_size, tile_size):

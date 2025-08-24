@@ -1,4 +1,8 @@
 [
-  {"id": "barge", "movement": 4, "capacity": 5},
-  {"id": "galley", "movement": 6, "capacity": 10}
+  {"id": "barge", "movement": 4, "capacity": 5,
+  "cost": {"wood": 5, "stone": 2},
+  "path": "Units/ships/barge.png"},
+  {"id": "galley", "movement": 6, "capacity": 10,
+  "cost": {"wood": 10, "stone": 5},
+  "path": "Units/ships/galley.png"}
 ]
