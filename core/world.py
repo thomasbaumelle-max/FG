@@ -31,6 +31,7 @@ from core.entities import (
     SHADOWLEAF_WOLF_STATS,
     BOAR_RAVEN_STATS,
     HURLOMBE_STATS,
+    REEF_SERPENT_STATS,
     Army,
     UnitCarrier,
 )
@@ -66,6 +67,7 @@ ENEMY_UNIT_IMAGES: Dict[str, str] = {
     SHADOWLEAF_WOLF_STATS.name: SHADOWLEAF_WOLF_STATS.name,
     BOAR_RAVEN_STATS.name: BOAR_RAVEN_STATS.name,
     HURLOMBE_STATS.name: HURLOMBE_STATS.name,
+    REEF_SERPENT_STATS.name: REEF_SERPENT_STATS.name,
 }
 
 # Number of tiles grouped into a single flora chunk used for spatial indexing
@@ -77,6 +79,7 @@ CREATURE_STATS: Dict[str, "UnitStats"] = {
     SHADOWLEAF_WOLF_STATS.name: SHADOWLEAF_WOLF_STATS,
     BOAR_RAVEN_STATS.name: BOAR_RAVEN_STATS,
     HURLOMBE_STATS.name: HURLOMBE_STATS,
+    REEF_SERPENT_STATS.name: REEF_SERPENT_STATS,
 }
 
 
@@ -887,9 +890,19 @@ class WorldMap:
                     break
 
     def _create_enemy_army_for_biome(self, biome: str) -> List[Unit]:
-        """Generate an enemy army themed to the given biome."""
+        """Generate an enemy army themed to the given biome.
 
-        creature_names = CREATURES_BY_BIOME.get(biome, DEFAULT_ENEMY_UNITS)
+        Water biomes have dedicated marine units defined in the creature
+        manifest.  If a biome has no specific entries fall back to the default
+        land creatures.
+        """
+
+        creature_names = CREATURES_BY_BIOME.get(biome)
+        if not creature_names:
+            if biome in constants.WATER_BIOMES:
+                creature_names = [REEF_SERPENT_STATS.name]
+            else:
+                creature_names = DEFAULT_ENEMY_UNITS
         num_stacks = random.randint(1, 3)
         units: List[Unit] = []
         for _ in range(num_stacks):
