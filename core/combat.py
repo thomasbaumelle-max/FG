@@ -228,14 +228,37 @@ class Combat:
         }
         self.spells_by_name: Dict[str, CombatSpell] = self.spells
         # Compute pixel dimensions of the combat grid for a hexagonal layout.
-        self.hex_width = constants.COMBAT_HEX_SIZE
-        self.hex_height = int(constants.COMBAT_HEX_SIZE * math.sqrt(3) / 2)
+        # When a battlefield background image is available, derive the hex size
+        # from that image so the grid fits nicely with lateral margins.
+        self._battlefield_bg: Optional[pygame.Surface] = None
+        if getattr(self.battlefield, "image", ""):
+            try:
+                self._battlefield_bg = pygame.image.load(self.battlefield.image).convert_alpha()
+            except Exception:
+                self._battlefield_bg = None
+
+        cols = constants.COMBAT_GRID_WIDTH
+        rows = constants.COMBAT_GRID_HEIGHT
+        if self._battlefield_bg:
+            img_w, img_h = self._battlefield_bg.get_size()
+            ratio_w = 0.9
+            ratio_h = 1.0
+            hex_w = min(
+                img_w * ratio_w / (1 + (cols - 1) * 0.75),
+                img_h * ratio_h / (rows + 0.5) * 2 / math.sqrt(3),
+            )
+            self.hex_width = int(hex_w)
+        else:
+            self.hex_width = constants.COMBAT_HEX_SIZE
+
+        self.hex_height = int(self.hex_width * math.sqrt(3) / 2)
         self.grid_pixel_width = int(
-            self.hex_width + (constants.COMBAT_GRID_WIDTH - 1) * self.hex_width * 3 / 4
+            self.hex_width + (cols - 1) * self.hex_width * 3 / 4
         )
         self.grid_pixel_height = int(
-            self.hex_height * constants.COMBAT_GRID_HEIGHT + self.hex_height / 2
+            self.hex_height * rows + self.hex_height / 2
         )
+        constants.COMBAT_HEX_SIZE = self.hex_width
         # Offset and zoom/pan state
         self.offset_x = 10
         self.offset_y = 10

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import Tuple
 
-import math
 import pygame
 import constants
 import theme
@@ -61,8 +60,8 @@ def draw(combat, frame: int = 0) -> None:
         available_w / combat.grid_pixel_width,
         available_h / combat.grid_pixel_height,
     )
-    tile_w = int(constants.COMBAT_HEX_SIZE * combat.zoom)
-    tile_h = int(constants.COMBAT_HEX_SIZE * combat.zoom * math.sqrt(3) / 2)
+    tile_w = int(combat.hex_width * combat.zoom)
+    tile_h = int(combat.hex_height * combat.zoom)
     grid_w = int(combat.grid_pixel_width * combat.zoom)
     grid_h = int(combat.grid_pixel_height * combat.zoom)
     extra_w = available_w - grid_w
@@ -100,7 +99,7 @@ def draw(combat, frame: int = 0) -> None:
         if isinstance(img, pygame.Surface):
             w, h = img.get_size()
             target_h = int(
-                constants.COMBAT_HEX_SIZE * constants.HERO_HEX_FACTOR * combat.zoom
+                combat.hex_width * constants.HERO_HEX_FACTOR * combat.zoom
             )
             if h != target_h:
                 scale = target_h / h
@@ -114,7 +113,7 @@ def draw(combat, frame: int = 0) -> None:
                 hx *= combat.zoom
                 hy *= combat.zoom
             x = combat.offset_x + int(hx)
-            base_h = int(constants.COMBAT_HEX_SIZE * combat.zoom)
+            base_h = int(combat.hex_width * combat.zoom)
             y = combat.offset_y + int(hy) - (h - base_h)
             combat.screen.blit(img, (x, y))
 
