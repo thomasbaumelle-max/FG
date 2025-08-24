@@ -11,6 +11,24 @@ import constants
 import theme
 
 
+def draw_hex(surface: pygame.Surface, rect: pygame.Rect, colour: Tuple[int, int, int], alpha: int, width: int = 0) -> None:
+    """Draw a hexagon inside ``rect`` on ``surface``.
+
+    The hexagon can be rendered filled or as an outline by adjusting ``width``.
+    ``alpha`` controls the transparency of the drawn shape.
+    """
+
+    points = [
+        (rect.x + rect.w * 0.25, rect.y),
+        (rect.x + rect.w * 0.75, rect.y),
+        (rect.x + rect.w, rect.y + rect.h / 2),
+        (rect.x + rect.w * 0.75, rect.y + rect.h),
+        (rect.x + rect.w * 0.25, rect.y + rect.h),
+        (rect.x, rect.y + rect.h / 2),
+    ]
+    pygame.draw.polygon(surface, (*colour, alpha), points, width)
+
+
 def draw(combat, frame: int = 0) -> None:
     """Render the combat grid and units to the screen.
 
@@ -86,15 +104,7 @@ def draw(combat, frame: int = 0) -> None:
     for x in range(constants.COMBAT_GRID_WIDTH):
         for y in range(constants.COMBAT_GRID_HEIGHT):
             rect = combat.cell_rect(x, y)
-            points = [
-                (rect.x + rect.w * 0.25, rect.y),
-                (rect.x + rect.w * 0.75, rect.y),
-                (rect.x + rect.w, rect.y + rect.h / 2),
-                (rect.x + rect.w * 0.75, rect.y + rect.h),
-                (rect.x + rect.w * 0.25, rect.y + rect.h),
-                (rect.x, rect.y + rect.h / 2),
-            ]
-            pygame.draw.polygon(overlay, (255, 255, 255, 40), points, 1)
+            draw_hex(overlay, rect, constants.WHITE, 40, width=1)
 
     # Draw decorative flora if any
     if combat.flora_loader and combat.flora_props:
@@ -122,19 +132,16 @@ def draw(combat, frame: int = 0) -> None:
         and combat.selected_action == "move"
     ):
         reachable = combat.reachable_squares(combat.selected_unit)
-        highlight_img = combat.assets.get("highlight")
+        highlight_img = combat.assets.get("move_overlay") or combat.assets.get("highlight")
         for (cx, cy) in reachable:
             rect = combat.cell_rect(cx, cy)
             if highlight_img:
+                img = highlight_img
                 if rect.size != highlight_img.get_size():
                     img = pygame.transform.scale(highlight_img, rect.size)
-                else:
-                    img = highlight_img
                 overlay.blit(img, rect.topleft)
             else:
-                s = pygame.Surface(rect.size, pygame.SRCALPHA)
-                s.fill((0, 0, 255, 100))
-                overlay.blit(s, rect.topleft)
+                draw_hex(overlay, rect, constants.GREEN, 100)
     # Highlight potential targets when preparing a spell
     if combat.casting_spell and combat.spell_caster and combat.selected_spell:
         targets: list[tuple[int, int]] = []
@@ -164,19 +171,16 @@ def draw(combat, frame: int = 0) -> None:
                     for x in range(constants.COMBAT_GRID_WIDTH)
                     if combat.grid[y][x] is None and (x, y) not in combat.obstacles
                 ]
-        highlight_img = combat.assets.get("highlight")
+        highlight_img = combat.assets.get("spell_overlay") or combat.assets.get("highlight")
         for (cx, cy) in targets:
             rect = combat.cell_rect(cx, cy)
             if highlight_img:
+                img = highlight_img
                 if rect.size != highlight_img.get_size():
                     img = pygame.transform.scale(highlight_img, rect.size)
-                else:
-                    img = highlight_img
                 overlay.blit(img, rect.topleft)
             else:
-                s = pygame.Surface(rect.size, pygame.SRCALPHA)
-                s.fill((255, 0, 0, 100))
-                overlay.blit(s, rect.topleft)
+                draw_hex(overlay, rect, constants.BLUE, 100)
 
     # Highlight attackable squares when preparing an attack action
     if (
@@ -185,25 +189,21 @@ def draw(combat, frame: int = 0) -> None:
         and combat.selected_action in ("melee", "ranged")
     ):
         targets = combat.attackable_squares(combat.selected_unit, combat.selected_action)
-        key = "melee_range" if combat.selected_action == "melee" else "ranged_range"
-        highlight_img = combat.assets.get(key)
+        if combat.selected_action == "melee":
+            highlight_img = combat.assets.get("melee_overlay") or combat.assets.get("melee_range")
+            colour = constants.RED
+        else:
+            highlight_img = combat.assets.get("ranged_overlay") or combat.assets.get("ranged_range")
+            colour = constants.YELLOW
         for (cx, cy) in targets:
             rect = combat.cell_rect(cx, cy)
             if highlight_img:
+                img = highlight_img
                 if rect.size != highlight_img.get_size():
                     img = pygame.transform.scale(highlight_img, rect.size)
-                else:
-                    img = highlight_img
                 overlay.blit(img, rect.topleft)
             else:
-                colour = (
-                    constants.RED
-                    if combat.selected_action == "melee"
-                    else constants.YELLOW
-                )
-                s = pygame.Surface(rect.size, pygame.SRCALPHA)
-                s.fill((*colour, 100))
-                overlay.blit(s, rect.topleft)
+                draw_hex(overlay, rect, colour, 100)
 
     blend = getattr(pygame, "BLEND_RGBA_ADD", 0)
     try:
