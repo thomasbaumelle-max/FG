@@ -70,6 +70,20 @@ UNIT_SPELLS: Dict[str, Dict[str, int]] = {
     'Dragon': {'Dragon Breath': 2},
 }
 
+
+def water_battlefield_template() -> List[List[str]]:
+    """Return a combat grid filled entirely with water tiles.
+
+    Naval battles take place on open water with no obstacles.  The returned
+    template mirrors the standard combat grid dimensions and contains only the
+    ``"ocean"`` biome.
+    """
+
+    return [
+        ["ocean" for _ in range(constants.COMBAT_GRID_WIDTH)]
+        for _ in range(constants.COMBAT_GRID_HEIGHT)
+    ]
+
 @dataclass
 class CombatSpell:
     """Represents a spell that can be cast during combat."""
