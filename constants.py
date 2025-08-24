@@ -100,7 +100,12 @@ BIOME_PRIORITY = {
 
 # Biomes that are inherently impassable regardless of the ``obstacle`` flag on a
 # tile.  Units may never enter these terrains.
-IMPASSABLE_BIOMES = {"mountain", "ocean", "river"}
+IMPASSABLE_BIOMES = {"mountain", "river"}
+
+# Biomes that require a boat to traverse.  These are otherwise considered
+# passable but movement is restricted to units currently embarked on a naval
+# vessel.
+WATER_BIOMES = {"ocean"}
 ROAD_COST = 1  # AP cost when moving along a road
 TILE_SIZE = 64  # pixel size of each square on the exploration map
 # Rendering layers – lower indices are drawn first

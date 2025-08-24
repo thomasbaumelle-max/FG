@@ -1,0 +1,4 @@
+[
+  {"id": "barge", "movement": 4, "capacity": 5},
+  {"id": "galley", "movement": 6, "capacity": 10}
+]

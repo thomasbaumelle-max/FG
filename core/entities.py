@@ -359,6 +359,8 @@ class Hero:
         # Action points for exploration; consumed when moving during your turn
         self.max_ap = 4
         self.ap = self.max_ap
+        # Type of boat currently owned/embarked by the hero, if any
+        self.naval_unit: Optional[str] = None
         # Starting army; deep copies will be made when entering combat
         self.army: List[Unit] = army if army is not None else []
         # Items carried by the hero
