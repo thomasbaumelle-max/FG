@@ -462,6 +462,9 @@ class WorldMap:
             if num_buildings:
                 self._place_resources()
 
+        if self._is_marine_map():
+            self._scatter_ocean_features(random)
+
         # Per-player fog of war state. ``visible`` marks tiles currently seen,
         # while ``explored`` remembers tiles that have ever been seen.  Entries
         # are created lazily for players when updating visibility.
@@ -1032,6 +1035,67 @@ class WorldMap:
                 chance = self.resource_density / 100.0
                 if rng.random() < chance:
                     tile.resource = rng.choices(ids, weights)[0]
+
+    def _scatter_ocean_features(self, rng: random.Random) -> None:
+        """Distribute marine points of interest across open water."""
+
+        water_tiles = [
+            (x, y)
+            for y, row in enumerate(self.grid)
+            for x, tile in enumerate(row)
+            if tile.biome in constants.WATER_BIOMES
+            and not tile.obstacle
+            and tile.building is None
+            and tile.treasure is None
+            and tile.resource is None
+            and tile.enemy_units is None
+        ]
+        rng.shuffle(water_tiles)
+        total = len(water_tiles)
+        if total == 0:
+            return
+
+        # Place special ocean buildings
+        building_specs = [
+            ("sea_sanctuary", max(1, total // 250)),
+            ("lighthouse", max(1, total // 250)),
+        ]
+        for bid, count in building_specs:
+            for _ in range(count):
+                if not water_tiles:
+                    break
+                x, y = water_tiles.pop()
+                building = create_building(bid)
+                if self._can_place_building(x, y, building):
+                    self._stamp_building(x, y, building)
+
+        # Sprinkle extra resource piles
+        resource_ids = ["wood", "stone", "crystal", "gold", "treasure"]
+        for _ in range(max(1, total // 60)):
+            if not water_tiles:
+                break
+            x, y = water_tiles.pop()
+            tile = self.grid[y][x]
+            if tile.resource is None:
+                tile.resource = rng.choice(resource_ids)
+
+        # Spawn roaming marine creatures
+        for _ in range(max(1, total // 80)):
+            if not water_tiles:
+                break
+            x, y = water_tiles.pop()
+            tile = self.grid[y][x]
+            if tile.enemy_units is not None:
+                continue
+            units = self._create_enemy_army_for_biome(tile.biome)
+            tile.enemy_units = units
+            cid = units[0].stats.name
+            mode, guard = CREATURE_BEHAVIOUR.get(cid, (CreatureBehavior.ROAMER, 3))
+            if mode is CreatureBehavior.GUARDIAN:
+                ai = GuardianAI(x, y, units, guard)
+            else:
+                ai = RoamingAI(x, y, units, guard)
+            self.creatures.append(ai)
 
     def _create_starting_area(self) -> None:
         """Create starting zones for player 0 and the enemy player."""
