@@ -175,6 +175,8 @@ def _scenario_config(screen: pygame.Surface, scenario: str) -> Tuple[Optional[di
     size_labels = [f"{k} ({w}x{h})" for k, (w, h) in sizes]
     ai_keys = list(constants.AI_DIFFICULTIES)
     ai_labels = [constants.DIFFICULTY_LABELS[k] for k in ai_keys]
+    map_type_opts = ["plaine", "marine"]
+    map_type_labels = [MENU_TEXTS[opt] for opt in map_type_opts]
     colour_labels = [MENU_TEXTS["blue"], MENU_TEXTS["red"]]
     colour_values = [constants.BLUE, constants.RED]
     faction_opts = ["red_knights", None]
@@ -183,11 +185,12 @@ def _scenario_config(screen: pygame.Surface, scenario: str) -> Tuple[Optional[di
     human_players_opts = [1, 2, 3, 4]
 
     # Current selection indices for each option group.
-    idx_size = idx_diff = idx_total = idx_human = idx_colour = idx_faction = 0
+    idx_size = idx_map = idx_diff = idx_total = idx_human = idx_colour = idx_faction = 0
     player_name = MENU_TEXTS["default_player_name"]
 
     rows = [
         MENU_TEXTS["map_size"],
+        MENU_TEXTS["map_type"],
         MENU_TEXTS["ai_difficulty"],
         MENU_TEXTS["total_players"],
         MENU_TEXTS["human_players"],
@@ -223,40 +226,44 @@ def _scenario_config(screen: pygame.Surface, scenario: str) -> Tuple[Optional[di
                     if row_idx == 0:
                         idx_size = (idx_size - 1) % len(size_labels)
                     elif row_idx == 1:
-                        idx_diff = (idx_diff - 1) % len(ai_keys)
+                        idx_map = (idx_map - 1) % len(map_type_labels)
                     elif row_idx == 2:
+                        idx_diff = (idx_diff - 1) % len(ai_keys)
+                    elif row_idx == 3:
                         idx_total = max(0, idx_total - 1)
                         _clamp_humans()
-                    elif row_idx == 3:
+                    elif row_idx == 4:
                         idx_human = max(0, idx_human - 1)
                         _clamp_humans()
-                    elif row_idx == 4:
-                        idx_colour = (idx_colour - 1) % len(colour_labels)
                     elif row_idx == 5:
+                        idx_colour = (idx_colour - 1) % len(colour_labels)
+                    elif row_idx == 6:
                         idx_faction = (idx_faction - 1) % len(faction_labels)
                 elif event.key in (pygame.K_RIGHT, pygame.K_d):
                     if row_idx == 0:
                         idx_size = (idx_size + 1) % len(size_labels)
                     elif row_idx == 1:
-                        idx_diff = (idx_diff + 1) % len(ai_keys)
+                        idx_map = (idx_map + 1) % len(map_type_labels)
                     elif row_idx == 2:
+                        idx_diff = (idx_diff + 1) % len(ai_keys)
+                    elif row_idx == 3:
                         idx_total = min(len(total_players_opts) - 1, idx_total + 1)
                         _clamp_humans()
-                    elif row_idx == 3:
+                    elif row_idx == 4:
                         idx_human = min(len(human_players_opts) - 1, idx_human + 1)
                         _clamp_humans()
-                    elif row_idx == 4:
-                        idx_colour = (idx_colour + 1) % len(colour_labels)
                     elif row_idx == 5:
+                        idx_colour = (idx_colour + 1) % len(colour_labels)
+                    elif row_idx == 6:
                         idx_faction = (idx_faction + 1) % len(faction_labels)
                 elif event.key == pygame.K_RETURN:
-                    if row_idx == 6:  # Name field
+                    if row_idx == 7:  # Name field
                         player_name, screen = _text_input(
                             screen, MENU_TEXTS["player_name_prompt"], default=player_name
                         )
                         if player_name is None:
                             player_name = MENU_TEXTS["default_player_name"]
-                    elif row_idx == 7:  # Confirm
+                    elif row_idx == 8:  # Confirm
                         _clamp_humans()
                         total_players = total_players_opts[idx_total]
                         human_players = min(
@@ -268,6 +275,7 @@ def _scenario_config(screen: pygame.Surface, scenario: str) -> Tuple[Optional[di
                         return (
                             {
                                 "map_size": sizes[idx_size][0],
+                                "map_type": map_type_opts[idx_map],
                                 "difficulty": ai_keys[idx_diff],
                                 "scenario": scenario,
                                 "total_players": total_players,
@@ -279,7 +287,7 @@ def _scenario_config(screen: pygame.Surface, scenario: str) -> Tuple[Optional[di
                             },
                             screen,
                         )
-                    elif row_idx == 8:  # Cancel
+                    elif row_idx == 9:  # Cancel
                         return None, screen
                 elif event.key == pygame.K_ESCAPE:
                     return None, screen
@@ -299,6 +307,7 @@ def _scenario_config(screen: pygame.Surface, scenario: str) -> Tuple[Optional[di
 
         values = [
             size_labels[idx_size],
+            map_type_labels[idx_map],
             ai_labels[idx_diff],
             str(total_players_opts[idx_total]),
             str(human_players_opts[idx_human]),
@@ -378,6 +387,7 @@ def main_menu(screen: pygame.Surface, can_resume: bool = False) -> pygame.Surfac
                 use_default_map=False,
                 slot=slot,
                 map_size=config["map_size"],
+                map_type=config["map_type"],
                 difficulty=config["difficulty"],
                 scenario=config["scenario"],
                 player_name=config["player_name"],
