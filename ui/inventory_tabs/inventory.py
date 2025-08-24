@@ -6,10 +6,10 @@ from dataclasses import asdict
 from typing import TYPE_CHECKING, List, Tuple
 import pygame
 import constants
+import theme
 from core.entities import Item, EquipmentSlot
 from ..inventory_screen import (
     COLOR_TEXT,
-    COLOR_SLOT_BG,
     COLOR_SLOT_BD,
     COLOR_ACCENT,
     RARITY_ORDER,
@@ -24,13 +24,20 @@ def filtered_inventory(screen: "InventoryScreen") -> List[Tuple[int, Item]]:
     items: List[Tuple[int, Item]] = []
     query = screen.search_text.lower()
     for idx, item in enumerate(screen.hero.inventory):
-        if screen.active_filter == "Armor" and item.slot in (None, EquipmentSlot.WEAPON):
+        if screen.active_filter == "Armor" and item.slot in (
+            None,
+            EquipmentSlot.WEAPON,
+        ):
             continue
         if screen.active_filter == "Weapons" and item.slot != EquipmentSlot.WEAPON:
             continue
-        if screen.active_filter == "Consumables" and not (item.slot is None and item.stackable):
+        if screen.active_filter == "Consumables" and not (
+            item.slot is None and item.stackable
+        ):
             continue
-        if screen.active_filter == "Quest" and not (item.slot is None and not item.stackable):
+        if screen.active_filter == "Quest" and not (
+            item.slot is None and not item.stackable
+        ):
             continue
         if query and query not in item.name.lower():
             continue
@@ -62,37 +69,51 @@ def draw(screen: "InventoryScreen") -> None:
 
     pygame.draw.rect(screen.screen, COLOR_TEXT, screen.search_rect, 2, border_radius=4)
     if screen.search_active:
-        pygame.draw.rect(screen.screen, COLOR_ACCENT, screen.search_rect, 2, border_radius=4)
+        pygame.draw.rect(
+            screen.screen, COLOR_ACCENT, screen.search_rect, 2, border_radius=4
+        )
     t = screen.font.render(screen.search_text or "Search...", True, COLOR_TEXT)
     screen.screen.blit(t, (screen.search_rect.x + 6, screen.search_rect.y + 6))
 
-    # Items list
+    # Items grid 6x6
     items = filtered_inventory(screen)
     start = screen.inventory_offset
     screen.item_rects = []
-    for i in range(20):
-        idx = start + i
-        rect = pygame.Rect(screen.center_rect.x + 12, screen.center_rect.y + 120 + i * 36, 420, 32)
-        pygame.draw.rect(screen.screen, COLOR_SLOT_BG, rect)
-        pygame.draw.rect(screen.screen, COLOR_SLOT_BD, rect, 1)
-        if idx < len(items):
-            inv_idx, item = items[idx]
-            icon = screen.assets.get(item.icon or "")
-            if icon:
-                icon = pygame.transform.scale(icon, (28, 28))
-                screen.screen.blit(icon, (rect.x + 2, rect.y + 2))
-            name = screen.font.render(item.name, True, COLOR_TEXT)
-            screen.screen.blit(name, (rect.x + 36, rect.y + 6))
-            qty = "" if not item.stackable else f" x{item.qty}"
-            if qty:
-                q = screen.font.render(qty, True, COLOR_TEXT)
-                screen.screen.blit(q, (rect.right - q.get_width() - 6, rect.y + 6))
-            screen.item_rects.append((inv_idx, rect))
-        else:
-            screen.item_rects.append((None, rect))
+    gx = screen.center_rect.x + 12
+    gy = screen.center_rect.y + 120
+    cell = (screen.center_rect.width - 24) // 6
+    screen.inventory_grid_origin = (gx, gy)
+    screen.inventory_cell_size = cell
+    for row in range(6):
+        for col in range(6):
+            idx = start + row * 6 + col
+            rect = pygame.Rect(gx + col * cell, gy + row * cell, cell, cell)
+            pygame.draw.rect(screen.screen, theme.PALETTE["panel"], rect)
+            theme.draw_frame(screen.screen, rect)
+            if idx < len(items):
+                inv_idx, item = items[idx]
+                icon = screen.assets.get(item.icon or "")
+                if icon:
+                    icon = pygame.transform.scale(icon, (cell - 4, cell - 4))
+                    screen.screen.blit(icon, (rect.x + 2, rect.y + 2))
+                qty = "" if not item.stackable else f"x{item.qty}"
+                if qty:
+                    q = screen.font.render(qty, True, COLOR_TEXT)
+                    screen.screen.blit(
+                        q,
+                        (
+                            rect.right - q.get_width() - 4,
+                            rect.bottom - q.get_height() - 4,
+                        ),
+                    )
+                screen.item_rects.append((inv_idx, rect))
+            else:
+                screen.item_rects.append((None, rect))
 
 
-def item_tooltip(screen: "InventoryScreen", item: Item, equip: bool = True) -> List[Tuple[str, Tuple[int, int, int]]]:
+def item_tooltip(
+    screen: "InventoryScreen", item: Item, equip: bool = True
+) -> List[Tuple[str, Tuple[int, int, int]]]:
     """Return tooltip lines for an item, simulating equip/unequip."""
     lines: List[Tuple[str, Tuple[int, int, int]]] = [
         (item.name, COLOR_TEXT),
