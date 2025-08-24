@@ -2,7 +2,6 @@ import os
 
 from core.entities import Hero, HeroStats, SkillNode, Modifier, SKILL_CATALOG
 from tools.skill_manifest import load_skill_manifest
-from tools.icon import get_icon
 
 
 def test_learn_skill_modifies_stats_and_points():
@@ -42,10 +41,10 @@ def test_learn_skill_adds_tag():
 
 def test_red_knights_manifest_and_icons():
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    manifest = load_skill_manifest(repo_root)
+    assets = {}
+    manifest = load_skill_manifest(repo_root, assets)
     branches = ["logistics", "tactics", "marksmanship", "weaponsmithing"]
     ranks = ["N", "A", "E", "M"]
-    sheet = os.path.join(repo_root, "assets", "red_knights_skills.png")
     for branch in branches:
         entries = [e for e in manifest if e.get("branch") == branch]
         prev_id = None
@@ -53,7 +52,7 @@ def test_red_knights_manifest_and_icons():
             entry = next(e for e in entries if e["rank"] == rank)
             if prev_id:
                 assert prev_id in entry["requires"]
-            icon = get_icon(sheet, tuple(entry["coords"]))
+            icon = assets.get(entry["id"])
             assert hasattr(icon, "get_width") and icon.get_width() > 0
             prev_id = entry["id"]
 

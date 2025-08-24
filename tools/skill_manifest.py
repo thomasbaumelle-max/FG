@@ -15,8 +15,10 @@ import json
 import os
 from typing import Any, Dict, List
 
+from tools.icon import get_icon
 
-def load_skill_manifest(repo_root: str) -> List[Dict[str, Any]]:
+
+def load_skill_manifest(repo_root: str, assets: Dict[str, Any] | None = None) -> List[Dict[str, Any]]:
     """Return raw skill entries from JSON manifests.
 
     Parameters
@@ -25,6 +27,10 @@ def load_skill_manifest(repo_root: str) -> List[Dict[str, Any]]:
         Path to the repository root.  The function looks for ``assets/skills.json``
         (legacy flat list) and for additional ``*.json`` files under
         ``assets/skills``.
+    assets:
+        Optional mapping where extracted icons will be stored.  When provided
+        the loader expects each manifest to specify a ``sheet`` key pointing to
+        a spritesheet containing the skill icons.
     """
 
     entries: List[Dict[str, Any]] = []
@@ -51,6 +57,10 @@ def load_skill_manifest(repo_root: str) -> List[Dict[str, Any]]:
                     data = json.load(fh)
             except Exception:  # pragma: no cover - invalid file
                 continue
+
+            sheet_name = data.pop("sheet", None)
+            sheet_path = os.path.join(repo_root, "assets", sheet_name) if sheet_name else ""
+
             for branch, ranks in data.items():
                 prev_id = None
                 for rank in rank_order:
@@ -62,6 +72,7 @@ def load_skill_manifest(repo_root: str) -> List[Dict[str, Any]]:
                     entry.setdefault("desc", "")
                     entry.setdefault("cost", 1)
                     entry.setdefault("effects", [])
+                    entry.setdefault("icon", "")
                     entry["branch"] = branch
                     entry["rank"] = rank
                     reqs = entry.get("requires", [])
@@ -70,6 +81,11 @@ def load_skill_manifest(repo_root: str) -> List[Dict[str, Any]]:
                     if prev_id and prev_id not in reqs:
                         reqs.append(prev_id)
                     entry["requires"] = reqs
+
+                    if assets is not None and sheet_path and entry.get("coords") is not None:
+                        assets[entry["id"]] = get_icon(sheet_path, tuple(entry["coords"]))
+                        entry["icon"] = entry["id"]
+
                     entries.append(entry)
                     prev_id = entry["id"]
 
