@@ -31,6 +31,7 @@ def test_units_drawn_in_coordinate_order(monkeypatch):
     u1 = _make_unit("u1")
     u2 = _make_unit("u2")
     u3 = _make_unit("u3")
+    u3.stats.battlefield_scale = 1.75
 
     assets = {"u1": pygame.Surface((10, 10)), "u2": pygame.Surface((10, 10)), "u3": pygame.Surface((10, 10))}
 
