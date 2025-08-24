@@ -758,6 +758,35 @@ class WorldMap:
                 return (nx, ny)
         return None
 
+    def _place_shipyard_adjacent_to_water(
+        self, x: int, y: int, owner: Optional[int] = None
+    ) -> bool:
+        """Attempt to place a shipyard on land neighbouring water at ``(x, y)``."""
+
+        land = self._adjacent_free_tile(x, y)
+        if land is None:
+            return False
+        lx, ly = land
+        building = create_building("shipyard")
+        if not self._can_place_building(lx, ly, building):
+            return False
+        self._stamp_building(lx, ly, building)
+        if owner is not None:
+            building.owner = owner
+        return True
+
+    def _place_shipyard_near(
+        self, x: int, y: int, owner: Optional[int], radius: int = 5
+    ) -> bool:
+        """Search within ``radius`` of ``(x, y)`` for water to place a shipyard."""
+
+        for yy in range(max(0, y - radius), min(self.height, y + radius + 1)):
+            for xx in range(max(0, x - radius), min(self.width, x + radius + 1)):
+                if self.grid[yy][xx].biome in constants.WATER_BIOMES:
+                    if self._place_shipyard_adjacent_to_water(xx, yy, owner):
+                        return True
+        return False
+
     def adjacent_enemy_hero(
         self, x: int, y: int, enemies: Sequence[EnemyHero]
     ) -> Optional[EnemyHero]:
@@ -1012,6 +1041,8 @@ class WorldMap:
                         else:
                             self.enemy_start = (tx, ty)
                             logger.error("No free tile around enemy town at %s,%s", tx, ty)
+                    # Place a shipyard if water is nearby
+                    self._place_shipyard_near(tx, ty, owner)
                     placed = True
                     break
             if not placed:
@@ -1038,6 +1069,8 @@ class WorldMap:
                         else:
                             self.enemy_start = (tx, ty)
                             logger.error("No free tile around enemy town at %s,%s", tx, ty)
+                    # Place a shipyard if water is nearby
+                    self._place_shipyard_near(tx, ty, owner)
                 coords = [
                     c for c in area_coords if self.grid[c[1]][c[0]].building is None
                 ]
@@ -1089,6 +1122,31 @@ class WorldMap:
 
         carve_area(ex, ey, size, owner=1)
         self.enemy_starting_area = (ex, ey, size)
+
+        # Ensure every continent has at least one shipyard
+        continents = self._find_continents()
+        for cells in continents:
+            if any(
+                self.grid[y][x].building
+                and self.grid[y][x].building.name == "Shipyard"
+                for x, y in cells
+            ):
+                continue
+            random.shuffle(cells)
+            placed = False
+            for x, y in cells:
+                if self.grid[y][x].building is not None:
+                    continue
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    nx, ny = x + dx, y + dy
+                    if not self.in_bounds(nx, ny):
+                        continue
+                    if self.grid[ny][nx].biome in constants.WATER_BIOMES:
+                        if self._place_shipyard_adjacent_to_water(nx, ny):
+                            placed = True
+                            break
+                if placed:
+                    break
 
     def _place_resources(self, per_biome_counts: Optional[Dict[str, int]] = None) -> None:
         """Distribute resource-producing buildings based on biomes."""
