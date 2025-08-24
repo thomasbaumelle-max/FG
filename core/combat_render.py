@@ -42,19 +42,16 @@ def draw(combat, frame: int = 0) -> None:
     :class:`~entities.UnitStats`.
     """
     # Start with a clean slate so the world map isn't visible behind the
-    # combat grid.  The background is simply filled with black.
-    combat.screen.fill(constants.BLACK)
+    # combat grid.  Fill the surface with the panel colour so leftover space
+    # matches the UI theme.
+    combat.screen.fill(theme.PALETTE["panel"])
 
     screen_w, screen_h = combat.screen.get_size()
     margin = HUD_MARGIN
     right_min = PANEL_W
     bottom_min = BUTTON_H + 8
-    top_decoration = int(screen_h * 0.2)
-    # 20% of the screen height is reserved for decorations.
-    # Example: on a 1536×1024 display, top_decoration becomes 204 px and
-    # available_h evaluates to ``1024 - 204 - bottom_min - margin*3``.
     available_w = screen_w - right_min - margin * 3
-    available_h = screen_h - top_decoration - bottom_min - margin * 3
+    available_h = screen_h - bottom_min - margin * 2
     combat.zoom = min(
         available_w / combat.grid_pixel_width,
         available_h / combat.grid_pixel_height,
@@ -66,13 +63,13 @@ def draw(combat, frame: int = 0) -> None:
     extra_w = available_w - grid_w
     side_margin = int(margin + extra_w / 2)
     combat.offset_x = side_margin
-    combat.offset_y = margin + top_decoration
+    combat.offset_y = margin
     panel_x = combat.offset_x + grid_w + side_margin
     panel_y = combat.offset_y
     panel_w = screen_w - panel_x - margin
     panel_h = grid_h
     bottom_x = combat.offset_x
-    bottom_y = combat.offset_y + grid_h + margin
+    bottom_y = combat.offset_y + grid_h
     bottom_w = grid_w
     bottom_h = screen_h - bottom_y - margin
 
@@ -322,7 +319,7 @@ def draw(combat, frame: int = 0) -> None:
                 pygame.draw.rect(combat.screen, constants.YELLOW, rect, 3)
 
     font = pygame.font.SysFont(None, 20)
-    if combat.turn_order:
+    if combat.turn_order and len(getattr(combat, "assets", {})) > len(combat.units):
         current = combat.turn_order[combat.current_index]
         # --- HUD (panneau + barre actions) ---
         combat.action_buttons, combat.auto_button = combat.hud.draw(
