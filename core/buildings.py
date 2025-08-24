@@ -110,11 +110,35 @@ class Shipyard(Building):
             hero.naval_unit = self.boats[index]
 
 
+class SeaSanctuary(Building):
+    """Building that revives a fallen unit stack when visited."""
+
+    def interact(self, hero: "Hero") -> None:
+        super().interact(hero)
+        for unit in hero.army:
+            if unit.count <= 0:
+                unit.count = 1
+                unit.current_hp = unit.stats.max_hp
+                break
+
+
+class Lighthouse(Building):
+    """Grants a vision range bonus to the visiting hero."""
+
+    def interact(self, hero: "Hero") -> None:
+        super().interact(hero)
+        current = getattr(hero, "vision_bonus", 0)
+        hero.vision_bonus = max(current, 2)
+
 def create_building(bid: str, defs: Optional[Dict[str, BuildingAsset]] = None) -> Building:
     asset = (defs or building_loader.BUILDINGS)[bid]
     b: Building
     if bid == "shipyard":
         b = Shipyard()
+    elif bid == "sea_sanctuary":
+        b = SeaSanctuary()
+    elif bid == "lighthouse":
+        b = Lighthouse()
     else:
         b = Building()
     b.id = asset.id

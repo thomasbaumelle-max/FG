@@ -69,6 +69,24 @@
     "path": "buildings/town/town_0.png",
     "variants": 1,
     "provides": {"resource": "gold", "per_day": 0}
+  },
+  {
+    "id": "sea_sanctuary",
+    "footprint": [1, 1],
+    "anchor_px": [512, 1020],
+    "passable": true,
+    "occludes": true,
+    "path": "buildings/sea_sanctuary/sea_sanctuary_0.png",
+    "variants": 1
+  },
+  {
+    "id": "lighthouse",
+    "footprint": [1, 1],
+    "anchor_px": [512, 1020],
+    "passable": true,
+    "occludes": true,
+    "path": "buildings/lighthouse/lighthouse_0.png",
+    "variants": 1
   }
 ]
 

@@ -28,6 +28,7 @@ def compute_vision(
     biome = BiomeCatalog.get(tile.biome)
     if biome is not None:
         bonus += getattr(biome, "vision_bonus", 0)
+    bonus += getattr(actor, "vision_bonus", 0)
     radius += bonus
     has_boat = getattr(actor, "naval_unit", None) is not None
 

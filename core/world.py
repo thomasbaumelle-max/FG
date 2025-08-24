@@ -1204,8 +1204,6 @@ class WorldMap:
             "mountain": "mine",
             "scarletia_volcanic": "pyramid",
         }
-        if count <= 0:
-            return
         candidates = [
             (x, y)
             for y, row in enumerate(self.grid)
@@ -1218,16 +1216,38 @@ class WorldMap:
         ]
         random.shuffle(candidates)
         placed = 0
-        for x, y in candidates:
-            tile = self.grid[y][x]
-            btype = building_map.get(tile.biome)
-            if not btype:
-                continue
-            building = create_building(btype)
-            if self._can_place_building(x, y, building):
-                self._stamp_building(x, y, building)
-                placed += 1
-                if placed >= count:
+        if count > 0:
+            for x, y in candidates:
+                tile = self.grid[y][x]
+                btype = building_map.get(tile.biome)
+                if not btype:
+                    continue
+                building = create_building(btype)
+                if self._can_place_building(x, y, building):
+                    self._stamp_building(x, y, building)
+                    placed += 1
+                    if placed >= count:
+                        break
+
+        # Scatter special ocean buildings regardless of ``count``
+        ocean_candidates = [
+            (x, y)
+            for y, row in enumerate(self.grid)
+            for x, tile in enumerate(row)
+            if tile.biome in constants.WATER_BIOMES
+            and not tile.obstacle
+            and tile.treasure is None
+            and tile.enemy_units is None
+            and tile.resource is None
+            and tile.building is None
+        ]
+        random.shuffle(ocean_candidates)
+        for bid in ("sea_sanctuary", "lighthouse"):
+            while ocean_candidates:
+                x, y = ocean_candidates.pop()
+                building = create_building(bid)
+                if self._can_place_building(x, y, building):
+                    self._stamp_building(x, y, building)
                     break
 
 
