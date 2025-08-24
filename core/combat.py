@@ -629,11 +629,16 @@ class Combat:
         ``True`` is returned if casting can begin, otherwise ``False``.
         """
 
-        if name not in UNIT_SPELLS.get(caster.stats.name, {}):
+        if name not in UNIT_SPELLS.get(caster.stats.name, {}) and name not in self.hero_spells:
             return False
         spell = self.get_spell(name)
-        if caster.mana < spell.cost:
-            return False
+        is_unit_spell = name in UNIT_SPELLS.get(caster.stats.name, {})
+        if is_unit_spell:
+            if caster.mana < spell.cost:
+                return False
+        else:
+            if self.hero_mana < spell.cost:
+                return False
         self.casting_spell = True
         self.spell_caster = caster
         self.selected_spell = spell
@@ -781,9 +786,7 @@ class Combat:
 
         # Bouclier / focus via statuts
         if attack_type == 'ranged' and self.get_status(attacker, 'focus'):
-            import random
-            if random.random() < 0.8:
-                base *= 2
+            base *= 2
             self.consume_status(attacker, 'focus')
         if attack_type == 'melee' and self.get_status(defender, 'shield_block'):
             self.consume_status(defender, 'shield_block')
@@ -972,14 +975,13 @@ class Combat:
         costs = UNIT_SPELLS.get(unit.stats.name, {})
         min_cost = min(costs.values()) if costs else None
         can_cast_unit = min_cost is not None and unit.mana >= min_cost
-        can_cast_hero = self.hero_mana > 0
         if unit.stats.name == "Mage":
-            if can_cast_unit or can_cast_hero:
+            if can_cast_unit:
                 actions.append("spell")
         else:
             if unit.stats.attack_range > unit.stats.min_range:
                 actions.append("ranged")
-            if can_cast_unit or can_cast_hero:
+            if can_cast_unit:
                 actions.append("spell")
         actions.append("wait")
         return actions
@@ -1216,7 +1218,7 @@ class Combat:
                                     print("Target out of range")
                             else:
                                 print("No enemy unit there")
-                        elif self.selected_action == 'spell':
+                        elif self.selected_action in ('spell', 'spellbook'):
                             print("Select a spell with the keyboard")
                 elif event.type == pygame.MOUSEBUTTONUP:
                     if event.button == 3:
