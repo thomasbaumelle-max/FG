@@ -89,7 +89,6 @@ def test_move_onto_boat_auto_embark(monkeypatch):
     assert game.hero.naval_unit == "barge"
     assert game.world.grid[0][1].boat is None
 
-
 def test_embark_requires_adjacent_land(monkeypatch):
     game, boat = setup_open_sea_game(monkeypatch)
     monkeypatch.setattr(audio, "play_sound", lambda *a, **k: None)
