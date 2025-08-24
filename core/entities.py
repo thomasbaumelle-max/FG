@@ -65,6 +65,9 @@ class SkillNode:
     requires: List[str]
     effects: List[Modifier | str]
     icon: str = ""
+    branch: str = ""
+    rank: str = ""
+    coords: Tuple[int, int] | None = None
 
 
 @dataclass
@@ -622,7 +625,10 @@ for entry in skills_manifest:
         cost=int(entry.get("cost", 1)),
         requires=entry.get("requires", []),
         effects=effects,
-        icon=entry.get("image", ""),
+        icon=entry.get("icon", entry.get("image", "")),
+        branch=entry.get("branch", ""),
+        rank=entry.get("rank", ""),
+        coords=tuple(entry.get("coords", [])) if entry.get("coords") else None,
     )
     SKILL_CATALOG[node.id] = node
 

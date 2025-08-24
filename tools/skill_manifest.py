@@ -1,4 +1,14 @@
-"""Load skill definitions from ``assets/skills.json``."""
+"""Load skill definitions from the project assets.
+
+The original project stored all skills in a single ``assets/skills.json`` file.
+Recent work introduced per‑faction skill files under ``assets/skills``.  This
+loader now combines the legacy file with any additional manifests found in that
+directory.  For branch based trees the loader automatically links the four
+ranks (``N``, ``A``, ``E`` and ``M``) so that each rank requires the previous
+one.  The function returns a flat list of entry dictionaries ready for
+consumption by :mod:`core.entities`.
+"""
+
 from __future__ import annotations
 
 import json
@@ -7,11 +17,60 @@ from typing import Any, Dict, List
 
 
 def load_skill_manifest(repo_root: str) -> List[Dict[str, Any]]:
-    """Return raw skill entries from the JSON manifest."""
-    manifest_path = os.path.join(repo_root, "assets", "skills.json")
+    """Return raw skill entries from JSON manifests.
+
+    Parameters
+    ----------
+    repo_root:
+        Path to the repository root.  The function looks for ``assets/skills.json``
+        (legacy flat list) and for additional ``*.json`` files under
+        ``assets/skills``.
+    """
+
+    entries: List[Dict[str, Any]] = []
+
+    # ------------------------------------------------------------------ legacy
+    legacy_path = os.path.join(repo_root, "assets", "skills.json")
     try:
-        with open(manifest_path, "r", encoding="utf-8") as f:
-            data: List[Dict[str, Any]] = json.load(f)
+        with open(legacy_path, "r", encoding="utf-8") as fh:
+            data: List[Dict[str, Any]] = json.load(fh)
+            entries.extend(data)
     except Exception:
-        return []
-    return data
+        pass
+
+    # ------------------------------------------------------------------ modern
+    skills_dir = os.path.join(repo_root, "assets", "skills")
+    rank_order = ["N", "A", "E", "M"]
+    if os.path.isdir(skills_dir):
+        for fname in sorted(os.listdir(skills_dir)):
+            if not fname.endswith(".json"):
+                continue
+            path = os.path.join(skills_dir, fname)
+            try:
+                with open(path, "r", encoding="utf-8") as fh:
+                    data = json.load(fh)
+            except Exception:  # pragma: no cover - invalid file
+                continue
+            for branch, ranks in data.items():
+                prev_id = None
+                for rank in rank_order:
+                    if rank not in ranks:
+                        continue
+                    entry: Dict[str, Any] = ranks[rank]
+                    entry.setdefault("id", f"{branch}_{rank}")
+                    entry.setdefault("name", entry["id"])
+                    entry.setdefault("desc", "")
+                    entry.setdefault("cost", 1)
+                    entry.setdefault("effects", [])
+                    entry["branch"] = branch
+                    entry["rank"] = rank
+                    reqs = entry.get("requires", [])
+                    if not isinstance(reqs, list):
+                        reqs = [reqs]
+                    if prev_id and prev_id not in reqs:
+                        reqs.append(prev_id)
+                    entry["requires"] = reqs
+                    entries.append(entry)
+                    prev_id = entry["id"]
+
+    return entries
