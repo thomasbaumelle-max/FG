@@ -241,8 +241,9 @@ def generate_combat_map(
     The returned grid has ``width``×``height`` cells and initially copies the
     biome of the source tile ``(x, y)``.  If the source tile borders a
     different biome, the second biome is mixed in using a simple checkerboard
-    pattern.  Decorative flora props are generated using the world's existing
-    ``flora_loader`` when available.
+    pattern.  Decorative flora props are not generated; an empty list is
+    returned.  Obstacles continue to be managed separately via
+    :attr:`combat.obstacles` and :meth:`Combat.generate_obstacles`.
     """
 
     origin_biome = world.grid[y][x].biome
@@ -266,16 +267,8 @@ def generate_combat_map(
                 if (xx + yy) % 2:
                     grid[yy][xx] = secondary
 
+    # Combat maps no longer place decorative flora automatically.
     flora_props: List["PropInstance"] = []
-    loader = getattr(world, "flora_loader", None)
-    if loader:
-        tags = [["" for _ in range(width)] for _ in range(height)]
-        allowed: Dict[str, List[str]] = {}
-        for biome_id in {cell for row in grid for cell in row}:
-            biome = BiomeCatalog.get(biome_id)
-            if biome and biome.flora:
-                allowed[biome_id] = biome.flora
-        flora_props = loader.autoplace(grid, tags, 0, allowed if allowed else None)
 
     return grid, flora_props
 

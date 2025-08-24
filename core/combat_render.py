@@ -127,25 +127,6 @@ def draw(combat, frame: int = 0) -> None:
             rect = combat.cell_rect(x, y)
             draw_hex(overlay, rect, constants.WHITE, 40, width=1)
 
-    # Draw decorative flora if any
-    if combat.flora_loader and combat.flora_props:
-
-        def grid_to_screen(tx: int, ty: int) -> Tuple[int, int]:
-            r = combat.cell_rect(tx, ty)
-            return r.centerx, r.bottom
-
-        decals = []
-        others = []
-        for p in combat.flora_props:
-            a = combat.flora_loader.assets.get(p.asset_id)
-            if a and a.type == "decal":
-                decals.append(p)
-            else:
-                others.append(p)
-        if decals:
-            combat.flora_loader.draw_props(combat.screen, decals, grid_to_screen)
-        if others:
-            combat.flora_loader.draw_props(combat.screen, others, grid_to_screen)
     # Highlight reachable squares when preparing a movement action
     if (
         combat.selected_unit
