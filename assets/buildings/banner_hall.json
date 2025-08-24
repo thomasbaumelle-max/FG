@@ -1,0 +1,12 @@
+[
+  {
+    "id": "banner_hall",
+    "footprint": [1, 1],
+    "anchor_px": [512, 1020],
+    "passable": false,
+    "occludes": true,
+    "path": "buildings/banner_hall/banner_hall_0.png",
+    "variants": 1,
+    "provides": {"resource": "gold", "per_day": 1}
+  }
+]

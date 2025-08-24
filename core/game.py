@@ -53,7 +53,7 @@ from core.entities import (
     ARTIFACT_ICONS,
 )
 from core.world import WorldMap, generate_combat_map, init_biome_images, Tile
-from core.faction import Faction
+from core.faction import FactionDef
 from graphics.spritesheet import load_sprite_sheet
 from mapgen import generate_continent_map
 from mapgen.continents import required_coast_images
@@ -61,6 +61,7 @@ from core.ai.faction_ai import FactionAI
 from core.ai.creature_ai import CreatureAI
 from core.buildings import Building, Town, create_building
 from loaders.building_loader import BUILDINGS, get_surface
+from loaders.faction_loader import load_factions
 from ui.main_screen import MainScreen
 from ui import dialogs
 from state.event_bus import (
@@ -161,7 +162,7 @@ class Game:
         scenario: Optional[str] = None,
         player_name: str = "Joueur",
         player_colour: Tuple[int, int, int] = constants.BLUE,
-        faction: Faction = Faction.RED_KNIGHTS,
+        faction: str = "red_knights",
         ai_names: Optional[List[str]] = None,
     ) -> None:
         self.screen = screen
@@ -170,7 +171,7 @@ class Game:
         self.scenario = scenario
         self.player_name = player_name
         self.player_colour = player_colour
-        self.faction = faction
+        self.faction_id = faction
         self.ai_names = ai_names or ["ordinateur"]
         constants.AI_DIFFICULTY = difficulty
         repo_root = os.path.dirname(os.path.dirname(__file__))
@@ -181,6 +182,10 @@ class Game:
         if extra:
             search_paths.append(extra)
         self.ctx = Context(repo_root=repo_root, search_paths=search_paths, asset_loader=self.assets)
+
+        # Load factions and register any unique buildings
+        self.factions: Dict[str, FactionDef] = load_factions(self.ctx)
+        self.faction: FactionDef = self.factions.get(self.faction_id, next(iter(self.factions.values()))) if self.factions else FactionDef("default", "Default")
 
         BiomeCatalog.load(self.ctx, "biomes/biomes.json")
         init_biome_images()
@@ -1647,6 +1652,7 @@ class Game:
                         num_obstacles=random.randint(1, 3),
                         unit_shadow_baked=self.unit_shadow_baked,
                         hero=None,
+                        hero_faction=getattr(actor, "faction", None),
                     )
                     audio.play_sound('attack')
                     hero_wins, _ = combat.run()
@@ -1932,6 +1938,7 @@ class Game:
                     num_obstacles=random.randint(1, 3),
                     unit_shadow_baked=self.unit_shadow_baked,
                     hero=self.hero,
+                    hero_faction=self.hero.faction,
                 )
                 audio.play_sound('attack')
                 hero_wins, exp_gained = combat.run()
@@ -2658,6 +2665,7 @@ class Game:
             num_obstacles=random.randint(1, 3),
             unit_shadow_baked=self.unit_shadow_baked,
             hero=self.hero,
+            hero_faction=self.hero.faction,
         )
         audio.play_sound("attack")
         hero_wins, exp_gained = combat.run()
@@ -2856,7 +2864,7 @@ class Game:
             "max_ap": self.hero.max_ap,
             "name": self.hero.name,
             "colour": list(self.hero.colour),
-            "faction": self.hero.faction.value,
+            "faction": getattr(self.hero.faction, "id", ""),
             "resources": self.hero.resources,
             "army": [self._unit_to_dict(u) for u in self.hero.army],
             "inventory": [self._unit_to_dict(u) for u in self.hero.inventory],
@@ -2948,8 +2956,8 @@ class Game:
         colour = tuple(
             hero_info.get("colour", getattr(self, "player_colour", constants.BLUE))
         )
-        faction_val = hero_info.get("faction", Faction.RED_KNIGHTS.value)
-        faction = Faction(faction_val) if isinstance(faction_val, str) else faction_val
+        faction_val = hero_info.get("faction", "red_knights")
+        faction = self.factions.get(faction_val, FactionDef(faction_val, faction_val.title()))
         hero = Hero(
             hero_info["x"],
             hero_info["y"],

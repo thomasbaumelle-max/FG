@@ -46,6 +46,7 @@ from core.spell import (
     cast_ice_wall,
     Spell as SpellDef,
 )
+from core.faction import FactionDef
 
 # Units with explicit hero/enemy image overrides. Other units default to an
 # asset whose identifier matches ``UnitStats.name``.
@@ -101,6 +102,7 @@ class Combat:
         num_obstacles: int = 0,
         unit_shadow_baked: Optional[Dict[str, bool]] = None,
         hero: Optional["Hero"] = None,
+        hero_faction: Optional[FactionDef] = None,
         fortification: Optional[Fortification] = None,
         siege_actions: Optional[List[SiegeAction]] = None,
     ) -> None:
@@ -112,6 +114,24 @@ class Combat:
         # Track initial enemy count to award experience
         self._initial_enemy_count = sum(u.count for u in self.enemy_units)
         self.units: List[Unit] = self.hero_units + self.enemy_units
+        self.hero_faction = hero_faction
+        if hero_faction:
+            for u in self.hero_units:
+                for tag in hero_faction.unit_tags.get(u.stats.name, []):
+                    if tag not in u.tags:
+                        u.tags.append(tag)
+                for stat, mod in hero_faction.doctrine.items():
+                    if hasattr(u.stats, stat):
+                        setattr(u.stats, stat, getattr(u.stats, stat) + mod)
+            for rule in hero_faction.army_synergies:
+                tag = rule.get("tag")
+                min_count = int(rule.get("min", 0))
+                morale = int(rule.get("morale", 0))
+                if tag:
+                    count = sum(1 for u in self.hero_units if tag in u.tags)
+                    if count >= min_count:
+                        for u in self.hero_units:
+                            u.stats.morale += morale
         # --- Spells and abilities runtime ---
         self.spell_defs: Dict[str, SpellDef] = load_spells(os.path.join("assets", "spells", "spells.json"))
         self.ability_engine = AbilityEngine()
@@ -270,9 +290,10 @@ class Combat:
     @staticmethod
     def copy_unit(unit: Unit) -> Unit:
         """Return a copy of a unit with identical stats and state."""
-        new_unit = Unit(unit.stats, unit.count, unit.side)
+        new_unit = Unit(copy.deepcopy(unit.stats), unit.count, unit.side)
         new_unit.current_hp = unit.current_hp
         new_unit.attack_bonus = unit.attack_bonus
+        new_unit.tags = list(unit.tags)
         return new_unit
 
     def get_unit_image(self, unit: Unit, size: Tuple[int, int]) -> Optional[pygame.Surface]:
