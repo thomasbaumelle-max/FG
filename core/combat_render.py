@@ -268,11 +268,17 @@ def draw(combat, frame: int = 0) -> None:
                 if 0 <= index < len(frames):
                     img = frames[index]
         if img:
-            if rect.size != img.get_size():
-                img = pygame.transform.scale(img, rect.size)
+            target_h = int(rect.height * unit.stats.battlefield_scale)
+            w, h = img.get_size()
+            if h != target_h:
+                scale = target_h / h
+                img = pygame.transform.scale(img, (int(w * scale), target_h))
+                w, h = img.get_size()
+            x = rect.center[0] - w // 2
+            y = rect.bottom - h
             if not combat.unit_shadow_baked.get(key or "", False):
                 combat.screen.blit(shadow_surf, rect.topleft)
-            combat.screen.blit(img, rect.topleft)
+            combat.screen.blit(img, (x, y))
         else:
             colour = (
                 combat.hero_colour if unit.side == "hero" else constants.RED

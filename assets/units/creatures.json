@@ -42,7 +42,8 @@
     "shadow_baked": false,
     "biomes": ["ocean"],
     "behavior": "roamer",
-    "guard_range": 3
+    "guard_range": 3,
+    "battlefield_scale": 1.75
   }
 ]
 

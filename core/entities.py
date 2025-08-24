@@ -99,6 +99,7 @@ class UnitStats:
     mana: int = 0
     min_range: int = 1
     retaliations_per_round: int = 1
+    battlefield_scale: float = 1.0
 
 
 @dataclass
