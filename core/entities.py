@@ -945,6 +945,34 @@ HURLOMBE_STATS = UnitStats(
     mana=2,
 )
 
+# Serpent des récifs — créature marine ne vivant que dans l'océan
+REEF_SERPENT_STATS = UnitStats(
+    name="reef_serpent",
+    max_hp=48,
+    attack_min=6,
+    attack_max=9,
+    defence_melee=3,
+    defence_ranged=3,
+    defence_magic=2,
+    speed=4,
+    attack_range=1,
+    initiative=7,
+    sheet="creatures",
+    hero_frames=(0, 0),
+    enemy_frames=(0, 0),
+    min_range=1,
+    retaliations_per_round=1,
+    morale=0,
+    luck=0,
+    abilities=[
+        "water_resistance(25%)",
+        "constrict(immobilize=1)",
+    ],
+    role="Prédateur marin à l'étreinte constrictive",
+    unit_type="beast",
+    mana=0,
+)
+
 
 def create_random_enemy_army() -> List[Unit]:
     """Generate a random selection of enemy units for the world map."""
