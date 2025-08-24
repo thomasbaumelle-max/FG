@@ -68,8 +68,9 @@ def test_embark_disembark_cost(monkeypatch):
     assert game.world.grid[0][1].boat is not None
 
 
-def test_move_requires_boat_notifies(monkeypatch):
+def test_move_without_boat_notifies(monkeypatch):
     game = setup_water_game(monkeypatch)
+    game.world.grid[0][1].boat = None
     monkeypatch.setattr(audio, "play_sound", lambda *a, **k: None)
     notices = []
     game._notify = lambda msg: notices.append(msg)
@@ -77,6 +78,16 @@ def test_move_requires_boat_notifies(monkeypatch):
     assert notices == ["A boat is required to embark."]
     assert (game.hero.x, game.hero.y) == (0, 0)
 
+
+def test_move_onto_boat_auto_embark(monkeypatch):
+    game = setup_water_game(monkeypatch)
+    monkeypatch.setattr(audio, "play_sound", lambda *a, **k: None)
+    start_ap = game.hero.ap
+    game.try_move_hero(1, 0)
+    assert (game.hero.x, game.hero.y) == (1, 0)
+    assert game.hero.ap == start_ap - 1
+    assert game.hero.naval_unit == "barge"
+    assert game.world.grid[0][1].boat is None
 
 def test_embark_requires_adjacent_land(monkeypatch):
     game, boat = setup_open_sea_game(monkeypatch)

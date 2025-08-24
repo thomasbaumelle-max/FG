@@ -1919,6 +1919,13 @@ class Game:
                     if self._capture_tile(nx, ny, tile, self.hero, 0, econ_state, econ_b):
                         self._publish_resources()
             return
+        if (
+            tile.biome in constants.WATER_BIOMES
+            and getattr(tile, "boat", None)
+            and not has_boat
+        ):
+            if self.embark(self.hero, tile.boat):
+                return
         if not tile.is_passable(has_boat=has_boat):
             if tile.biome in constants.WATER_BIOMES and not has_boat:
                 self._notify("A boat is required to embark.")
