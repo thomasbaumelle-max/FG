@@ -242,11 +242,10 @@ class Game:
                 self.map_size, constants.MAP_SIZE_PRESETS[constants.DEFAULT_MAP_SIZE]
             )
             # Generate only the first region's biomes using the new indexing
-            land_chance = 0.55 if self.map_type == "plaine" else 0.35
             map_rows = generate_continent_map(
                 width,
                 height,
-                land_chance=land_chance,
+                map_type=self.map_type,
                 smoothing_iterations=5,
                 biome_chars="GFD",
             )
