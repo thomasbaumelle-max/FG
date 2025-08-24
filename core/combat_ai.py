@@ -11,7 +11,7 @@ def choose_target(combat, unit: Unit, enemies: List[Unit]) -> Unit:
     """Select a target taking objective value into account."""
 
     def score(enemy: Unit) -> Tuple[int, int]:
-        dist = abs(enemy.x - unit.x) + abs(enemy.y - unit.y)
+        dist = combat.hex_distance((enemy.x, enemy.y), (unit.x, unit.y))
         # Base threat based on offensive potential
         threat = enemy.stats.attack_max * enemy.count
         # Targets already weakened are more attractive
@@ -21,13 +21,11 @@ def choose_target(combat, unit: Unit, enemies: List[Unit]) -> Unit:
         if getattr(enemy.stats, "treasure", False):
             threat -= 20
         # Simple flank detection – enemies with adjacent allies are worth more
-        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            nx, ny = enemy.x + dx, enemy.y + dy
-            if 0 <= nx < constants.COMBAT_GRID_WIDTH and 0 <= ny < constants.COMBAT_GRID_HEIGHT:
-                other = combat.grid[ny][nx]
-                if other and getattr(other, "side", None) == enemy.side:
-                    threat -= 5
-                    break
+        for nx, ny in combat.hex_neighbors(enemy.x, enemy.y):
+            other = combat.grid[ny][nx]
+            if other and getattr(other, "side", None) == enemy.side:
+                threat -= 5
+                break
         diff = {"Novice": 0.5, "Intermédiaire": 0.75, "Avancé": 1.0}.get(
             constants.AI_DIFFICULTY, 1.0
         )
@@ -98,6 +96,32 @@ def _a_star(
 ) -> List[Tuple[int, int]]:
     """Compute an A* path on the combat grid."""
 
+    def offset_to_axial(x: int, y: int) -> Tuple[int, int]:
+        q = x
+        r = y - (x - (x & 1)) // 2
+        return q, r
+
+    def axial_to_offset(q: int, r: int) -> Tuple[int, int]:
+        x = q
+        y = r + (q - (q & 1)) // 2
+        return x, y
+
+    def hex_neighbors(x: int, y: int) -> List[Tuple[int, int]]:
+        q, r = offset_to_axial(x, y)
+        directions = [(1, 0), (1, -1), (0, -1), (-1, 0), (-1, 1), (0, 1)]
+        result: List[Tuple[int, int]] = []
+        for dq, dr in directions:
+            nq, nr = q + dq, r + dr
+            nx, ny = axial_to_offset(nq, nr)
+            if 0 <= nx < constants.COMBAT_GRID_WIDTH and 0 <= ny < constants.COMBAT_GRID_HEIGHT:
+                result.append((nx, ny))
+        return result
+
+    def hex_distance(a: Tuple[int, int], b: Tuple[int, int]) -> int:
+        aq, ar = offset_to_axial(*a)
+        bq, br = offset_to_axial(*b)
+        return (abs(aq - bq) + abs(ar - br) + abs(aq + ar - bq - br)) // 2
+
     frontier: List[Tuple[int, Tuple[int, int]]] = [(0, start)]
     came_from: Dict[Tuple[int, int], Optional[Tuple[int, int]]] = {start: None}
     cost_so_far: Dict[Tuple[int, int], int] = {start: 0}
@@ -106,19 +130,13 @@ def _a_star(
         _, current = heapq.heappop(frontier)
         if current == goal:
             break
-        for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
-            nx, ny = current[0] + dx, current[1] + dy
-            if not (
-                0 <= nx < constants.COMBAT_GRID_WIDTH
-                and 0 <= ny < constants.COMBAT_GRID_HEIGHT
-            ):
-                continue
+        for nx, ny in hex_neighbors(*current):
             if (nx, ny) in blocked:
                 continue
             new_cost = cost_so_far[current] + 1
             if (nx, ny) not in cost_so_far or new_cost < cost_so_far[(nx, ny)]:
                 cost_so_far[(nx, ny)] = new_cost
-                priority = new_cost + abs(goal[0] - nx) + abs(goal[1] - ny)
+                priority = new_cost + hex_distance((nx, ny), goal)
                 heapq.heappush(frontier, (priority, (nx, ny)))
                 came_from[(nx, ny)] = current
     else:
@@ -131,6 +149,7 @@ def _a_star(
         cur = came_from.get(cur)
         if cur is None:
             return []
+        
     path.reverse()
     return path
 
@@ -148,7 +167,7 @@ def ai_take_turn(combat, unit: Unit, enemies: List[Unit]) -> None:
         return
 
     target = choose_target(combat, unit, enemies)
-    dist = abs(target.x - unit.x) + abs(target.y - unit.y)
+    dist = combat.hex_distance((unit.x, unit.y), (target.x, target.y))
 
     # Consider spell casting before moving or attacking
     spell_choice = select_spell(unit, enemies, combat)
@@ -219,7 +238,7 @@ def ai_take_turn(combat, unit: Unit, enemies: List[Unit]) -> None:
     for nx, ny in path[:move_speed]:
         combat.move_unit(unit, nx, ny)
 
-    dist = abs(target.x - unit.x) + abs(target.y - unit.y)
+    dist = combat.hex_distance((unit.x, unit.y), (target.x, target.y))
     if dist <= 1:
         attack_type = "melee"
     elif (
