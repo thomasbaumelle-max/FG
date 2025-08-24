@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Dict, Optional, Set, List, Tuple
 import constants
 from loaders import building_loader
 from loaders.building_loader import BuildingAsset
+from loaders.core import Context
 
 if TYPE_CHECKING:  # pragma: no cover
     from core.entities import Hero, Unit
@@ -113,6 +114,13 @@ def create_building(bid: str, defs: Optional[Dict[str, BuildingAsset]] = None) -
     b.occludes = bool(asset.occludes)
     b.growth_per_week = dict(getattr(asset, "growth_per_week", {}))
     return b
+
+
+def register_faction_buildings(ctx: Context, manifests: List[str]) -> None:
+    """Register additional buildings defined for specific factions."""
+
+    for path in manifests:
+        building_loader.register_buildings(ctx, path)
 
 
 class Town(Building):

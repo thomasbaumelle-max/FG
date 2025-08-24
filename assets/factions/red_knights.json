@@ -1,0 +1,19 @@
+{
+  "id": "red_knights",
+  "name": "Red Knights",
+  "doctrine": {"morale": 1, "luck": -1},
+  "favored_spells": ["fire", "light"],
+  "unit_tags": {
+    "Swordsman": ["scarlet"],
+    "Archer": ["scarlet"],
+    "Mage": ["scarlet"],
+    "Cavalry": ["scarlet"],
+    "Priest": ["scarlet"],
+    "Dragon": ["scarlet"]
+  },
+  "unique_buildings": ["buildings/banner_hall.json"],
+  "army_synergies": [
+    {"tag": "scarlet", "min": 3, "morale": 1},
+    {"tag": "undead", "min": 1, "morale": -1}
+  ]
+}

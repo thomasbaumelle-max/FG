@@ -17,7 +17,6 @@ import pygame
 
 import constants, audio, settings
 from core.game import Game, SAVE_SLOT_FILES
-from core.faction import Faction
 from ui.options_menu import options_menu
 from ui.menu_utils import simple_menu
 
@@ -178,11 +177,8 @@ def _scenario_config(screen: pygame.Surface, scenario: str) -> Tuple[Optional[di
     ai_labels = [constants.DIFFICULTY_LABELS[k] for k in ai_keys]
     colour_labels = [MENU_TEXTS["blue"], MENU_TEXTS["red"]]
     colour_values = [constants.BLUE, constants.RED]
-    faction_opts = [Faction.RED_KNIGHTS, None]
-    faction_labels = [
-        MENU_TEXTS.get(f.value, f.value) if isinstance(f, Faction) else MENU_TEXTS["random"]
-        for f in faction_opts
-    ]
+    faction_opts = ["red_knights", None]
+    faction_labels = ["Red Knights" if f else MENU_TEXTS["random"] for f in faction_opts]
     total_players_opts = [2, 3, 4]
     human_players_opts = [1, 2, 3, 4]
 
@@ -277,8 +273,7 @@ def _scenario_config(screen: pygame.Surface, scenario: str) -> Tuple[Optional[di
                                 "total_players": total_players,
                                 "human_players": human_players,
                                 "player_colour": colour_values[idx_colour],
-                                "faction": faction_opts[idx_faction]
-                                or Faction.RED_KNIGHTS,
+                                "faction": faction_opts[idx_faction] or "red_knights",
                                 "player_name": player_name,
                                 "ai_names": ai_names,
                             },

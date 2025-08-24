@@ -137,3 +137,10 @@ def load_default_buildings() -> Dict[str, BuildingAsset]:
 
 BUILDINGS: Dict[str, BuildingAsset] = load_default_buildings()
 
+
+def register_buildings(ctx: Context, manifest: str) -> None:
+    """Load additional building definitions and register them globally."""
+
+    BUILDINGS.update(load_buildings(ctx, manifest))
+
+

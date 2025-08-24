@@ -17,7 +17,7 @@ from enum import Enum, auto
 from typing import Any, Dict, List, Optional, Tuple, Literal, Set, Protocol, runtime_checkable
 
 import constants
-from .faction import Faction
+from .faction import FactionDef
 from tools.artifact_manifest import load_artifact_manifest
 from tools.skill_manifest import load_skill_manifest
 
@@ -155,6 +155,8 @@ class Unit:
         self.retaliations_left: int = stats.retaliations_per_round
         # Direction the unit is facing as a (dx, dy) vector
         self.facing: Tuple[int, int] = (0, 1)
+        # Arbitrary tags describing the unit (used for faction bonuses)
+        self.tags: List[str] = []
 
     @property
     def is_alive(self) -> bool:
@@ -334,7 +336,7 @@ class Hero:
         portrait: Any | None = None,
         name: str = "Hero",
         colour: Tuple[int, int, int] = constants.BLUE,
-        faction: Faction = Faction.RED_KNIGHTS,
+        faction: FactionDef | None = None,
     ) -> None:
         self.x = x
         self.y = y
@@ -545,7 +547,7 @@ class EnemyHero(Hero):
         y: int,
         army: Optional[List[Unit]] = None,
         colour: Tuple[int, int, int] = constants.RED,
-        faction: Faction = Faction.RED_KNIGHTS,
+        faction: FactionDef | None = None,
     ) -> None:
         super().__init__(x, y, army, name="ordinateur", colour=colour, faction=faction)
         try:
