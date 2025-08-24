@@ -7,7 +7,7 @@ from typing import Dict, List, Tuple
 import theme
 import constants
 from loaders.boat_loader import BoatDef
-from core.entities import Hero
+from core.entities import Hero, Boat
 from core.buildings import Shipyard
 
 # Layout constants similar to town_screen
@@ -77,7 +77,26 @@ class ShipyardScreen:
         hero: Hero = self.game.hero
         for res, amt in bdef.cost.items():
             hero.resources[res] = hero.resources.get(res, 0) - int(amt)
-        hero.naval_unit = bdef.id
+        sx, sy = self.shipyard.origin
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                if dx == 0 and dy == 0:
+                    continue
+                tx, ty = sx + dx, sy + dy
+                if not self.game.world.in_bounds(tx, ty):
+                    continue
+                tile = self.game.world.grid[ty][tx]
+                if tile.biome in constants.WATER_BIOMES and tile.boat is None:
+                    boat = Boat(
+                        id=bdef.id,
+                        x=tx,
+                        y=ty,
+                        movement=bdef.movement,
+                        capacity=bdef.capacity,
+                        owner=0,
+                    )
+                    tile.boat = boat
+                    return
 
     # ---------------------------------------------------------------- drawing
     def draw(self) -> None:

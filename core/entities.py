@@ -323,6 +323,36 @@ class Army(UnitCarrier):
         self.ap = self.max_ap
 
 
+@dataclass
+class Boat(UnitCarrier):
+    """Boat available on the world map that can carry units."""
+
+    id: str
+    x: int
+    y: int
+    movement: int
+    capacity: int
+    owner: int | None
+    garrison: List[Unit] = field(default_factory=list)
+    ap: int = 0
+    name: str = "Boat"
+    portrait: Any | None = None
+
+    def __post_init__(self) -> None:
+        self.ap = self.movement
+
+    @property
+    def units(self) -> List[Unit]:  # Alias required by UnitCarrier
+        return self.garrison
+
+    @units.setter
+    def units(self, value: List[Unit]) -> None:
+        self.garrison = value
+
+    def apply_bonuses_to_army(self) -> None:  # pragma: no cover - no bonuses yet
+        return None
+
+
 
 class Hero:
     """Represents the player on the world map along with their army."""

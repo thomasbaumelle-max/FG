@@ -41,6 +41,7 @@ from core.entities import (
     Unit,
     UnitStats,
     UnitCarrier,
+    Boat,
     Item,
     HeroStats,
     SWORDSMAN_STATS,
@@ -1815,11 +1816,14 @@ class Game:
         has_boat = getattr(self.hero, "naval_unit", None) is not None
         prev_tile = self.world.grid[prev_y][prev_x]
         extra = 0
+        landed = False
         if has_boat:
             cur_water = prev_tile.biome in constants.WATER_BIOMES
             next_water = tile.biome in constants.WATER_BIOMES
             if cur_water != next_water:
                 extra = 1
+                if cur_water and not next_water:
+                    landed = True
         if self.hero.ap < step_cost + extra:
             self._notify("No action points left. End your turn to restore them (press T).")
             return
@@ -1876,6 +1880,8 @@ class Game:
         self._update_caches_for_tile(self.hero.x, self.hero.y)
         # Consume action points based on terrain or road
         self.hero.ap -= step_cost + extra
+        if landed:
+            self.disembark(self.hero, prev_x, prev_y)
         # Check enemy hero encounter
         for enemy in list(self.enemy_heroes):
             if enemy.x == self.hero.x and enemy.y == self.hero.y:
@@ -2078,6 +2084,37 @@ class Game:
         # Update fog of war after movement
         self._update_player_visibility(self.hero)
         # otherwise just move
+
+    def embark(self, hero: Hero, boat: Boat) -> bool:
+        """Embark ``hero`` onto ``boat`` if adjacent."""
+        if abs(hero.x - boat.x) + abs(hero.y - boat.y) != 1:
+            return False
+        tile = self.world.grid[boat.y][boat.x]
+        if tile.boat is not boat or hero.ap <= 0:
+            return False
+        prev_x, prev_y = hero.x, hero.y
+        hero.ap -= 1
+        hero.x, hero.y = boat.x, boat.y
+        hero.naval_unit = boat.id
+        hero.army.extend(boat.garrison)
+        boat.garrison.clear()
+        tile.boat = None
+        self._update_caches_for_tile(prev_x, prev_y)
+        self._update_caches_for_tile(hero.x, hero.y)
+        audio.play_sound('move')
+        return True
+
+    def disembark(self, hero: Hero, x: int, y: int) -> None:
+        """Leave the boat on water tile ``(x, y)`` and remove naval status."""
+        boat_id = getattr(hero, "naval_unit", None)
+        if not boat_id:
+            return
+        bdef = self.boat_defs.get(boat_id) if hasattr(self, "boat_defs") else None
+        movement = bdef.movement if bdef else 0
+        capacity = bdef.capacity if bdef else 0
+        boat = Boat(boat_id, x, y, movement, capacity, owner=0)
+        self.world.grid[y][x].boat = boat
+        hero.naval_unit = None
 
     def prompt_combat_choice(self, enemy_units, army_units=None) -> str:
         """Display a prompt asking whether to engage in combat or auto-resolve.
