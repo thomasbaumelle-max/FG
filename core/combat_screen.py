@@ -1,33 +1,37 @@
 """User interface drawing for the combat screen."""
 
 from __future__ import annotations
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, Tuple, Optional
 import json
 from pathlib import Path
 import pygame
-import constants
 import theme
 import settings
 
 BUTTON_H = 28
-PANEL_W  = 260
-MARGIN   = 10
-LINE     = (74, 76, 86)
+PANEL_W = 260
+MARGIN = 10
+LINE = (74, 76, 86)
 
 
 class CombatHUD:
     """Draws the combat interface and exposes clickable action regions."""
     def __init__(self) -> None:
         """Initialise fonts and load localized action labels."""
-        self.font   = pygame.font.SysFont(None, 18)
-        self.small  = pygame.font.SysFont(None, 16)
-        self.title  = pygame.font.SysFont(None, 22)
+        self.font = pygame.font.SysFont(None, 18)
+        self.small = pygame.font.SysFont(None, 16)
+        self.title = pygame.font.SysFont(None, 22)
         self.action_labels = self._load_action_labels(settings.LANGUAGE)
 
     def _load_action_labels(self, language: str) -> Dict[str, str]:
         """Load translated action labels from ``assets/i18n/action_labels.json``."""
         default = "en"
-        path = Path(__file__).resolve().parents[1] / "assets" / "i18n" / "action_labels.json"
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "assets"
+            / "i18n"
+            / "action_labels.json"
+        )
         try:
             with path.open("r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -42,9 +46,8 @@ class CombatHUD:
         self,
         screen: pygame.Surface,
         grid_rect: pygame.Rect,
-        show_top: bool = False,
-    ) -> Tuple[pygame.Rect, pygame.Rect, Optional[pygame.Rect]]:
-        """Return rectangles for the side, bottom and optional top panels."""
+    ) -> Tuple[pygame.Rect, pygame.Rect]:
+        """Return rectangles for the side and bottom panels."""
         right = pygame.Rect(
             grid_rect.x + grid_rect.width + MARGIN,
             grid_rect.y,
@@ -57,98 +60,27 @@ class CombatHUD:
             grid_rect.width,
             BUTTON_H + 8,
         )
-        top: Optional[pygame.Rect] = None
-        if show_top:
-            h = BUTTON_H + 8
-            top = pygame.Rect(
-                grid_rect.x,
-                max(0, grid_rect.y - h - MARGIN),
-                grid_rect.width,
-                h,
-            )
-        return right, bottom, top
+        return right, bottom
 
-    def draw(self, screen: pygame.Surface, combat, frame: int) -> Tuple[Dict[str, pygame.Rect], Optional[pygame.Rect]]:
+    def draw(
+        self, screen: pygame.Surface, combat
+    ) -> Tuple[Dict[str, pygame.Rect], Optional[pygame.Rect]]:
         """Draw the HUD and return ``(action_buttons, auto_button)``."""
         # Determine the grid area from current offsets and zoom
         grid_w = int(combat.grid_pixel_width * combat.zoom)
         grid_h = int(combat.grid_pixel_height * combat.zoom)
         grid_rect = pygame.Rect(combat.offset_x, combat.offset_y, grid_w, grid_h)
 
-        right, bottom, top = self._panel_rects(
-            screen, grid_rect, show_top=combat.hero is not None
-        )
+        right, bottom = self._panel_rects(screen, grid_rect)
 
         # Backgrounds
-        screen.fill(theme.PALETTE.get("panel", (32,34,40)), right)
+        screen.fill(theme.PALETTE.get("panel", (32, 34, 40)), right)
         pygame.draw.rect(screen, LINE, right, 1)
-        screen.fill(theme.PALETTE.get("panel", (32,34,40)), bottom)
+        screen.fill(theme.PALETTE.get("panel", (32, 34, 40)), bottom)
         pygame.draw.rect(screen, LINE, bottom, 1)
-        if top:
-            screen.fill(theme.PALETTE.get("panel", (32,34,40)), top)
-            pygame.draw.rect(screen, LINE, top, 1)
 
         action_buttons: Dict[str, pygame.Rect] = {}
         auto_button: Optional[pygame.Rect] = None
-
-        # ---- Top panel: hero portrait and stats ----
-        if top and combat.hero:
-            hero = combat.hero
-            x = top.x + 10
-            y = top.y + 4
-            img: Optional[pygame.Surface] = None
-            portrait = getattr(hero, "portrait", None)
-            if portrait:
-                if isinstance(portrait, pygame.Surface):
-                    img = portrait
-                else:
-                    img = combat.assets.get(portrait)
-                if img and img.get_size() != (64, 64):
-                    img = pygame.transform.scale(img, (64, 64))
-            if img:
-                screen.blit(img, (x, top.y + 4))
-                x += 64 + 8
-            name = self.title.render(hero.name, True, theme.PALETTE["text"])
-            screen.blit(name, (x, y))
-            lines = [
-                f"Mana {combat.hero_mana}/{getattr(hero, 'max_mana', combat.hero_mana)}",
-                f"ATK {hero.base_stats.dmg}",
-                f"DEF M/R/Mg {hero.base_stats.def_melee}/{hero.base_stats.def_ranged}/{hero.base_stats.def_magic}",
-            ]
-            for i, s in enumerate(lines):
-                txt = self.font.render(s, True, theme.PALETTE["text"])
-                screen.blit(txt, (x, y + 24 + i * 16))
-
-            if combat.hero_spells:
-                spell_btn = pygame.Rect(
-                    top.x + top.width - 110,
-                    top.y + 4,
-                    100,
-                    top.height - 8,
-                )
-                pygame.draw.rect(screen, (52, 55, 63), spell_btn)
-                pygame.draw.rect(screen, LINE, spell_btn, 1)
-                lab = self.small.render("Spellbook", True, theme.PALETTE["text"])
-                screen.blit(lab, lab.get_rect(center=spell_btn.center))
-                action_buttons["spellbook"] = spell_btn
-
-                if combat.selected_action == "spellbook":
-                    x2 = spell_btn.x - 4
-                    spells = sorted(combat.hero_spells.keys())
-                    for s in spells:
-                        r = pygame.Rect(x2 - 140, top.y + 4, 140, top.height - 8)
-                        pygame.draw.rect(screen, (70, 72, 82), r)
-                        pygame.draw.rect(screen, LINE, r, 1)
-                        txt = self.small.render(s, True, theme.PALETTE["text"])
-                        screen.blit(txt, txt.get_rect(center=r.center))
-                        action_buttons[s] = r
-                        x2 = r.x - 4
-                    r = pygame.Rect(x2 - 70, top.y + 4, 70, top.height - 8)
-                    pygame.draw.rect(screen, (70, 72, 82), r)
-                    pygame.draw.rect(screen, LINE, r, 1)
-                    txt = self.small.render("Back", True, theme.PALETTE["text"])
-                    screen.blit(txt, txt.get_rect(center=r.center))
-                    action_buttons["back"] = r
 
         # ---- Right panel: unit card and turn order ----
         if combat.turn_order:
@@ -158,7 +90,6 @@ class CombatHUD:
             screen.blit(title, (right.x + 10, right.y + 8))
 
             # Portrait (or scaled sprite)
-            rect = combat.cell_rect(unit.x, unit.y)
             # Use whichever image the engine prefers
             img = combat.get_unit_image(unit, (64, 64))
             if img:
@@ -169,25 +100,34 @@ class CombatHUD:
                 f"HP {unit.current_hp}/{unit.stats.max_hp}",
                 f"Mana {unit.mana}/{unit.max_mana}",
                 f"ATK {unit.stats.attack_min}-{unit.stats.attack_max}",
-                f"DEF M/R/Mg {unit.stats.defence_melee}/{unit.stats.defence_ranged}/{unit.stats.defence_magic}",
+                (
+                    f"DEF M/R/Mg {unit.stats.defence_melee}/"
+                    f"{unit.stats.defence_ranged}/{unit.stats.defence_magic}"
+                ),
                 f"Spd {unit.stats.speed}  Init {unit.stats.initiative}",
             ]
             for i, s in enumerate(lines):
                 txt = self.font.render(s, True, theme.PALETTE["text"])
-                screen.blit(txt, (right.x + 84, right.y + 42 + i*18))
+                screen.blit(txt, (right.x + 84, right.y + 42 + i * 18))
 
             # Turn order thumbnails
             y0 = right.y + 150
-            screen.blit(self.small.render("Next:", True, theme.PALETTE["text"]), (right.x + 10, y0))
+            screen.blit(
+                self.small.render("Next:", True, theme.PALETTE["text"]),
+                (right.x + 10, y0),
+            )
             y = y0 + 18
-            upcoming = combat.turn_order[combat.current_index+1:] + combat.turn_order[:combat.current_index]
+            upcoming = (
+                combat.turn_order[combat.current_index + 1:]
+                + combat.turn_order[:combat.current_index]
+            )
             for u in upcoming[:6]:
                 sw = 34
                 r = pygame.Rect(right.x + 10, y, sw, sw)
                 pygame.draw.rect(screen, LINE, r, 1)
-                im = combat.get_unit_image(u, (sw-2, sw-2))
+                im = combat.get_unit_image(u, (sw - 2, sw - 2))
                 if im:
-                    screen.blit(im, (r.x+1, r.y+1))
+                    screen.blit(im, (r.x + 1, r.y + 1))
                 name = self.small.render(u.stats.name, True, theme.PALETTE["text"])
                 screen.blit(name, (r.x + r.width + 6, y + 8))
                 y += sw + 6
@@ -200,24 +140,31 @@ class CombatHUD:
             70,
             bottom.height - 8,
         )
-        pygame.draw.rect(screen, (52,55,63), auto_button)
+        pygame.draw.rect(screen, (52, 55, 63), auto_button)
         pygame.draw.rect(screen, LINE, auto_button, 1)
-        lab = self.small.render("AUTO" if not combat.auto_mode else "HUMAN", True, theme.PALETTE["text"])
+        lab = self.small.render(
+            "AUTO" if not combat.auto_mode else "HUMAN",
+            True,
+            theme.PALETTE["text"],
+        )
         screen.blit(lab, lab.get_rect(center=auto_button.center))
 
         # Line of action buttons
         x = bottom.x + 8
+
         def add_btn(key: str, label: str) -> None:
             nonlocal x
             r = pygame.Rect(x, bottom.y + 4, 110, bottom.height - 8)
-            pygame.draw.rect(screen, (52,55,63), r)
+            pygame.draw.rect(screen, (52, 55, 63), r)
             pygame.draw.rect(screen, LINE, r, 1)
             txt = self.small.render(label, True, theme.PALETTE["text"])
             screen.blit(txt, txt.get_rect(center=r.center))
             action_buttons[key] = r
             x = r.x + r.width + 6
 
-        actions = combat.get_available_actions(combat.turn_order[combat.current_index])
+        actions = combat.get_available_actions(
+            combat.turn_order[combat.current_index]
+        )
         # Stable ordering for readability
         wanted = ["move", "melee", "ranged", "spell", "wait"]
         for a in wanted:
@@ -235,7 +182,7 @@ class CombatHUD:
             x2 = x
             for s in spells:
                 r = pygame.Rect(x2, bottom.y + 4, 140, bottom.height - 8)
-                pygame.draw.rect(screen, (70,72,82), r)
+                pygame.draw.rect(screen, (70, 72, 82), r)
                 pygame.draw.rect(screen, LINE, r, 1)
                 txt = self.small.render(s, True, theme.PALETTE["text"])
                 screen.blit(txt, txt.get_rect(center=r.center))
@@ -243,7 +190,7 @@ class CombatHUD:
                 x2 = r.x + r.width + 4
             # Back button
             r = pygame.Rect(x2, bottom.y + 4, 70, bottom.height - 8)
-            pygame.draw.rect(screen, (70,72,82), r)
+            pygame.draw.rect(screen, (70, 72, 82), r)
             pygame.draw.rect(screen, LINE, r, 1)
             txt = self.small.render("Back", True, theme.PALETTE["text"])
             screen.blit(txt, txt.get_rect(center=r.center))

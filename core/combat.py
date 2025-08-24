@@ -1221,7 +1221,7 @@ class Combat:
                                     print("Target out of range")
                             else:
                                 print("No enemy unit there")
-                        elif self.selected_action in ('spell', 'spellbook'):
+                        elif self.selected_action == 'spell':
                             print("Select a spell with the keyboard")
                 elif event.type == pygame.MOUSEBUTTONUP:
                     if event.button == 3:
