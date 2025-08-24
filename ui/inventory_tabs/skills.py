@@ -35,8 +35,8 @@ def draw(screen: "InventoryScreen") -> None:
     nodes = screen.skill_trees.get(screen.active_skill_tab, [])
     positions = screen.skill_positions.get(screen.active_skill_tab, {})
 
-    # Grid & connectors
-    cols, rows = 3, 3
+    # Grid & connectors (single column, four ranks)
+    cols, rows = 1, 4
     cell = 110
     grid_w = cols * cell
     gx = screen.center_rect.x + (screen.center_rect.width - grid_w) // 2
@@ -67,14 +67,14 @@ def draw(screen: "InventoryScreen") -> None:
         pygame.draw.rect(screen.screen, COLOR_SLOT_BG, rect, border_radius=8)
         pygame.draw.rect(screen.screen, state_col, rect, 3, border_radius=8)
 
-        # icon
+        # branch icon
         icon = screen.assets.get(node.icon)
         if icon:
             icon = pygame.transform.smoothscale(icon, (rect.width - 12, rect.height - 46))
             screen.screen.blit(icon, (rect.x + 6, rect.y + 6))
 
-        name = screen.font_small.render(node.name, True, COLOR_TEXT)
-        screen.screen.blit(name, (rect.centerx - name.get_width() // 2, rect.bottom - name.get_height() - 6))
+        label = screen.font_small.render(node.rank, True, COLOR_TEXT)
+        screen.screen.blit(label, (rect.centerx - label.get_width() // 2, rect.bottom - label.get_height() - 6))
 
         screen.skill_rects[node.id] = rect
 

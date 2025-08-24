@@ -69,10 +69,10 @@ def test_switch_skill_tabs(monkeypatch):
         "draw",
         types.SimpleNamespace(rect=lambda *a, **k: None, line=lambda *a, **k: None),
     )
-    rect = inv.skill_tab_buttons["water"]
-    assert inv.active_skill_tab == "combat"
+    rect = inv.skill_tab_buttons["tactics"]
+    assert inv.active_skill_tab == inv.SKILL_TABS[0]
     assert inv._check_skill_tab_click((rect.x + 1, rect.y + 1))
-    assert inv.active_skill_tab == "water"
+    assert inv.active_skill_tab == "tactics"
 
 
 def test_skill_acquisition_per_tree(monkeypatch):
@@ -87,13 +87,13 @@ def test_skill_acquisition_per_tree(monkeypatch):
         types.SimpleNamespace(rect=lambda *a, **k: None, line=lambda *a, **k: None),
     )
     inv._draw_skills_content()
-    rect = inv.skill_rects["strength1"]
+    rect = inv.skill_rects["logistics_N"]
     inv._on_lmb_down((rect.centerx, rect.centery))
-    assert "strength1" in hero.learned_skills["combat"]
+    assert "logistics_N" in hero.learned_skills["logistics"]
 
-    rect_water = inv.skill_tab_buttons["water"]
-    inv._check_skill_tab_click((rect_water.x + 1, rect_water.y + 1))
+    rect_tactics = inv.skill_tab_buttons["tactics"]
+    inv._check_skill_tab_click((rect_tactics.x + 1, rect_tactics.y + 1))
     inv._draw_skills_content()
-    assert inv.skill_rects == {}
-    assert hero.learned_skills.get("water", set()) == set()
+    assert "tactics_N" in inv.skill_rects
+    assert hero.learned_skills.get("tactics", set()) == set()
 

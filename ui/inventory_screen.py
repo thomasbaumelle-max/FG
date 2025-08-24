@@ -21,7 +21,10 @@ from core.entities import (
     Modifier,
     SkillNode,
     Unit,
+    SKILL_CATALOG,
+    REPO_ROOT,
 )
+from tools.skill_manifest import load_skill_manifest
 from .inventory_interface import InventoryInterface
 
 # --------------------------------------------------------------------------- #
@@ -56,8 +59,6 @@ from .inventory_tabs import skills as skills_tab
 class InventoryScreen:
     TAB_NAMES = ["stats", "inventory", "skills"]
 
-    SKILL_TABS = ["combat", "water", "fire", "earth", "air"]
-
     def __init__(
         self,
         screen: pygame.Surface,
@@ -71,7 +72,7 @@ class InventoryScreen:
         self.hero = hero
         self.clock = clock or pygame.time.Clock()
         self.active_tab = "stats"
-        self.active_skill_tab = "combat"
+        self.active_skill_tab = ""
         self.open_pause_menu = pause_cb
 
         # Fonts
@@ -126,88 +127,41 @@ class InventoryScreen:
         # Equipment
         self.slot_rects: Dict[EquipmentSlot, pygame.Rect] = {}
 
-        # Skill trees for each school (placeholder data; could be loaded from JSON)
-        combat_nodes = [
-            SkillNode(
-                id="strength1", name="Strength I", desc="Damage +1",
-                cost=1, requires=[], effects=[Modifier("dmg", 1, "flat")],
-                icon=constants.IMG_SKILL_COMBAT,
-            ),
-            SkillNode(
-                id="strength2", name="Strength II", desc="Damage +2",
-                cost=2, requires=["strength1"], effects=[Modifier("dmg", 2, "flat")],
-                icon=constants.IMG_SKILL_COMBAT,
-            ),
-            SkillNode(
-                id="power_strike", name="Power Strike", desc="Melee damage +3",
-                cost=2, requires=["strength1"], effects=[Modifier("dmg", 3, "flat")],
-                icon=constants.IMG_SKILL_COMBAT,
-            ),
-            SkillNode(
-                id="speed1", name="Speed I", desc="Speed +1",
-                cost=1, requires=[], effects=[Modifier("spd", 1, "flat")],
-                icon=constants.IMG_SKILL_MAGIC,
-            ),
-            SkillNode(
-                id="haste", name="Haste", desc="Initiative +2",
-                cost=2, requires=["speed1"], effects=[Modifier("init", 2, "flat")],
-                icon=constants.IMG_SKILL_MAGIC,
-            ),
-            SkillNode(
-                id="agility", name="Agility", desc="Speed +1",
-                cost=2, requires=["speed1"], effects=[Modifier("spd", 1, "flat")],
-                icon=constants.IMG_SKILL_MAGIC,
-            ),
-            SkillNode(
-                id="elite", name="Elite", desc="Gain elite tag",
-                cost=1, requires=[], effects=["elite"],
-                icon=constants.IMG_SKILL_COMBAT,
-            ),
-            SkillNode(
-                id="veteran", name="Veteran", desc="All defences +1",
-                cost=2, requires=["elite"],
-                effects=[
-                    Modifier("def_melee", 1, "flat"),
-                    Modifier("def_ranged", 1, "flat"),
-                    Modifier("def_magic", 1, "flat"),
-                ],
-                icon=constants.IMG_SKILL_COMBAT,
-            ),
-            SkillNode(
-                id="leader", name="Leader", desc="Morale +1",
-                cost=2, requires=["elite"], effects=[Modifier("moral", 1, "flat")],
-                icon=constants.IMG_SKILL_COMBAT,
-            ),
-        ]
-        combat_pos = {
-            "strength1": (0, 0),
-            "strength2": (0, 1),
-            "power_strike": (0, 2),
-            "speed1": (1, 0),
-            "haste": (1, 1),
-            "agility": (1, 2),
-            "elite": (2, 0),
-            "veteran": (2, 1),
-            "leader": (2, 2),
-        }
-        self.skill_trees: Dict[str, List[SkillNode]] = {
-            "combat": combat_nodes,
-            "water": [],
-            "fire": [],
-            "earth": [],
-            "air": [],
-        }
-        self.skill_positions: Dict[str, Dict[str, Tuple[int, int]]] = {
-            "combat": combat_pos,
-            "water": {},
-            "fire": {},
-            "earth": {},
-            "air": {},
-        }
+        # Skills --------------------------------------------------------------
+        self.skill_trees: Dict[str, List[SkillNode]] = {}
+        self.skill_positions: Dict[str, Dict[str, Tuple[int, int]]] = {}
+        self.SKILL_TABS: List[str] = []
+        self._build_skill_trees()
+        self.active_skill_tab = self.SKILL_TABS[0] if self.SKILL_TABS else ""
         self.skill_rects: Dict[str, pygame.Rect] = {}
 
         # Layout
         self._recalc_layout()
+
+    # ------------------------------------------------------------------ Skills
+    def _build_skill_trees(self) -> None:
+        """Populate skill trees and positions from the JSON manifest."""
+        manifest = load_skill_manifest(REPO_ROOT)
+        rank_order = ["N", "A", "E", "M"]
+        order: List[str] = []
+        for entry in manifest:
+            branch = entry.get("branch", "")
+            if branch and branch not in order:
+                order.append(branch)
+        self.SKILL_TABS = order
+        self.skill_trees = {b: [] for b in order}
+        self.skill_positions = {b: {} for b in order}
+        for entry in manifest:
+            branch = entry.get("branch", "")
+            nid = entry.get("id")
+            node = SKILL_CATALOG.get(nid)
+            if not node or branch not in self.skill_trees:
+                continue
+            self.skill_trees[branch].append(node)
+            row = rank_order.index(entry.get("rank", "N")) if entry.get("rank", "N") in rank_order else 0
+            self.skill_positions[branch][nid] = (0, row)
+        for branch in self.skill_trees:
+            self.skill_trees[branch].sort(key=lambda n: rank_order.index(n.rank) if n.rank in rank_order else 0)
 
     # ------------------------------------------------------------------ Layout
     def _recalc_layout(self) -> None:
