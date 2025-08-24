@@ -161,6 +161,7 @@ class Game:
         use_default_map: bool = True,
         slot: int = 0,
         map_size: str = constants.DEFAULT_MAP_SIZE,
+        map_type: str = "plaine",
         difficulty: str = constants.AI_DIFFICULTY,
         scenario: Optional[str] = None,
         player_name: str = "Joueur",
@@ -171,6 +172,7 @@ class Game:
         self.screen = screen
         self.current_slot = slot
         self.map_size = map_size
+        self.map_type = map_type
         self.scenario = scenario
         self.player_name = player_name
         self.player_colour = player_colour
@@ -240,10 +242,11 @@ class Game:
                 self.map_size, constants.MAP_SIZE_PRESETS[constants.DEFAULT_MAP_SIZE]
             )
             # Generate only the first region's biomes using the new indexing
+            land_chance = 0.55 if self.map_type == "plaine" else 0.35
             map_rows = generate_continent_map(
                 width,
                 height,
-                land_chance=0.55,
+                land_chance=land_chance,
                 smoothing_iterations=5,
                 biome_chars="GFD",
             )

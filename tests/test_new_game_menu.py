@@ -110,7 +110,7 @@ def test_scenario_config_confirm(monkeypatch):
     monkeypatch.setattr(pygame, "QUIT", 13, raising=False)
 
     events = []
-    for _ in range(7):
+    for _ in range(8):
         events.append([SimpleNamespace(type=pygame.KEYDOWN, key=pygame.K_DOWN)])
     events.append([SimpleNamespace(type=pygame.KEYDOWN, key=pygame.K_RETURN)])
 
@@ -121,3 +121,4 @@ def test_scenario_config_confirm(monkeypatch):
     config, _ = menu._scenario_config(screen, "foo.json")
     assert config["scenario"] == "foo.json"
     assert config["map_size"] == list(constants.MAP_SIZE_PRESETS.keys())[0]
+    assert config["map_type"] == "plaine"

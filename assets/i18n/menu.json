@@ -6,12 +6,13 @@
     "campaign_soon": "Campaign (coming soon)",
     "new_game": "New Game",
     "choose_scenario": "Choose a scenario",
-    "cancel": "Cancel",
+    "cancel": "Annuler",
     "blue": "Blue",
     "red": "Red",
     "random": "Random",
     "default_player_name": "Player",
     "map_size": "Map size",
+    "map_type": "Map type",
     "ai_difficulty": "AI Difficulty",
     "total_players": "Total players",
     "human_players": "Human players",
@@ -32,7 +33,9 @@
     "error": "Error",
     "pause": "Pause",
     "save": "Save",
-    "Red Knights": "Red Knights"
+    "Red Knights": "Red Knights",
+    "plaine": "Plains",
+    "marine": "Marine"
   },
   "fr": {
     "slot": "Emplacement {index}",
@@ -47,6 +50,7 @@
     "random": "Aléatoire",
     "default_player_name": "Joueur",
     "map_size": "Taille de la carte",
+    "map_type": "Type de carte",
     "ai_difficulty": "Difficulté de l'IA",
     "total_players": "Joueurs totaux",
     "human_players": "Joueurs humains",
@@ -67,6 +71,8 @@
     "error": "Erreur",
     "pause": "Pause",
     "save": "Sauvegarde",
-    "Red Knights": "Chevaliers rouges"
+    "Red Knights": "Chevaliers rouges",
+    "plaine": "Plaine",
+    "marine": "Marine"
   }
 }
