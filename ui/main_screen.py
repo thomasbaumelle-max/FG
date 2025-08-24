@@ -22,7 +22,12 @@ from .widgets.hero_list import HeroList
 from .widgets.buttons_column import ButtonsColumn
 from .widgets.hero_army_panel import HeroArmyPanel
 from .widgets.turn_bar import TurnBar
-from .state.event_bus import EVENT_BUS, ON_CAMERA_CHANGED
+from .state.event_bus import (
+    EVENT_BUS,
+    ON_CAMERA_CHANGED,
+    ON_SEA_CHAIN_PROGRESS,
+    ON_INFO_MESSAGE,
+)
 
 
 MOUSEBUTTONDOWN = getattr(pygame, "MOUSEBUTTONDOWN", 1)
@@ -77,6 +82,7 @@ class MainScreen:
             calendar=getattr(getattr(game, "state", None), "turn", None)
         )
         self.compute_layout(game.screen.get_width(), game.screen.get_height())
+        EVENT_BUS.subscribe(ON_SEA_CHAIN_PROGRESS, self._on_sea_chain_progress)
 
     # ------------------------------------------------------------------
     # Layout
@@ -167,6 +173,15 @@ class MainScreen:
             "6": buttons_rect,      # boutons
             "7": army_rect,         # armée du héros
         }
+
+    def _on_sea_chain_progress(self, current: int, total: int) -> None:
+        """Display progress for sea quest chain in the description bar."""
+        if current >= total:
+            EVENT_BUS.publish(ON_INFO_MESSAGE, "Sea quest completed!")
+        else:
+            EVENT_BUS.publish(
+                ON_INFO_MESSAGE, f"Sea waypoint {current}/{total} reached"
+            )
 
     # ------------------------------------------------------------------
     # Event handling

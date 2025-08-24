@@ -1,0 +1,6 @@
+{
+  "sea_chain": [
+    {"x": 1, "y": 0, "reward": {"gold": 10}},
+    {"x": 2, "y": 0, "reward": {"gold": 20}}
+  ]
+}
