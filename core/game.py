@@ -919,6 +919,7 @@ class Game:
         came_from: Dict[Tuple[int, int], Optional[Tuple[int, int]]] = {start: None}
         cost_so_far: Dict[Tuple[int, int], int] = {start: 0}
         actor = getattr(self, "active_actor", getattr(self, "hero", None))
+        has_boat = isinstance(actor, Hero) and getattr(actor, "naval_unit", None) is not None
 
         while frontier:
             _, (x, y) = heapq.heappop(frontier)
@@ -929,7 +930,7 @@ class Game:
                 if not self.world.in_bounds(nx, ny):
                     continue
                 tile = self.world.grid[ny][nx]
-                if not tile.is_passable() and (nx, ny) != goal:
+                if not tile.is_passable(has_boat=has_boat) and (nx, ny) != goal:
                     continue
                 if (nx, ny) != goal:
                     # Avoid stepping onto friendly units or heroes
@@ -971,7 +972,14 @@ class Game:
                     step_cost = constants.ROAD_COST
                 else:
                     step_cost = biome.terrain_cost if biome else 1
-                new_cost = cost_so_far[(x, y)] + step_cost
+                extra = 0
+                if has_boat:
+                    cur_tile = self.world.grid[y][x]
+                    cur_water = cur_tile.biome in constants.WATER_BIOMES
+                    next_water = tile.biome in constants.WATER_BIOMES
+                    if cur_water != next_water:
+                        extra = 1
+                new_cost = cost_so_far[(x, y)] + step_cost + extra
                 if (nx, ny) not in cost_so_far or new_cost < cost_so_far[(nx, ny)]:
                     cost_so_far[(nx, ny)] = new_cost
                     priority = new_cost + heuristic((nx, ny), goal)
@@ -1799,7 +1807,15 @@ class Game:
             step_cost = constants.ROAD_COST
         else:
             step_cost = biome.terrain_cost if biome else 1
-        if self.hero.ap < step_cost:
+        has_boat = getattr(self.hero, "naval_unit", None) is not None
+        prev_tile = self.world.grid[prev_y][prev_x]
+        extra = 0
+        if has_boat:
+            cur_water = prev_tile.biome in constants.WATER_BIOMES
+            next_water = tile.biome in constants.WATER_BIOMES
+            if cur_water != next_water:
+                extra = 1
+        if self.hero.ap < step_cost + extra:
             self._notify("No action points left. End your turn to restore them (press T).")
             return
         if tile.building and not tile.building.passable:
@@ -1844,7 +1860,7 @@ class Game:
                     if self._capture_tile(nx, ny, tile, self.hero, 0, econ_state, econ_b):
                         self._publish_resources()
             return
-        if not tile.is_passable():
+        if not tile.is_passable(has_boat=has_boat):
             return
         # Move hero
         self.hero.x = nx
@@ -1854,7 +1870,7 @@ class Game:
         self._update_caches_for_tile(prev_x, prev_y)
         self._update_caches_for_tile(self.hero.x, self.hero.y)
         # Consume action points based on terrain or road
-        self.hero.ap -= step_cost
+        self.hero.ap -= step_cost + extra
         # Check enemy hero encounter
         for enemy in list(self.enemy_heroes):
             if enemy.x == self.hero.x and enemy.y == self.hero.y:

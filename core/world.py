@@ -355,12 +355,19 @@ class Tile:
             return True
         return False
 
-    def is_passable(self) -> bool:
-        """Return ``True`` if the tile can be entered by units."""
+    def is_passable(self, has_boat: bool = False) -> bool:
+        """Return ``True`` if the tile can be entered by units.
+
+        Water biomes require ``has_boat`` to be ``True``.  This keeps oceans
+        traversable for embarked heroes while still blocking movement for other
+        units.
+        """
         biome = BiomeCatalog.get(self.biome)
         passable = (
             biome.passable if biome is not None else self.biome not in constants.IMPASSABLE_BIOMES
         )
+        if self.biome in constants.WATER_BIOMES and not has_boat:
+            return False
         if self.building and not getattr(self.building, "passable", True):
             return False
         return passable and not self.obstacle

@@ -559,6 +559,17 @@ class WorldRenderer:
             surf: Optional[pygame.Surface] = None
             is_hero = not isinstance(actor, Army)
 
+            # Draw boat beneath heroes that possess one
+            if is_hero and getattr(actor, "naval_unit", None):
+                boat = self.assets.get(getattr(actor, "naval_unit"))
+                if isinstance(boat, pygame.Surface):
+                    try:
+                        if boat.get_size() != (tile_size, tile_size):
+                            boat = pygame.transform.smoothscale(boat, (tile_size, tile_size))
+                    except AttributeError:
+                        pass
+                    layers[constants.LAYER_UNITS].blit(boat, (px, py))
+
             if hidden:
                 player_hero = getattr(self.game, "hero", None)
                 if (
