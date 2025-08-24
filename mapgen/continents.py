@@ -174,7 +174,8 @@ def generate_continent_map(
     width: int,
     height: int,
     seed: Optional[int] = None,
-    land_chance: float = 0.45,
+    map_type: str = "plaine",
+    land_chance: Optional[float] = None,
     smoothing_iterations: int = 4,
     biome_chars: str = "GFDMHSI",
     ocean_char: str = "W",
@@ -191,17 +192,40 @@ def generate_continent_map(
     compatibility but is no longer emitted; coastlines are rendered via
     overlays on the natural biomes.  The feature symbol is always ``'.'`` as
     higher level code will place obstacles and items afterwards.
+    ``map_type`` controls the overall ratio of land to water and defaults to
+    ``"plaine"`` for land‑heavy maps.  Passing ``"marine"`` yields mostly
+    water with a few larger islands preserved for starting areas.
     """
     if seed is not None:
         random.seed(seed)
+
+    if land_chance is None:
+        if map_type == "marine":
+            land_chance = 0.2
+        elif map_type == "plaine":
+            land_chance = 0.7
+        else:
+            land_chance = 0.45
+
     grid = _cellular_automata_land_mask(width, height, land_chance, smoothing_iterations)
 
-    # Remove tiny islands that clutter the map
     if min_continent_size is None:
-        min_continent_size = max(4, (width * height) // 100)
-    _remove_small_continents(grid, min_continent_size)
+        if map_type == "marine":
+            min_continent_size = max(4, (width * height) // 200)
+        else:
+            min_continent_size = max(4, (width * height) // 100)
 
-    continents = _label_continents(grid)
+    if map_type == "marine":
+        continents = _label_continents(grid)
+        largest = sorted(continents.values(), key=len, reverse=True)
+        for cells in largest[2:]:
+            if len(cells) < min_continent_size:
+                for x, y in cells:
+                    grid[y][x] = False
+        continents = _label_continents(grid)
+    else:
+        _remove_small_continents(grid, min_continent_size)
+        continents = _label_continents(grid)
     if biome_compatibility is None:
         biome_compatibility = DEFAULT_BIOME_COMPATIBILITY
     biome_map = _assign_biomes(grid, continents, biome_chars, biome_compatibility)

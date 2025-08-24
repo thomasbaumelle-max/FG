@@ -118,3 +118,11 @@ def test_building_images_loaded():
             del sys.modules["pygame"]
         sys.modules.pop("pygame.draw", None)
 
+
+def test_marine_map_has_two_starting_areas():
+    random.seed(0)
+    rows = generate_continent_map(30, 30, seed=0, map_type="marine")
+    world = WorldMap(map_data=rows)
+    assert world.starting_area is not None
+    assert world.enemy_starting_area is not None
+

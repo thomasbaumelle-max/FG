@@ -1,5 +1,6 @@
 import sys
 import types
+import random
 
 pygame_stub = types.SimpleNamespace()
 sys.modules.setdefault("pygame", pygame_stub)
@@ -14,6 +15,8 @@ def test_collect_flora_adds_item_and_removes_prop(monkeypatch):
     import audio
 
     monkeypatch.setattr(audio, "play_sound", lambda *a, **k: None)
+
+    random.seed(0)
 
     game = Game.__new__(Game)
     game.world = WorldMap(width=2, height=1, num_obstacles=0, num_treasures=0, num_enemies=0)
