@@ -60,7 +60,7 @@ from mapgen import generate_continent_map
 from mapgen.continents import required_coast_images
 from core.ai.faction_ai import FactionAI
 from core.ai.creature_ai import CreatureAI
-from core.buildings import Building, Town, create_building
+from core.buildings import Building, Town, Shipyard, create_building
 from loaders.building_loader import BUILDINGS, get_surface
 from loaders.faction_loader import load_factions
 from ui.main_screen import MainScreen
@@ -2018,6 +2018,12 @@ class Game:
                 building_info.open_panel(
                     self.screen, tile.building, self.clock, self.hero, econ_b
                 )
+                if isinstance(tile.building, Shipyard):
+                    from ui import shipyard_screen
+
+                    shipyard_screen.open(
+                        self.screen, self, tile.building, self.clock
+                    )
         # Collect flora
         prop = getattr(self.world, "collectibles", {}).get((self.hero.x, self.hero.y))
         if prop:
@@ -2159,6 +2165,10 @@ class Game:
             building_info.open_panel(
                 self.screen, building, self.clock, self.hero, econ_b
             )
+            if isinstance(building, Shipyard):
+                from ui import shipyard_screen
+
+                shipyard_screen.open(self.screen, self, building, self.clock)
             return "leave"
 
         font = theme.get_font(32) or pygame.font.SysFont(None, 32)
