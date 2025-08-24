@@ -148,8 +148,10 @@ MARKET_RATES = {
 
 # Combat settings
 # Battlefield dimensions for tactical combat
-COMBAT_GRID_WIDTH = 8
-COMBAT_GRID_HEIGHT = 6
+# ``COMBAT_HEX_SIZE`` represents the width of a single hex cell in pixels.
+COMBAT_HEX_SIZE = 64
+COMBAT_GRID_WIDTH = 10
+COMBAT_GRID_HEIGHT = 10
 COMBAT_TILE_SIZE = 64
 
 # Colours (RGB)

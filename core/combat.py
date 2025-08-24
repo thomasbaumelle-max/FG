@@ -16,6 +16,7 @@ import os
 import random
 import sys
 import copy
+import math
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
@@ -222,9 +223,15 @@ class Combat:
             "Dragon Breath": CombatSpell("Dragon Breath", 2, "cell", self.spell_dragon_breath),
         }
         self.spells_by_name: Dict[str, CombatSpell] = self.spells
-        # Compute pixel dimensions of the combat grid.
-        self.grid_pixel_width = constants.COMBAT_GRID_WIDTH * constants.COMBAT_TILE_SIZE
-        self.grid_pixel_height = constants.COMBAT_GRID_HEIGHT * constants.COMBAT_TILE_SIZE
+        # Compute pixel dimensions of the combat grid for a hexagonal layout.
+        self.hex_width = constants.COMBAT_HEX_SIZE
+        self.hex_height = int(constants.COMBAT_HEX_SIZE * math.sqrt(3) / 2)
+        self.grid_pixel_width = int(
+            self.hex_width + (constants.COMBAT_GRID_WIDTH - 1) * self.hex_width * 3 / 4
+        )
+        self.grid_pixel_height = int(
+            self.hex_height * constants.COMBAT_GRID_HEIGHT + self.hex_height / 2
+        )
         # Offset and zoom/pan state
         self.offset_x = 10
         self.offset_y = 10
@@ -1252,20 +1259,30 @@ class Combat:
         py = (py - self.offset_y) / self.zoom
         if px < 0 or py < 0:
             return None
-        col = int(px // constants.COMBAT_TILE_SIZE)
-        row = int(py // constants.COMBAT_TILE_SIZE)
+        col = int(px // (self.hex_width * 3 / 4))
+        row_offset = self.hex_height / 2 if col % 2 else 0
+        row = int((py - row_offset) // self.hex_height)
         if 0 <= col < constants.COMBAT_GRID_WIDTH and 0 <= row < constants.COMBAT_GRID_HEIGHT:
             return col, row
         return None
 
     def cell_rect(self, x: int, y: int) -> pygame.Rect:
-        tile = int(constants.COMBAT_TILE_SIZE * self.zoom)
-        return pygame.Rect(
-            int(self.offset_x + x * tile),
-            int(self.offset_y + y * tile),
-            tile,
-            tile,
-        )
+        w = int(self.hex_width * self.zoom)
+        h = int(self.hex_height * self.zoom)
+        px = int(self.offset_x + x * w * 3 / 4)
+        py = int(self.offset_y + y * h + (h / 2 if x % 2 else 0))
+        return pygame.Rect(px, py, w, h)
+
+    @staticmethod
+    def offset_to_axial(x: int, y: int) -> Tuple[int, int]:
+        q = x
+        r = y - (x - (x & 1)) // 2
+        return q, r
+
+    def hex_distance(self, a: Tuple[int, int], b: Tuple[int, int]) -> int:
+        aq, ar = self.offset_to_axial(*a)
+        bq, br = self.offset_to_axial(*b)
+        return int((abs(aq - bq) + abs(ar - br) + abs(aq + ar - bq - br)) / 2)
 
     def generate_obstacles(self, count: int) -> None:
         """Randomly place impassable obstacles on the grid."""
@@ -1438,7 +1455,7 @@ class Combat:
                     and (x, y) not in self.ice_walls
                     and (x, y) not in self.obstacles
                 ):
-                    dist = abs(x - unit.x) + abs(y - unit.y)
+                    dist = self.hex_distance((unit.x, unit.y), (x, y))
                     if dist <= move_speed:
                         reachable.append((x, y))
         return reachable
