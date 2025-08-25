@@ -1,16 +1,26 @@
-import random
+from pathlib import Path
 
-import pytest
-from mapgen.continents import generate_continent_map
-from core.world import WorldMap
 import constants
+from core.world import WorldMap
+from core.buildings import create_building
 
 
-@pytest.mark.slow
+def _load_world() -> WorldMap:
+    path = Path(__file__).parent / "fixtures" / "mini_marine_map.txt"
+    world = WorldMap.from_file(str(path))
+    # Reload original data to undo starting area modifications
+    rows = [line.rstrip("\n") for line in open(path, "r", encoding="utf-8")]
+    world._load_from_parsed_data([world._parse_row(r) for r in rows])
+    # Place buildings and features on the water
+    world.grid[1][1].building = create_building("sea_sanctuary")
+    world.grid[3][3].building = create_building("lighthouse")
+    world.grid[5][5].resource = {"gold": 1}
+    world.grid[7][7].enemy_units = [object()]
+    return world
+
+
 def test_marine_world_scattered_ocean_features():
-    random.seed(0)
-    rows = generate_continent_map(30, 30, seed=0, map_type="marine")
-    world = WorldMap(map_data=rows)
+    world = _load_world()
 
     buildings = {"sea_sanctuary": 0, "lighthouse": 0}
     water_resources = 0
