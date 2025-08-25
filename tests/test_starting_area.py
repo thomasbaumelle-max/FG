@@ -63,7 +63,7 @@ def test_starting_area_has_buildings_and_town(plaine_world):
 
 @pytest.mark.slow
 @pytest.mark.worldgen
-def test_building_images_loaded(plaine_world):
+def test_building_images_loaded(plaine_world, asset_manager):
     import sys
     import types
 
@@ -116,10 +116,9 @@ def test_building_images_loaded(plaine_world):
     sys.modules["pygame.draw"] = pygame_stub.draw
 
     try:
-        from loaders.asset_manager import AssetManager
         from loaders.building_loader import BUILDINGS
         world = plaine_world
-        assets = AssetManager(repo_root=".")
+        assets = asset_manager
         for asset in BUILDINGS.values():
             files = asset.file_list()
             if files:
