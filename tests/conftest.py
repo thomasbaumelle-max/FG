@@ -5,6 +5,7 @@ import sys
 import math
 import random
 import pytest
+from types import SimpleNamespace
 
 # Provide a lightweight pygame stub so tests run without the real library
 _STUB = os.path.join(os.path.dirname(__file__), "pygame_stub", "__init__.py")
@@ -22,6 +23,7 @@ if ROOT not in sys.path:
 import constants
 from core.combat import Combat, water_battlefield_template
 from state.event_bus import EVENT_BUS
+from loaders.asset_manager import AssetManager
 
 
 @pytest.fixture
@@ -62,6 +64,21 @@ def _restore_pygame_module():
     sys.modules["pygame"] = pygame
     yield
     sys.modules["pygame"] = pygame
+
+
+@pytest.fixture(scope="session")
+def asset_manager():
+    """Provide a reusable :class:`AssetManager` instance for tests."""
+
+    import pygame
+
+    if not hasattr(pygame, "image"):
+        pygame.image = SimpleNamespace(load=lambda path: pygame.Surface((1, 1)))
+
+    mgr = AssetManager(repo_root=".")
+    yield mgr
+    if hasattr(mgr, "close"):
+        mgr.close()
 
 
 @pytest.fixture(autouse=True)
