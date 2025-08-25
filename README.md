@@ -174,10 +174,11 @@ feature codes—along with example continent layouts—is documented in
 ## Running Tests
 
 The project includes a small automated test suite that exercises map
-generation, combat rules and save/load behaviour.  Run the tests with:
+generation, combat rules and save/load behaviour.  Run the tests in
+parallel with:
 
 ```bash
-pytest
+pytest -n auto
 ```
 
 Slow tests that perform extensive world generation or long AI loops are marked with `slow` and either `worldgen` or `combat`. You can run a subset with:

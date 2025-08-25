@@ -112,5 +112,4 @@ def test_army_selection_publishes_event_and_displays_info():
     pos = (card.x + card.width // 2, card.y + card.height // 2)
     evt = SimpleNamespace(type=MOUSEBUTTONDOWN, pos=pos, button=1)
     widget.handle_event(evt, rect)
-    EVENT_BUS._subscribers[ON_SELECT_HERO].remove(on_select)
     assert selected == [army]

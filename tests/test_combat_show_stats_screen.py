@@ -71,7 +71,7 @@ def _run_show_stats(monkeypatch, simple_combat):
     events = [
         [],
         [
-            SimpleNamespace(type=pygame.MOUSEBUTTONDOWN, button=1, pos=(400, 560))
+            SimpleNamespace(type=pygame.MOUSEBUTTONDOWN, button=1, pos=(400, 510))
         ],
     ]
 

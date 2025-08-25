@@ -1,4 +1,5 @@
 import importlib.util
+import importlib.util
 import os
 import sys
 import math
@@ -19,6 +20,7 @@ if ROOT not in sys.path:
 
 import constants
 from core.combat import Combat, water_battlefield_template
+from state.event_bus import EVENT_BUS
 
 
 @pytest.fixture(autouse=True)
@@ -33,6 +35,15 @@ def _restore_pygame_module():
     sys.modules["pygame"] = pygame
     yield
     sys.modules["pygame"] = pygame
+
+
+@pytest.fixture(autouse=True)
+def _reset_event_bus():
+    """Isolate global event subscriptions for parallel tests."""
+
+    EVENT_BUS.reset()
+    yield
+    EVENT_BUS.reset()
 
 
 @pytest.fixture
