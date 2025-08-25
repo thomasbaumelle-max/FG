@@ -13,7 +13,10 @@ for the animation to progress.
 """
 
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
+
+import json
+import os
 
 import pygame
 
@@ -38,31 +41,84 @@ class ResourcesBar:
         self.font = theme.get_font(24)
         self.resources = PlayerResources()
         self.show_delta = show_delta
-        # Placeholder coloured squares for resource icons
+
+        icons_file = os.path.join("assets", "icons", "icons.json")
+        try:
+            with open(icons_file, "r", encoding="utf8") as fh:
+                self._icon_manifest = json.load(fh)
+        except Exception:  # pragma: no cover - file missing or invalid
+            self._icon_manifest = {}
+
         size = 24
-        self.icons: Dict[str, pygame.Surface] = {
-            "gold": self._make_icon(constants.YELLOW, size),
-            "wood": self._make_icon(constants.GREEN, size),
-            "stone": self._make_icon(constants.GREY, size),
-            "crystal": self._make_icon(constants.BLUE, size),
-        }
+        self.icons: Dict[str, pygame.Surface] = {}
+        img_mod = getattr(pygame, "image", None)
+        transform = getattr(pygame, "transform", None)
+        for name in self.resources.as_dict().keys():
+            icon = self._load_icon(name, size, img_mod, transform)
+            if icon is None:
+                icon = self._placeholder_icon(size)
+            self.icons[name] = icon
+
         self._deltas: Dict[str, List[_DeltaAnim]] = {name: [] for name in self.resources.as_dict()}
         # Subscribe to resource change events
         EVENT_BUS.subscribe(ON_RESOURCES_CHANGED, self.set_resources)
 
     # Internal helpers -------------------------------------------------
-    def _make_icon(self, colour: Tuple[int, int, int], size: int) -> pygame.Surface:
+    def _placeholder_icon(self, size: int) -> pygame.Surface:
         surf = pygame.Surface((size, size), pygame.SRCALPHA)
         try:
             surf = surf.convert_alpha()
         except Exception:  # pragma: no cover
             pass
-        surf.fill(colour)
-        if hasattr(pygame, "draw") and hasattr(pygame.draw, "rect"):
-            pygame.draw.rect(
-                surf, theme.FRAME_COLOURS["normal"], surf.get_rect(), theme.FRAME_WIDTH
-            )
         return surf
+
+    def _load_icon(
+        self,
+        name: str,
+        size: int,
+        img_mod: Optional[object],
+        transform: Optional[object],
+    ) -> Optional[pygame.Surface]:
+        info = self._icon_manifest.get(f"resource_{name}")
+        if not isinstance(info, dict):
+            return None
+        try:
+            if "file" in info:
+                path = os.path.join("assets", "icons", info["file"])
+                if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
+                    icon = img_mod.load(path)
+                    if hasattr(icon, "convert_alpha"):
+                        icon = icon.convert_alpha()
+                    if transform and hasattr(transform, "scale"):
+                        icon = transform.scale(icon, (size, size))
+                    return icon
+            elif "sheet" in info:
+                sheet_path = os.path.join("assets", "icons", info["sheet"])
+                coords = info.get("coords", [0, 0])
+                tile = info.get("tile", [0, 0])
+                if (
+                    img_mod
+                    and hasattr(img_mod, "load")
+                    and os.path.exists(sheet_path)
+                    and tile[0]
+                    and tile[1]
+                ):
+                    sheet = img_mod.load(sheet_path)
+                    if hasattr(sheet, "convert_alpha"):
+                        sheet = sheet.convert_alpha()
+                    rect = pygame.Rect(
+                        coords[0] * tile[0],
+                        coords[1] * tile[1],
+                        tile[0],
+                        tile[1],
+                    )
+                    icon = sheet.subsurface(rect)
+                    if transform and hasattr(transform, "scale"):
+                        icon = transform.scale(icon, (size, size))
+                    return icon
+        except Exception:  # pragma: no cover - loading failed
+            return None
+        return None
 
     # Public API -------------------------------------------------------
     def set_resources(self, resources: PlayerResources) -> None:
