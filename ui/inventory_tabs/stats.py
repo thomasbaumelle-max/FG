@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Optional
+import json
+import os
+
 import pygame
 import constants
 from core.combat import Combat
@@ -12,6 +15,77 @@ from ..inventory_screen import (
     COLOR_SLOT_BD,
     COLOR_ACCENT,
 )
+
+# ---------------------------------------------------------------------------
+# Icon loading
+
+_ICON_CACHE: Dict[str, Optional[pygame.Surface]] = {}
+try:
+    with open(os.path.join("assets", "icons", "icons.json"), "r", encoding="utf8") as fh:
+        _ICON_MANIFEST = json.load(fh)
+except Exception:  # pragma: no cover - file missing or invalid
+    _ICON_MANIFEST = {}
+
+_STAT_ICON_IDS = {
+    "HP": "status_regeneration",
+    "Dmg": "round_attack_range",
+    "Spd": "status_haste",
+    "Init": "resource_speed",
+    "Def Melee": "action_defend",
+    "Def Ranged": "action_shoot",
+    "Def Magic": "round_defence_magic",
+    "Morale": "round_morale",
+    "Luck": "round_luck",
+}
+
+
+def _load_icon(name: str, size: int) -> Optional[pygame.Surface]:
+    """Load icon ``name`` at ``size`` pixels using the manifest."""
+    if name in _ICON_CACHE:
+        return _ICON_CACHE[name]
+    info = _ICON_MANIFEST.get(name)
+    img_mod = getattr(pygame, "image", None)
+    transform = getattr(pygame, "transform", None)
+    try:
+        if isinstance(info, dict) and "file" in info:
+            path = os.path.join("assets", "icons", info["file"])
+            if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
+                icon = img_mod.load(path)
+                if hasattr(icon, "convert_alpha"):
+                    icon = icon.convert_alpha()
+                if transform and hasattr(transform, "scale"):
+                    icon = transform.scale(icon, (size, size))
+                _ICON_CACHE[name] = icon
+                return icon
+        elif isinstance(info, dict) and "sheet" in info:
+            sheet_path = os.path.join("assets", "icons", info["sheet"])
+            coords = info.get("coords", [0, 0])
+            tile = info.get("tile", [0, 0])
+            if (
+                img_mod
+                and hasattr(img_mod, "load")
+                and os.path.exists(sheet_path)
+                and tile[0]
+                and tile[1]
+            ):
+                sheet = img_mod.load(sheet_path)
+                if hasattr(sheet, "convert_alpha"):
+                    sheet = sheet.convert_alpha()
+                rect = pygame.Rect(
+                    coords[0] * tile[0],
+                    coords[1] * tile[1],
+                    tile[0],
+                    tile[1],
+                )
+                icon = sheet.subsurface(rect)
+                if transform and hasattr(transform, "scale"):
+                    icon = transform.scale(icon, (size, size))
+                _ICON_CACHE[name] = icon
+                return icon
+    except Exception:  # pragma: no cover - loading failed
+        pass
+    _ICON_CACHE[name] = None
+    return None
 
 if TYPE_CHECKING:  # pragma: no cover - only for type hints
     from ..inventory_screen import InventoryScreen
@@ -53,11 +127,19 @@ def draw(screen: "InventoryScreen") -> None:
         ("Luck", stats.luck),
     ]
     y2 = y + len(lines) * 26 + 8
+    size = 24
     for j, (name, val) in enumerate(pairs):
+        icon_id = _STAT_ICON_IDS.get(name)
+        icon = _load_icon(icon_id, size) if icon_id else None
+        if icon:
+            screen.screen.blit(icon, (x, y2 + j * 24))
+        else:
+            placeholder = screen.font.render(name[:2], True, COLOR_TEXT)
+            screen.screen.blit(placeholder, (x, y2 + j * 24))
         t1 = screen.font.render(name + ":", True, COLOR_TEXT)
         t2 = screen.font.render(str(val), True, COLOR_TEXT)
-        screen.screen.blit(t1, (x, y2 + j * 24))
-        screen.screen.blit(t2, (x + 140, y2 + j * 24))
+        screen.screen.blit(t1, (x + size + 4, y2 + j * 24))
+        screen.screen.blit(t2, (x + size + 4 + 140, y2 + j * 24))
 
     # Army 7x1
     font_big = screen.font_big or screen.font
