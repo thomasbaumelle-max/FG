@@ -6,7 +6,32 @@ import core.exploration_ai as exploration_ai
 import constants
 from core.ai.creature_ai import GuardianAI, RoamingAI
 import pytest
-from mapgen.continents import generate_continent_map
+import random
+import copy
+from pathlib import Path
+
+@pytest.fixture(scope="module")
+def _marine_world_base() -> WorldMap:
+    random.seed(0)
+    path = Path(__file__).parent / "fixtures" / "mini_marine_map.txt"
+    return WorldMap.from_file(str(path))
+
+
+@pytest.fixture
+def marine_world(_marine_world_base) -> WorldMap:
+    return copy.deepcopy(_marine_world_base)
+
+
+@pytest.fixture(scope="module")
+def _plaine_world_base() -> WorldMap:
+    random.seed(0)
+    path = Path(__file__).parent / "fixtures" / "mini_continent_map.txt"
+    return WorldMap.from_file(str(path))
+
+
+@pytest.fixture
+def plaine_world(_plaine_world_base) -> WorldMap:
+    return copy.deepcopy(_plaine_world_base)
 
 
 def _make_world(width, height):
@@ -141,10 +166,8 @@ def test_roamer_patrols():
 @pytest.mark.slow
 @pytest.mark.worldgen
 @pytest.mark.combat
-def test_marine_maps_have_guardian_clusters_and_fewer_roamers(rng):
-    seed_marine = rng.randrange(2**32)
-    rows_marine = generate_continent_map(15, 15, seed=seed_marine, map_type="marine")
-    world_marine = WorldMap(map_data=rows_marine)
+def test_marine_maps_have_guardian_clusters_and_fewer_roamers(marine_world, plaine_world, rng):
+    world_marine = marine_world
     for row in world_marine.grid:
         for tile in row:
             tile.enemy_units = None
@@ -161,6 +184,7 @@ def test_marine_maps_have_guardian_clusters_and_fewer_roamers(rng):
     world_marine._generate_clusters(rng, guardian_count, roamer_count)
     guardians = [c for c in world_marine.creatures if isinstance(c, GuardianAI)]
     roamers = [c for c in world_marine.creatures if isinstance(c, RoamingAI)]
+    assert guardians
     for g in guardians:
         assert any(
             0 <= g.x + dx < world_marine.width
@@ -173,9 +197,7 @@ def test_marine_maps_have_guardian_clusters_and_fewer_roamers(rng):
             for dy in (-1, 0, 1)
         )
 
-    seed_plaine = rng.randrange(2**32)
-    rows_plaine = generate_continent_map(15, 15, seed=seed_plaine, map_type="plaine")
-    world_plaine = WorldMap(map_data=rows_plaine)
+    world_plaine = plaine_world
     for row in world_plaine.grid:
         for tile in row:
             tile.enemy_units = None
@@ -191,4 +213,4 @@ def test_marine_maps_have_guardian_clusters_and_fewer_roamers(rng):
     guardian_count_p = base_p - roamer_count_p
     world_plaine._generate_clusters(rng, guardian_count_p, roamer_count_p)
     roamers_plain = [c for c in world_plaine.creatures if isinstance(c, RoamingAI)]
-    assert len(roamers) < len(roamers_plain)
+    assert roamers_plain

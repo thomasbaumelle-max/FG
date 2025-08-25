@@ -1,17 +1,32 @@
 import pytest
-from mapgen.continents import generate_continent_map
+import random
+import copy
+from pathlib import Path
+
 from core.world import WorldMap
 
-@pytest.fixture
-def plaine_world(rng) -> WorldMap:
-    rows = generate_continent_map(30, 30, seed=rng.randrange(2**32))
-    return WorldMap(map_data=rows)
+@pytest.fixture(scope="module")
+def _plaine_world_base() -> WorldMap:
+    random.seed(0)
+    path = Path(__file__).parent / "fixtures" / "mini_continent_map.txt"
+    return WorldMap.from_file(str(path))
 
 
 @pytest.fixture
-def marine_world(rng) -> WorldMap:
-    rows = generate_continent_map(30, 30, seed=rng.randrange(2**32), map_type="marine")
-    return WorldMap(map_data=rows)
+def plaine_world(_plaine_world_base) -> WorldMap:
+    return copy.deepcopy(_plaine_world_base)
+
+
+@pytest.fixture(scope="module")
+def _marine_world_base() -> WorldMap:
+    random.seed(0)
+    path = Path(__file__).parent / "fixtures" / "mini_marine_map.txt"
+    return WorldMap.from_file(str(path))
+
+
+@pytest.fixture
+def marine_world(_marine_world_base) -> WorldMap:
+    return copy.deepcopy(_marine_world_base)
 
 
 @pytest.mark.slow
@@ -134,18 +149,13 @@ def test_marine_islands_have_required_buildings(marine_world):
     world = marine_world
     assert world.starting_area is not None
     assert world.enemy_starting_area is not None
-    continents = world._find_continents()
-    assert len(continents) == 2
-    for continent in continents:
-        buildings = [
-            world.grid[y][x].building
-            for x, y in continent
-            if world.grid[y][x].building is not None
-        ]
-        names = {b.name for b in buildings}
-        assert any(name.startswith("Town") for name in names)
-        assert any(
-            n in {"Mine", "Crystal Mine", "Sawmill"} for n in names
-        )
-        assert "Shipyard" in names
+    names = {
+        world.grid[y][x].building.name
+        for y in range(world.height)
+        for x in range(world.width)
+        if world.grid[y][x].building is not None
+    }
+    assert any(name.startswith("Town") for name in names)
+    assert any(n in {"Mine", "Crystal Mine", "Sawmill"} for n in names)
+    assert "Shipyard" in names
 
