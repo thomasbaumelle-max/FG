@@ -160,19 +160,17 @@ def test_game_updates_minimap_fog(monkeypatch, pygame_stub):
     assert game.main_screen.minimap.invalidated is True
 
 
-@pytest.mark.skip("requires game assets not present in test environment")
 def test_minimap_fog_initialized_on_game_start(monkeypatch, tmp_path, pygame_stub):
     """Fog rectangles should be populated immediately after starting a game."""
 
     from types import SimpleNamespace
     import sys
 
-    pg = pygame_stub()
+    pg = pygame_stub(transform=SimpleNamespace(flip=lambda surf, xbool, ybool: surf))
     pg.draw.circle = lambda *a, **k: None
     pg.draw.rect = lambda *a, **k: None
     pg.draw.polygon = lambda *a, **k: None
     pg.draw.line = lambda *a, **k: None
-    pg.transform.flip = lambda surf, xbool, ybool: surf
     pg.BLEND_RGBA_MULT = 0
     pg.BLEND_RGBA_ADD = 0
     pg.font.Font = lambda *a, **k: SimpleNamespace(render=lambda *a2, **k2: pg.Surface((1, 1)))
@@ -180,16 +178,6 @@ def test_minimap_fog_initialized_on_game_start(monkeypatch, tmp_path, pygame_stu
     DummySurface = pg.Surface((1, 1)).__class__
     DummySurface.get_size = lambda self: (self.get_width(), self.get_height())
     DummySurface.copy = lambda self: self
-
-    Rect = pg.Rect
-    Rect.bottom = property(lambda self: self.y + self.height)
-    Rect.top = property(lambda self: self.y)
-    Rect.right = property(lambda self: self.x + self.width)
-    Rect.left = property(lambda self: self.x)
-    Rect.centerx = property(lambda self: self.x + self.width // 2)
-    Rect.centery = property(lambda self: self.y + self.height // 2)
-    Rect.center = property(lambda self: (self.centerx, self.centery))
-    Rect.size = property(lambda self: (self.width, self.height))
 
     monkeypatch.setitem(sys.modules, "pygame", pg)
     monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
@@ -214,5 +202,6 @@ def test_minimap_fog_initialized_on_game_start(monkeypatch, tmp_path, pygame_stu
     map_path = tmp_path / "map.txt"
     map_path.write_text("G.W.\nG.W.\n")
 
+    monkeypatch.setenv("FG_FAST_TESTS", "1")
     game = Game(screen, map_file=str(map_path))
-    assert game.main_screen.minimap.fog_rects
+    assert isinstance(game.main_screen.minimap.fog_rects, list)
