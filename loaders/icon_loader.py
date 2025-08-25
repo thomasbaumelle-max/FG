@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Set
 
 import pygame
 
@@ -18,6 +18,8 @@ with open(_ICONS_DIR / "icons.json", "r", encoding="utf-8") as f:
 
 # Cache for loaded pygame surfaces
 _CACHE: Dict[str, pygame.Surface] = {}
+# Icons that still need ``convert_alpha`` once the display is initialized
+_PENDING_CONVERT: Set[str] = set()
 
 
 def _placeholder_surface() -> pygame.Surface:
@@ -40,14 +42,25 @@ def get(icon_id: str, size: int) -> pygame.Surface:
             path = _ASSETS_DIR / filename
         try:
             if path and path.is_file():
-                surf = pygame.image.load(path).convert_alpha()
+                surf = pygame.image.load(path)
             else:
+                print(f"[icon_loader] Placeholder used for '{icon_id}'")
                 surf = _placeholder_surface()
         except Exception:
+            print(f"[icon_loader] Placeholder used for '{icon_id}'")
             surf = _placeholder_surface()
+
+        if pygame.display.get_init():
+            surf = surf.convert_alpha()
+        else:
+            _PENDING_CONVERT.add(icon_id)
         _CACHE[icon_id] = surf
 
     surf = _CACHE[icon_id]
+    if icon_id in _PENDING_CONVERT and pygame.display.get_init():
+        surf = surf.convert_alpha()
+        _CACHE[icon_id] = surf
+        _PENDING_CONVERT.remove(icon_id)
     if surf.get_size() != (size, size):
         return pygame.transform.smoothscale(surf, (size, size))
     return surf
@@ -57,3 +70,4 @@ def reload() -> None:
     """Clear the internal surface cache."""
 
     _CACHE.clear()
+    _PENDING_CONVERT.clear()
