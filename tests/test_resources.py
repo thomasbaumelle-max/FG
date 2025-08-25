@@ -1,4 +1,3 @@
-import random
 import sys
 import types
 
@@ -11,8 +10,8 @@ from core.buildings import create_building
 from core.game import Game
 
 
-def test_place_resources_and_collect():
-    random.seed(0)
+def test_place_resources_and_collect(rng, monkeypatch):
+    monkeypatch.setattr("random.shuffle", rng.shuffle)
     wm = WorldMap(
         width=3,
         height=1,

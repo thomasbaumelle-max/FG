@@ -3,6 +3,7 @@ import importlib.util
 import os
 import sys
 import math
+import random
 import pytest
 
 # Provide a lightweight pygame stub so tests run without the real library
@@ -53,6 +54,13 @@ def _restore_ai_difficulty():
     saved = constants.AI_DIFFICULTY
     yield
     constants.AI_DIFFICULTY = saved
+
+
+@pytest.fixture
+def rng():
+    """Return a deterministic random number generator."""
+
+    return random.Random(0)
 
 
 @pytest.fixture
