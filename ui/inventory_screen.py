@@ -10,6 +10,8 @@ Inventory & Hero screen – HoMM-like look:
 
 from __future__ import annotations
 from typing import Callable, Dict, List, Optional, Tuple, Set
+import json
+import os
 import pygame
 
 import constants
@@ -186,14 +188,68 @@ class InventoryScreen:
 
         # Tab buttons
         self.tab_buttons: Dict[str, pygame.Rect] = {}
+        self.tab_icons: Dict[str, Optional[pygame.Surface]] = {}
         th = self.tabs_rect.height // len(self.TAB_NAMES)
         for i, name in enumerate(self.TAB_NAMES):
-            self.tab_buttons[name] = pygame.Rect(
+            rect = pygame.Rect(
                 self.tabs_rect.x + 6,
                 self.tabs_rect.y + i * th + 6,
                 self.tabs_rect.width - 12,
                 th - 12,
             )
+            self.tab_buttons[name] = rect
+
+        # Load icon manifest once
+        if not hasattr(self, "_icon_manifest"):
+            icons_path = os.path.join("assets", "icons", "icons.json")
+            try:
+                with open(icons_path, "r", encoding="utf8") as fh:
+                    self._icon_manifest = json.load(fh)
+            except Exception:  # pragma: no cover - file missing or invalid
+                self._icon_manifest = {}
+
+        img_mod = getattr(pygame, "image", None)
+        transform = getattr(pygame, "transform", None)
+        for name, rect in self.tab_buttons.items():
+            info = self._icon_manifest.get(f"{name}_tab")
+            icon: Optional[pygame.Surface] = None
+            if isinstance(info, dict):
+                try:
+                    if "file" in info:
+                        path = os.path.join("assets", "icons", info["file"])
+                        if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
+                            icon = img_mod.load(path)
+                    elif "sheet" in info:
+                        sheet_path = os.path.join("assets", "icons", info["sheet"])
+                        coords = info.get("coords", [0, 0])
+                        tile = info.get("tile", [0, 0])
+                        if (
+                            img_mod
+                            and hasattr(img_mod, "load")
+                            and os.path.exists(sheet_path)
+                            and tile[0]
+                            and tile[1]
+                        ):
+                            sheet = img_mod.load(sheet_path)
+                            if hasattr(sheet, "convert_alpha"):
+                                sheet = sheet.convert_alpha()
+                            src = pygame.Rect(
+                                coords[0] * tile[0],
+                                coords[1] * tile[1],
+                                tile[0],
+                                tile[1],
+                            )
+                            if hasattr(sheet, "subsurface"):
+                                icon = sheet.subsurface(src)
+                    if icon and transform and hasattr(transform, "scale"):
+                        size = min(rect.width, rect.height) - 12
+                        if size > 0:
+                            icon = transform.scale(icon, (size, size))
+                    if icon and hasattr(icon, "convert_alpha"):
+                        icon = icon.convert_alpha()
+                except Exception:  # pragma: no cover - loading failed
+                    icon = None
+            self.tab_icons[name] = icon
 
         # Equipment slot grid (silhouette)
         cols, rows = 3, 4
@@ -339,13 +395,26 @@ class InventoryScreen:
             col = (60, 62, 72) if name == self.active_tab else (46, 48, 56)
             pygame.draw.rect(self.screen, col, rect, border_radius=6)
             pygame.draw.rect(self.screen, COLOR_SLOT_BD, rect, 2, border_radius=6)
-            font_big = self.font_big or self.font
-            if font_big:
-                label = font_big.render(name.title(), True, COLOR_TEXT)
+            icon = getattr(self, "tab_icons", {}).get(name)
+            if icon:
                 self.screen.blit(
-                    label,
-                    (rect.x + 12, rect.y + (rect.height - label.get_height()) // 2),
+                    icon,
+                    (
+                        rect.x + (rect.width - icon.get_width()) // 2,
+                        rect.y + (rect.height - icon.get_height()) // 2,
+                    ),
                 )
+            else:
+                font_big = self.font_big or self.font
+                if font_big:
+                    label = font_big.render(name.title(), True, COLOR_TEXT)
+                    self.screen.blit(
+                        label,
+                        (
+                            rect.x + (rect.width - label.get_width()) // 2,
+                            rect.y + (rect.height - label.get_height()) // 2,
+                        ),
+                    )
 
     def _draw_resbar(self) -> None:
         pygame.draw.rect(self.screen, (20, 20, 24), self.resbar_rect)

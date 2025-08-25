@@ -70,6 +70,9 @@
   "nav_hero_screen": { "sheet": "ui/icons/ui_nav_sheet.png", "coords": [1, 2], "tile": [512, 512] },
   "nav_inventory": { "sheet": "ui/icons/ui_nav_sheet.png", "coords": [2, 2], "tile": [512, 512] },
   "nav_skill_tree": { "sheet": "ui/icons/ui_nav_sheet.png", "coords": [0, 3], "tile": [512, 512] },
+  "stats_tab": { "sheet": "ui/icons/ui_nav_sheet.png", "coords": [1, 2], "tile": [512, 512] },
+  "inventory_tab": { "sheet": "ui/icons/ui_nav_sheet.png", "coords": [2, 2], "tile": [512, 512] },
+  "skills_tab": { "sheet": "ui/icons/ui_nav_sheet.png", "coords": [0, 3], "tile": [512, 512] },
   "nav_end_day": { "sheet": "ui/icons/ui_nav_sheet.png", "coords": [1, 3], "tile": [512, 512] },
   "nav_pause": { "sheet": "ui/icons/ui_nav_sheet.png", "coords": [2, 3], "tile": [512, 512] },
 
