@@ -58,7 +58,7 @@ class CombatHUD:
         )
         bottom = pygame.Rect(
             grid_rect.x,
-            grid_rect.y - combat.top_margin + grid_rect.height + MARGIN,
+            grid_rect.y + grid_rect.height + MARGIN,
             grid_rect.width,
             BUTTON_H + 8,
         )
