@@ -36,6 +36,37 @@ class Rect:
     def center(self):
         return (self.x + self.width // 2, self.y + self.height // 2)
 
+    @property
+    def size(self):
+        return (self.width, self.height)
+
+    @size.setter
+    def size(self, value):
+        self.width, self.height = value
+        self.bottom = self.y + self.height
+
+    @property
+    def midtop(self):
+        return (self.x + self.width // 2, self.y)
+
+    @midtop.setter
+    def midtop(self, pos):
+        cx, cy = pos
+        self.x = cx - self.width // 2
+        self.y = cy
+        self.bottom = self.y + self.height
+
+    @property
+    def midbottom(self):
+        return (self.x + self.width // 2, self.y + self.height)
+
+    @midbottom.setter
+    def midbottom(self, pos):
+        cx, cy = pos
+        self.x = cx - self.width // 2
+        self.y = cy - self.height
+        self.bottom = self.y + self.height
+
     def collidepoint(self, pos):
         return False
 
