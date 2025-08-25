@@ -176,29 +176,29 @@ feature codes—along with example continent layouts—is documented in
 The project includes a small automated test suite that exercises map
 generation, combat rules and save/load behaviour. Most tests can be run in
 parallel; a few that rely on global state are marked with ``serial`` and must
-run one at a time. Run the parallelisable tests with:
+run one at a time.
+
+Run the main test suite (excluding slow, worldgen and combat cases) with:
 
 ```bash
-pytest -n auto -m "not slow"
+pytest -q -n auto -m "not slow and not worldgen and not combat"
+```
+
+Tests marked ``serial`` must be executed separately:
+
+```bash
+pytest -q -n 1 -m serial
+```
+
+Slow and specialised tests covering world generation and extended combat are
+skipped by default. Run them explicitly with:
+
+```bash
+pytest -q -n auto -m "slow or worldgen or combat"
 ```
 
 In continuous integration environments, add `--log-file=pytest.log` to
 write test logs to a file when needed.
-
-Tests marked ``serial`` are excluded from the above command and must be run
-separately with:
-
-```bash
-pytest -m serial
-```
-
-Slow tests that perform extensive world generation or long AI loops are marked
-with `slow` and either `worldgen` or `combat`. These are skipped by default.
-Run them explicitly (for example in CI) with:
-
-```bash
-pytest -m slow
-```
 
 
 ## Configuration
