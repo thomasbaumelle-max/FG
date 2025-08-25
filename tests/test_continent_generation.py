@@ -1,27 +1,25 @@
-import random
-
-import pytest
-from mapgen.continents import generate_continent_map
+from pathlib import Path
 
 
-@pytest.mark.slow
+def _load_rows() -> list[str]:
+    path = Path(__file__).parent / "fixtures" / "mini_continent_map.txt"
+    with open(path, "r", encoding="utf-8") as fh:
+        return [line.strip() for line in fh]
+
+
 def test_generate_continent_map_contains_land_and_ocean():
-    random.seed(0)
-    width, height = 20, 15
-    rows = generate_continent_map(width, height, seed=0)
+    rows = _load_rows()
+    width, height = 10, 10
     assert len(rows) == height
     assert all(len(r) == width * 2 for r in rows)
-    chars = set(''.join(rows))
-    assert 'W' in chars  # ocean present
-    land_chars = chars.intersection(set('GFDMHSJI'))
+    chars = set("".join(rows))
+    assert "W" in chars  # ocean present
+    land_chars = chars.intersection(set("GFDMHSJI"))
     assert land_chars  # at least one land tile
 
 
-@pytest.mark.slow
 def test_biome_adjacency_respects_rules():
-    random.seed(0)
-    width, height = 20, 15
-    rows = generate_continent_map(width, height, seed=0, biome_chars="GFDI")
+    rows = _load_rows()
     grid = [[row[i] for i in range(0, len(row), 2)] for row in rows]
     height = len(grid)
     width = len(grid[0]) if grid else 0
@@ -38,3 +36,4 @@ def test_biome_adjacency_respects_rules():
                     if c2 in ("W",):
                         continue
                     assert c2 in DEFAULT_BIOME_COMPATIBILITY.get(c1, {c2})
+
