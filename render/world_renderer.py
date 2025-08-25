@@ -6,6 +6,8 @@ import sys
 import queue
 import threading
 from collections import OrderedDict
+import json
+from pathlib import Path
 import pygame
 from typing import Dict, Optional, Tuple, Set, List, Sequence
 
@@ -74,6 +76,19 @@ class WorldRenderer:
             "corner": {c: assets.get(f"mask_{c}") for c in ("ne", "nw", "se", "sw")},
         }
         self._river_img = assets.get("terrain/river.png")
+
+        icons_file = (
+            Path(__file__).resolve().parents[1]
+            / "assets"
+            / "icons"
+            / "icons.json"
+        )
+        try:
+            with icons_file.open("r", encoding="utf8") as fh:
+                self._icon_manifest = json.load(fh)
+        except Exception:
+            self._icon_manifest = {}
+        self._icon_cache: Dict[Tuple[str, int], Optional[pygame.Surface]] = {}
 
     # ------------------------------------------------------------------
     # Cached biome chunk helpers
@@ -187,6 +202,62 @@ class WorldRenderer:
                 if start_cx <= cx < end_cx and start_cy <= cy < end_cy:
                     continue
                 self._queue_prefetch(cx, cy)
+
+    # ------------------------------------------------------------------
+    # Icon helper
+    def _load_icon(self, key: str, size: int) -> Optional[pygame.Surface]:
+        """Return icon ``key`` scaled to ``size`` or ``None`` on failure."""
+        cache_key = (key, size)
+        if cache_key in self._icon_cache:
+            return self._icon_cache[cache_key]
+
+        info = self._icon_manifest.get(key)
+        icon: Optional[pygame.Surface] = None
+        try:
+            if isinstance(info, dict):
+                if "file" in info:
+                    path = (
+                        Path(__file__).resolve().parents[1]
+                        / "assets"
+                        / "icons"
+                        / info["file"]
+                    )
+                    if path.exists() and hasattr(pygame.image, "load"):
+                        icon = pygame.image.load(str(path))
+                        if hasattr(icon, "convert_alpha"):
+                            icon = icon.convert_alpha()
+                elif "sheet" in info:
+                    sheet_path = (
+                        Path(__file__).resolve().parents[1]
+                        / "assets"
+                        / "icons"
+                        / info["sheet"]
+                    )
+                    coords = info.get("coords", [0, 0])
+                    tile = info.get("tile", [0, 0])
+                    if (
+                        sheet_path.exists()
+                        and tile[0]
+                        and tile[1]
+                        and hasattr(pygame.image, "load")
+                    ):
+                        sheet = pygame.image.load(str(sheet_path))
+                        if hasattr(sheet, "convert_alpha"):
+                            sheet = sheet.convert_alpha()
+                        rect = pygame.Rect(
+                            coords[0] * tile[0],
+                            coords[1] * tile[1],
+                            tile[0],
+                            tile[1],
+                        )
+                        icon = sheet.subsurface(rect)
+            if icon and hasattr(pygame.transform, "scale"):
+                icon = pygame.transform.scale(icon, (size, size))
+        except Exception:
+            icon = None
+
+        self._icon_cache[cache_key] = icon
+        return icon
 
     # ------------------------------------------------------------------
     # Camera helpers
@@ -426,7 +497,7 @@ class WorldRenderer:
                 px = (x - start_x) * tile_size + offset_x
                 py = (y - start_y) * tile_size + offset_y
                 if tile.obstacle and tile.building is None:
-                    img = self.assets.get(constants.IMG_OBSTACLE)
+                    img = self._load_icon("obstacle", tile_size)
                     if img:
                         layers[constants.LAYER_OBJECTS].blit(img, (px, py))
                     else:
@@ -436,9 +507,8 @@ class WorldRenderer:
                             (px, py, tile_size, tile_size),
                         )
                 elif tile.treasure is not None:
-                    img = self.assets.get(constants.IMG_TREASURE)
+                    img = self._load_icon("treasure_chest", tile_size)
                     if img:
-                        img = scale_if_needed(img)
                         layers[constants.LAYER_OBJECTS].blit(img, (px, py))
                     else:
                         pygame.draw.rect(
