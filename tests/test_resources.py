@@ -11,8 +11,6 @@ from core.entities import Hero, Unit, SWORDSMAN_STATS
 from core.buildings import create_building
 from core.game import Game
 
-
-@pytest.mark.serial
 def test_place_resources_and_collect(rng, monkeypatch):
     monkeypatch.setattr("random.shuffle", rng.shuffle)
     wm = WorldMap(
