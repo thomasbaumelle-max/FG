@@ -95,37 +95,42 @@ class TownScreen:
         for name in self._res_icons:
             surf = None
             info = self._icon_manifest.get(f"resource_{name}")
-            if isinstance(info, dict):
-                try:
-                    if "file" in info:
-                        path = Path("assets") / info["file"]
-                        if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
-                            surf = img_mod.load(path)
-                            if hasattr(surf, "convert_alpha"):
-                                surf = surf.convert_alpha()
-                    elif "sheet" in info:
-                        sheet_path = Path("assets") / info["sheet"]
-                        coords = info.get("coords", [0, 0])
-                        tile = info.get("tile", [0, 0])
-                        if (
-                            img_mod
-                            and hasattr(img_mod, "load")
-                            and os.path.exists(sheet_path)
-                            and tile[0]
-                            and tile[1]
-                        ):
-                            sheet = img_mod.load(sheet_path)
-                            if hasattr(sheet, "convert_alpha"):
-                                sheet = sheet.convert_alpha()
-                            rect = pygame.Rect(
-                                coords[0] * tile[0],
-                                coords[1] * tile[1],
-                                tile[0],
-                                tile[1],
-                            )
-                            surf = sheet.subsurface(rect)
-                except Exception:  # pragma: no cover - loading failed
-                    surf = None
+            try:
+                if isinstance(info, str):
+                    path = Path("assets/icons") / info
+                    if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
+                        surf = img_mod.load(path)
+                        if hasattr(surf, "convert_alpha"):
+                            surf = surf.convert_alpha()
+                elif isinstance(info, dict) and "file" in info:
+                    path = Path("assets") / info["file"]
+                    if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
+                        surf = img_mod.load(path)
+                        if hasattr(surf, "convert_alpha"):
+                            surf = surf.convert_alpha()
+                elif isinstance(info, dict) and "sheet" in info:
+                    sheet_path = Path("assets") / info["sheet"]
+                    coords = info.get("coords", [0, 0])
+                    tile = info.get("tile", [0, 0])
+                    if (
+                        img_mod
+                        and hasattr(img_mod, "load")
+                        and os.path.exists(sheet_path)
+                        and tile[0]
+                        and tile[1]
+                    ):
+                        sheet = img_mod.load(sheet_path)
+                        if hasattr(sheet, "convert_alpha"):
+                            sheet = sheet.convert_alpha()
+                        rect = pygame.Rect(
+                            coords[0] * tile[0],
+                            coords[1] * tile[1],
+                            tile[0],
+                            tile[1],
+                        )
+                        surf = sheet.subsurface(rect)
+            except Exception:  # pragma: no cover - loading failed
+                surf = None
             if surf is None:
                 surf = pygame.Surface((36, 36), pygame.SRCALPHA)
                 try:

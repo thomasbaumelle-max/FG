@@ -14,7 +14,7 @@ _ASSETS_DIR = _ROOT / "assets"
 _ICONS_DIR = _ASSETS_DIR / "icons"
 
 with open(_ICONS_DIR / "icons.json", "r", encoding="utf-8") as f:
-    _ICON_MAP: Dict[str, str | dict] = json.load(f)
+    _ICON_MAP: Dict[str, str] = json.load(f)
 
 # Cache for loaded pygame surfaces
 _CACHE: Dict[str, pygame.Surface] = {}
@@ -34,22 +34,16 @@ def get(icon_id: str, size: int) -> pygame.Surface:
     """
 
     if icon_id not in _CACHE:
-        entry = _ICON_MAP.get(icon_id)
-        filename = None
-        if isinstance(entry, str):
-            filename = entry
-        elif isinstance(entry, dict):
-            filename = entry.get("file")
-        if isinstance(filename, str):
-            path = _ICONS_DIR / filename
-            if not path.is_file():
-                # Support paths relative to the assets directory
-                path = _ASSETS_DIR / filename
-            try:
+        filename = _ICON_MAP.get(icon_id)
+        path = _ICONS_DIR / filename if isinstance(filename, str) else None
+        if path and not path.is_file():
+            path = _ASSETS_DIR / filename
+        try:
+            if path and path.is_file():
                 surf = pygame.image.load(path).convert_alpha()
-            except Exception:
+            else:
                 surf = _placeholder_surface()
-        else:
+        except Exception:
             surf = _placeholder_surface()
         _CACHE[icon_id] = surf
 

@@ -26,7 +26,7 @@ def test_get_and_reload(monkeypatch):
     _prepare_pygame(monkeypatch)
 
     # ensure test icon exists
-    icon_dir = Path("assets/icons/icons")
+    icon_dir = Path("assets/icons")
     icon_dir.mkdir(parents=True, exist_ok=True)
     img_path = icon_dir / "end_turn.png"
     img_path.touch()

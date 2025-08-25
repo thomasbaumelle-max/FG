@@ -174,53 +174,65 @@ class ButtonsColumn:
 
         icon_drawn = False
         info = self._icons.get(btn.name) or self._icons.get(f"action_{btn.name}")
-        if isinstance(info, dict):
-            img_mod = getattr(pygame, "image", None)
-            transform = getattr(pygame, "transform", None)
-            try:
-                if "file" in info:
-                    full_path = Path("assets") / info["file"]
-                    if img_mod and hasattr(img_mod, "load") and os.path.exists(full_path):
-                        icon = img_mod.load(full_path)
-                        if hasattr(icon, "convert_alpha"):
-                            icon = icon.convert_alpha()
-                        if transform and hasattr(transform, "scale"):
-                            icon = transform.scale(
-                                icon,
-                                (self.BUTTON_SIZE[0] - 8, self.BUTTON_SIZE[1] - 8),
-                            )
-                        surf.blit(icon, (4, 4))
-                        icon_drawn = True
-                elif "sheet" in info:
-                    sheet_path = Path("assets") / info["sheet"]
-                    coords = info.get("coords", [0, 0])
-                    tile = info.get("tile", [0, 0])
-                    if (
-                        img_mod
-                        and hasattr(img_mod, "load")
-                        and os.path.exists(sheet_path)
-                        and tile[0]
-                        and tile[1]
-                    ):
-                        sheet = img_mod.load(sheet_path)
-                        if hasattr(sheet, "convert_alpha"):
-                            sheet = sheet.convert_alpha()
-                        rect = pygame.Rect(
-                            coords[0] * tile[0],
-                            coords[1] * tile[1],
-                            tile[0],
-                            tile[1],
+        img_mod = getattr(pygame, "image", None)
+        transform = getattr(pygame, "transform", None)
+        try:
+            if isinstance(info, str):
+                full_path = Path("assets/icons") / info
+                if img_mod and hasattr(img_mod, "load") and os.path.exists(full_path):
+                    icon = img_mod.load(full_path)
+                    if hasattr(icon, "convert_alpha"):
+                        icon = icon.convert_alpha()
+                    if transform and hasattr(transform, "scale"):
+                        icon = transform.scale(
+                            icon,
+                            (self.BUTTON_SIZE[0] - 8, self.BUTTON_SIZE[1] - 8),
                         )
-                        icon = sheet.subsurface(rect)
-                        if transform and hasattr(transform, "scale"):
-                            icon = transform.scale(
-                                icon,
-                                (self.BUTTON_SIZE[0] - 8, self.BUTTON_SIZE[1] - 8),
-                            )
-                        surf.blit(icon, (4, 4))
-                        icon_drawn = True
-            except Exception:  # pragma: no cover - loading failed
-                icon_drawn = False
+                    surf.blit(icon, (4, 4))
+                    icon_drawn = True
+            elif isinstance(info, dict) and "file" in info:
+                full_path = Path("assets") / info["file"]
+                if img_mod and hasattr(img_mod, "load") and os.path.exists(full_path):
+                    icon = img_mod.load(full_path)
+                    if hasattr(icon, "convert_alpha"):
+                        icon = icon.convert_alpha()
+                    if transform and hasattr(transform, "scale"):
+                        icon = transform.scale(
+                            icon,
+                            (self.BUTTON_SIZE[0] - 8, self.BUTTON_SIZE[1] - 8),
+                        )
+                    surf.blit(icon, (4, 4))
+                    icon_drawn = True
+            elif isinstance(info, dict) and "sheet" in info:
+                sheet_path = Path("assets") / info["sheet"]
+                coords = info.get("coords", [0, 0])
+                tile = info.get("tile", [0, 0])
+                if (
+                    img_mod
+                    and hasattr(img_mod, "load")
+                    and os.path.exists(sheet_path)
+                    and tile[0]
+                    and tile[1]
+                ):
+                    sheet = img_mod.load(sheet_path)
+                    if hasattr(sheet, "convert_alpha"):
+                        sheet = sheet.convert_alpha()
+                    rect = pygame.Rect(
+                        coords[0] * tile[0],
+                        coords[1] * tile[1],
+                        tile[0],
+                        tile[1],
+                    )
+                    icon = sheet.subsurface(rect)
+                    if transform and hasattr(transform, "scale"):
+                        icon = transform.scale(
+                            icon,
+                            (self.BUTTON_SIZE[0] - 8, self.BUTTON_SIZE[1] - 8),
+                        )
+                    surf.blit(icon, (4, 4))
+                    icon_drawn = True
+        except Exception:  # pragma: no cover - loading failed
+            icon_drawn = False
 
         if not icon_drawn:
             pass

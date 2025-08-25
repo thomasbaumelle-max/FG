@@ -214,42 +214,45 @@ class InventoryScreen:
         for name, rect in self.tab_buttons.items():
             info = self._icon_manifest.get(f"{name}_tab")
             icon: Optional[pygame.Surface] = None
-            if isinstance(info, dict):
-                try:
-                    if "file" in info:
-                        path = Path("assets") / info["file"]
-                        if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
-                            icon = img_mod.load(path)
-                    elif "sheet" in info:
-                        sheet_path = Path("assets") / info["sheet"]
-                        coords = info.get("coords", [0, 0])
-                        tile = info.get("tile", [0, 0])
-                        if (
-                            img_mod
-                            and hasattr(img_mod, "load")
-                            and os.path.exists(sheet_path)
-                            and tile[0]
-                            and tile[1]
-                        ):
-                            sheet = img_mod.load(sheet_path)
-                            if hasattr(sheet, "convert_alpha"):
-                                sheet = sheet.convert_alpha()
-                            src = pygame.Rect(
-                                coords[0] * tile[0],
-                                coords[1] * tile[1],
-                                tile[0],
-                                tile[1],
-                            )
-                            if hasattr(sheet, "subsurface"):
-                                icon = sheet.subsurface(src)
-                    if icon and transform and hasattr(transform, "scale"):
-                        size = min(rect.width, rect.height) - 12
-                        if size > 0:
-                            icon = transform.scale(icon, (size, size))
-                    if icon and hasattr(icon, "convert_alpha"):
-                        icon = icon.convert_alpha()
-                except Exception:  # pragma: no cover - loading failed
-                    icon = None
+            try:
+                if isinstance(info, str):
+                    path = Path("assets/icons") / info
+                    if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
+                        icon = img_mod.load(path)
+                elif isinstance(info, dict) and "file" in info:
+                    path = Path("assets") / info["file"]
+                    if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
+                        icon = img_mod.load(path)
+                elif isinstance(info, dict) and "sheet" in info:
+                    sheet_path = Path("assets") / info["sheet"]
+                    coords = info.get("coords", [0, 0])
+                    tile = info.get("tile", [0, 0])
+                    if (
+                        img_mod
+                        and hasattr(img_mod, "load")
+                        and os.path.exists(sheet_path)
+                        and tile[0]
+                        and tile[1]
+                    ):
+                        sheet = img_mod.load(sheet_path)
+                        if hasattr(sheet, "convert_alpha"):
+                            sheet = sheet.convert_alpha()
+                        src = pygame.Rect(
+                            coords[0] * tile[0],
+                            coords[1] * tile[1],
+                            tile[0],
+                            tile[1],
+                        )
+                        if hasattr(sheet, "subsurface"):
+                            icon = sheet.subsurface(src)
+                if icon and transform and hasattr(transform, "scale"):
+                    size = min(rect.width, rect.height) - 12
+                    if size > 0:
+                        icon = transform.scale(icon, (size, size))
+                if icon and hasattr(icon, "convert_alpha"):
+                    icon = icon.convert_alpha()
+            except Exception:  # pragma: no cover - loading failed
+                icon = None
             self.tab_icons[name] = icon
 
         # Equipment slot grid (silhouette)
