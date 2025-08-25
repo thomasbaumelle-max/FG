@@ -142,15 +142,21 @@ class draw:
 
 class display:
     _surface = Surface((800, 600))
+    _init = True
 
     @staticmethod
     def set_mode(size, flags=0):
         display._surface = Surface(size)
+        display._init = True
         return display._surface
 
     @staticmethod
     def get_surface():
         return display._surface
+
+    @staticmethod
+    def get_init():
+        return display._init
 
     @staticmethod
     def Info():
@@ -167,6 +173,7 @@ class display:
     @staticmethod
     def flip():
         pass
+
     @staticmethod
     def toggle_fullscreen():
         return True
