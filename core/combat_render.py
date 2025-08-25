@@ -77,15 +77,22 @@ def draw(combat, frame: int = 0) -> None:
         else:
             bg = None
         combat._battlefield_bg = bg
+    scale_x = scale_y = 1.0
     if bg:
-        if bg.get_size() != (grid_w + 2 * side_margin, grid_h + top_margin):
-            bg = pygame.transform.scale(
-                bg, (grid_w + 2 * side_margin, grid_h + top_margin)
-            )
+        target_w = grid_w + 2 * side_margin
+        target_h = grid_h + top_margin
+        orig_w, orig_h = bg.get_size()
+        if (orig_w, orig_h) != (target_w, target_h):
+            scale_x = target_w / orig_w
+            scale_y = target_h / orig_h
+            bg = pygame.transform.scale(bg, (target_w, target_h))
+            combat._battlefield_bg = bg
+        combat._battlefield_bg_scale = (scale_x, scale_y)
         combat.screen.blit(
             bg, (combat.offset_x - side_margin, combat.offset_y - top_margin)
         )
     else:
+        combat._battlefield_bg_scale = (scale_x, scale_y)
         combat.screen.fill(
             constants.GREEN,
             pygame.Rect(
@@ -108,15 +115,12 @@ def draw(combat, frame: int = 0) -> None:
                 img = pygame.transform.scale(img, (int(w * scale), target_h))
                 w, h = img.get_size()
             hx, hy = getattr(combat.battlefield, "hero_pos", (0, 0))
-            if 0 <= hx <= 1 and 0 <= hy <= 1:
-                hx *= grid_w
-                hy *= grid_h
-            else:
-                hx *= combat.zoom
-                hy *= combat.zoom
-            x = combat.offset_x + int(hx)
+            scale_x, scale_y = getattr(combat, "_battlefield_bg_scale", (1.0, 1.0))
+            hx = int(hx * scale_x)
+            hy = int(hy * scale_y)
+            x = combat.offset_x - side_margin + hx
             base_h = int(combat.hex_width * combat.zoom)
-            y = combat.offset_y + int(hy) - (h - base_h)
+            y = combat.offset_y - top_margin + hy - (h - base_h)
             combat.screen.blit(img, (x, y))
 
     # Hex grid overlay
