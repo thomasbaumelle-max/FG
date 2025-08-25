@@ -12,6 +12,20 @@ from core.world import WorldMap
 import constants
 
 
+@pytest.fixture(scope="module")
+def plaine_world() -> WorldMap:
+    random.seed(0)
+    rows = generate_continent_map(30, 30, seed=0, map_type="plaine")
+    return WorldMap(map_data=rows)
+
+
+@pytest.fixture(scope="module")
+def marine_world() -> WorldMap:
+    random.seed(0)
+    rows = generate_continent_map(30, 30, seed=0, map_type="marine")
+    return WorldMap(map_data=rows)
+
+
 def setup_water_game(monkeypatch):
     game, constants, Army, Unit, S_STATS = setup_game(monkeypatch)
     game.compute_path = GameClass.compute_path.__get__(game, GameClass)
@@ -105,15 +119,9 @@ def test_disembark_requires_adjacent_land(monkeypatch):
     assert game.world.grid[0][0].boat is None
 
 
-def _generate_world(map_type: str) -> WorldMap:
-    random.seed(0)
-    rows = generate_continent_map(30, 30, seed=0, map_type=map_type)
-    return WorldMap(map_data=rows)
-
-
 @pytest.mark.slow
-def test_plaine_map_is_land_heavy():
-    world = _generate_world("plaine")
+def test_plaine_map_is_land_heavy(plaine_world):
+    world = plaine_world
     total = world.width * world.height
     land = sum(
         1
@@ -125,8 +133,8 @@ def test_plaine_map_is_land_heavy():
 
 
 @pytest.mark.slow
-def test_marine_map_features_and_starting_islands():
-    world = _generate_world("marine")
+def test_marine_map_features_and_starting_islands(marine_world):
+    world = marine_world
     total = world.width * world.height
     water = sum(
         1

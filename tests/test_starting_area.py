@@ -5,11 +5,23 @@ from mapgen.continents import generate_continent_map
 from core.world import WorldMap
 
 
-@pytest.mark.slow
-def test_starting_area_has_buildings_and_town():
+@pytest.fixture(scope="module")
+def plaine_world() -> WorldMap:
     random.seed(0)
     rows = generate_continent_map(30, 30, seed=0)
-    world = WorldMap(map_data=rows)
+    return WorldMap(map_data=rows)
+
+
+@pytest.fixture(scope="module")
+def marine_world() -> WorldMap:
+    random.seed(0)
+    rows = generate_continent_map(30, 30, seed=0, map_type="marine")
+    return WorldMap(map_data=rows)
+
+
+@pytest.mark.slow
+def test_starting_area_has_buildings_and_town(plaine_world):
+    world = plaine_world
     assert world.starting_area is not None
     x0, y0, size = world.starting_area
     assert 5 <= size <= 10
@@ -40,7 +52,7 @@ def test_starting_area_has_buildings_and_town():
     assert world.grid[sy][sx].building is None
 
 @pytest.mark.slow
-def test_building_images_loaded():
+def test_building_images_loaded(plaine_world):
     import sys
     import types
 
@@ -93,12 +105,9 @@ def test_building_images_loaded():
     sys.modules["pygame.draw"] = pygame_stub.draw
 
     try:
-        from mapgen.continents import generate_continent_map
         from loaders.asset_manager import AssetManager
         from loaders.building_loader import BUILDINGS
-        random.seed(0)
-        rows = generate_continent_map(30, 30, seed=0)
-        world = WorldMap(map_data=rows)
+        world = plaine_world
         assets = AssetManager(repo_root=".")
         for asset in BUILDINGS.values():
             files = asset.file_list()
@@ -123,10 +132,8 @@ def test_building_images_loaded():
 
 
 @pytest.mark.slow
-def test_marine_islands_have_required_buildings():
-    random.seed(0)
-    rows = generate_continent_map(30, 30, seed=0, map_type="marine")
-    world = WorldMap(map_data=rows)
+def test_marine_islands_have_required_buildings(marine_world):
+    world = marine_world
     assert world.starting_area is not None
     assert world.enemy_starting_area is not None
     continents = world._find_continents()
