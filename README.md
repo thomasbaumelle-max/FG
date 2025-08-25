@@ -191,10 +191,12 @@ Execute the remaining serial tests separately with:
 pytest -m serial
 ```
 
-Slow tests that perform extensive world generation or long AI loops are marked with `slow` and either `worldgen` or `combat`. You can run a subset with:
+Slow tests that perform extensive world generation or long AI loops are marked
+with `slow` and either `worldgen` or `combat`. These are skipped by default.
+Run them explicitly (for example in CI) with:
 
 ```bash
-pytest -m "not slow and not worldgen"
+pytest -m slow
 ```
 
 
