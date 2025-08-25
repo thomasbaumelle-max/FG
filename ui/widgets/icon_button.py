@@ -26,6 +26,7 @@ class IconButton:
         callback: Callable[[], None],
         hotkey: Optional[int] = None,
         tooltip: str = "",
+        enabled: bool = True,
     ) -> None:
         self.rect = rect
         self.icon_id = icon_id
@@ -34,6 +35,7 @@ class IconButton:
         self.tooltip = tooltip
         self.hovered = False
         self.pressed = False
+        self.enabled = enabled
         self.font = theme.get_font(16)
 
     # ------------------------------------------------------------------
@@ -41,11 +43,13 @@ class IconButton:
         """Render the button to ``surface``."""
 
         bg = theme.PALETTE["panel"]
-        if self.pressed:
-            bg = theme.PALETTE["accent"]
+        if not self.enabled:
+            frame_state = "disabled"
+        else:
+            if self.pressed:
+                bg = theme.PALETTE["accent"]
+            frame_state = "highlight" if (self.hovered or self.pressed) else "normal"
         surface.fill(bg, self.rect)
-
-        frame_state = "highlight" if (self.hovered or self.pressed) else "normal"
         theme.draw_frame(surface, self.rect, frame_state)
 
         icon = IconLoader.get(self.icon_id, self.rect.w)
@@ -64,6 +68,8 @@ class IconButton:
     def handle(self, event: pygame.event.Event) -> bool:
         """Process a pygame event returning ``True`` if it was handled."""
 
+        if not self.enabled:
+            return False
         if event.type == MOUSEMOTION:
             self.hovered = self.rect.collidepoint(getattr(event, "pos", (0, 0)))
         elif event.type == MOUSEBUTTONDOWN and getattr(event, "button", 0) == 1:
