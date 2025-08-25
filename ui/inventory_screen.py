@@ -10,9 +10,6 @@ Inventory & Hero screen – HoMM-like look:
 
 from __future__ import annotations
 from typing import Callable, Dict, List, Optional, Tuple, Set
-import json
-import os
-from pathlib import Path
 import pygame
 
 import constants
@@ -205,15 +202,6 @@ class InventoryScreen:
                 tooltip=name.title(),
             )
             self.tab_buttons[name] = btn
-
-        # Load icon manifest once
-        if not hasattr(self, "_icon_manifest"):
-            icons_path = os.path.join("assets", "icons", "icons.json")
-            try:
-                with open(icons_path, "r", encoding="utf8") as fh:
-                    self._icon_manifest = json.load(fh)
-            except Exception:  # pragma: no cover - file missing or invalid
-                self._icon_manifest = {}
 
         # Equipment slot grid (silhouette)
         cols, rows = 3, 4
