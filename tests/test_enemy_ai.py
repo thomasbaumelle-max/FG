@@ -1,5 +1,4 @@
 import random
-import copy
 from pathlib import Path
 
 import pygame
@@ -23,7 +22,7 @@ def _plaine_world_base() -> WorldMap:
 
 @pytest.fixture
 def plaine_world(_plaine_world_base) -> WorldMap:
-    return copy.deepcopy(_plaine_world_base)
+    return _plaine_world_base.clone()
 
 
 @pytest.mark.slow
