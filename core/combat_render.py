@@ -270,7 +270,9 @@ def draw(combat, frame: int = 0) -> None:
                 if 0 <= index < len(frames):
                     img = frames[index]
         if img:
-            target_h = int(rect.height * unit.stats.battlefield_scale)
+            target_h = int(
+                combat.hex_width * unit.stats.battlefield_scale * combat.zoom
+            )
             w, h = img.get_size()
             if h != target_h:
                 scale = target_h / h
