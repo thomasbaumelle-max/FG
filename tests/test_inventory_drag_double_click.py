@@ -88,7 +88,8 @@ def test_double_click_equip(monkeypatch):
     hero.inventory.append(item)
     inv = InventoryScreen(screen, {}, hero)
     inv.active_tab = "inventory"
-    inv.item_rects = [(0, Rect(0, 0, 10, 10))]
+    inv.inventory_grid_origin = (0, 0)
+    inv.inventory_cell_size = 10
     times = [0, 100]
     monkeypatch.setattr(pygame.time, "get_ticks", lambda: times.pop(0), raising=False)
     inv._on_lmb_down((1, 1))
