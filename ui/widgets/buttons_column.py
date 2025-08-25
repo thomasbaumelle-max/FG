@@ -65,7 +65,7 @@ class ButtonsColumn:
         self.font = theme.get_font(20)
         self.hotkey_font = theme.get_font(12)
 
-        # Load mapping of button names -> icon file
+        # Load icon manifest describing where to find each icon
         icons_file = os.path.join("assets", "icons", "icons.json")
         try:
             with open(icons_file, "r", encoding="utf8") as fh:
@@ -151,25 +151,54 @@ class ButtonsColumn:
             )
 
         icon_drawn = False
-        path = self._icons.get(btn.name)
-        if path:
-            full_path = os.path.join("assets", "icons", path)
+        info = self._icons.get(btn.name)
+        if isinstance(info, dict):
             img_mod = getattr(pygame, "image", None)
             transform = getattr(pygame, "transform", None)
-            if img_mod and hasattr(img_mod, "load") and os.path.exists(full_path):
-                try:
-                    icon = img_mod.load(full_path)
-                    if hasattr(icon, "convert_alpha"):
-                        icon = icon.convert_alpha()
-                    if transform and hasattr(transform, "scale"):
-                        icon = transform.scale(
-                            icon,
-                            (self.BUTTON_SIZE[0] - 8, self.BUTTON_SIZE[1] - 8),
+            try:
+                if "file" in info:
+                    full_path = os.path.join("assets", "icons", info["file"])
+                    if img_mod and hasattr(img_mod, "load") and os.path.exists(full_path):
+                        icon = img_mod.load(full_path)
+                        if hasattr(icon, "convert_alpha"):
+                            icon = icon.convert_alpha()
+                        if transform and hasattr(transform, "scale"):
+                            icon = transform.scale(
+                                icon,
+                                (self.BUTTON_SIZE[0] - 8, self.BUTTON_SIZE[1] - 8),
+                            )
+                        surf.blit(icon, (4, 4))
+                        icon_drawn = True
+                elif "sheet" in info:
+                    sheet_path = os.path.join("assets", "icons", info["sheet"])
+                    coords = info.get("coords", [0, 0])
+                    tile = info.get("tile", [0, 0])
+                    if (
+                        img_mod
+                        and hasattr(img_mod, "load")
+                        and os.path.exists(sheet_path)
+                        and tile[0]
+                        and tile[1]
+                    ):
+                        sheet = img_mod.load(sheet_path)
+                        if hasattr(sheet, "convert_alpha"):
+                            sheet = sheet.convert_alpha()
+                        rect = pygame.Rect(
+                            coords[0] * tile[0],
+                            coords[1] * tile[1],
+                            tile[0],
+                            tile[1],
                         )
-                    surf.blit(icon, (4, 4))
-                    icon_drawn = True
-                except Exception:  # pragma: no cover - loading failed
-                    icon_drawn = False
+                        icon = sheet.subsurface(rect)
+                        if transform and hasattr(transform, "scale"):
+                            icon = transform.scale(
+                                icon,
+                                (self.BUTTON_SIZE[0] - 8, self.BUTTON_SIZE[1] - 8),
+                            )
+                        surf.blit(icon, (4, 4))
+                        icon_drawn = True
+            except Exception:  # pragma: no cover - loading failed
+                icon_drawn = False
 
         if not icon_drawn:
             if self.font:
