@@ -1,9 +1,10 @@
 import random
+import copy
+from pathlib import Path
 
 import pygame
 import pytest
 
-from mapgen.continents import generate_continent_map
 from core.world import WorldMap
 from core.game import Game
 from core.ai.faction_ai import FactionAI
@@ -14,10 +15,15 @@ from core import economy
 
 
 @pytest.fixture(scope="module")
-def plaine_world() -> WorldMap:
+def _plaine_world_base() -> WorldMap:
     random.seed(0)
-    rows = generate_continent_map(30, 30, seed=0)
-    return WorldMap(map_data=rows)
+    path = Path(__file__).parent / "fixtures" / "mini_continent_map.txt"
+    return WorldMap.from_file(str(path))
+
+
+@pytest.fixture
+def plaine_world(_plaine_world_base) -> WorldMap:
+    return copy.deepcopy(_plaine_world_base)
 
 
 @pytest.mark.slow
