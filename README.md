@@ -179,13 +179,14 @@ parallel; a few that rely on global state are marked with ``serial`` and must
 run one at a time. Run the parallelisable tests with:
 
 ```bash
-pytest -n auto -m "not serial"
+pytest -n auto -m "not slow"
 ```
 
 In continuous integration environments, add `--log-file=pytest.log` to
 write test logs to a file when needed.
 
-Execute the remaining serial tests separately with:
+Tests marked ``serial`` are excluded from the above command and must be run
+separately with:
 
 ```bash
 pytest -m serial
