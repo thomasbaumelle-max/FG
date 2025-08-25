@@ -200,6 +200,15 @@ pytest -q -n auto -m "slow or worldgen or combat"
 In continuous integration environments, add `--log-file=pytest.log` to
 write test logs to a file when needed.
 
+### Focused test runs
+
+Pytest provides several options to iterate quickly during development:
+
+* `pytest --testmon` runs only the tests impacted by your recent changes.
+* `pytest --lf` re-executes only the tests that failed in the previous run.
+* `pytest --randomly-seed=0` (requires the `pytest-randomly` plugin) fixes the
+  random seed to help detect order-dependent failures.
+
 
 ## Configuration
 
