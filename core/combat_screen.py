@@ -25,6 +25,40 @@ class CombatHUD:
         self.title = pygame.font.SysFont(None, 22)
         self.action_labels = self._load_action_labels(settings.LANGUAGE)
 
+        # Load icon manifest describing action/stat/status icons
+        icons_file = (
+            Path(__file__).resolve().parents[1]
+            / "assets"
+            / "icons"
+            / "icons.json"
+        )
+        try:
+            with icons_file.open("r", encoding="utf8") as fh:
+                self._icon_manifest = json.load(fh)
+        except Exception:
+            self._icon_manifest = {}
+
+        self._icon_cache: Dict[Tuple[str, int], Optional[pygame.Surface]] = {}
+
+        # Preload commonly used action and stat icons
+        self.action_icon_keys = {
+            "move": "action_move",
+            "melee": "action_attack",
+            "ranged": "action_shoot",
+            "spell": "action_cast",
+            "wait": "action_wait",
+        }
+        self.stat_icon_keys = {
+            "hp": "stat_hp",
+            "mana": "round_mana",
+            "attack": "round_attack_range",
+            "defence": "round_defence_magic",
+            "speed": "resource_speed",
+            "initiative": "resource_speed",
+            "morale": "round_morale",
+            "luck": "round_luck",
+        }
+
     def _load_action_labels(self, language: str) -> Dict[str, str]:
         """Load translated action labels from ``assets/i18n/action_labels.json``."""
         default = "en"
@@ -43,6 +77,60 @@ class CombatHUD:
         if language != default:
             labels.update(data.get(language, {}))
         return labels
+
+    def _load_icon(self, key: str, size: int) -> Optional[pygame.Surface]:
+        """Return icon ``key`` scaled to ``size`` or ``None`` on failure."""
+        cache_key = (key, size)
+        if cache_key in self._icon_cache:
+            return self._icon_cache[cache_key]
+
+        info = self._icon_manifest.get(key)
+        icon: Optional[pygame.Surface] = None
+        try:
+            if isinstance(info, dict):
+                if "file" in info:
+                    path = (
+                        Path(__file__).resolve().parents[1]
+                        / "assets"
+                        / "icons"
+                        / info["file"]
+                    )
+                    if path.exists() and hasattr(pygame.image, "load"):
+                        icon = pygame.image.load(str(path))
+                        if hasattr(icon, "convert_alpha"):
+                            icon = icon.convert_alpha()
+                elif "sheet" in info:
+                    sheet_path = (
+                        Path(__file__).resolve().parents[1]
+                        / "assets"
+                        / "icons"
+                        / info["sheet"]
+                    )
+                    coords = info.get("coords", [0, 0])
+                    tile = info.get("tile", [0, 0])
+                    if (
+                        sheet_path.exists()
+                        and tile[0]
+                        and tile[1]
+                        and hasattr(pygame.image, "load")
+                    ):
+                        sheet = pygame.image.load(str(sheet_path))
+                        if hasattr(sheet, "convert_alpha"):
+                            sheet = sheet.convert_alpha()
+                        rect = pygame.Rect(
+                            coords[0] * tile[0],
+                            coords[1] * tile[1],
+                            tile[0],
+                            tile[1],
+                        )
+                        icon = sheet.subsurface(rect)
+            if icon and hasattr(pygame.transform, "scale"):
+                icon = pygame.transform.scale(icon, (size, size))
+        except Exception:
+            icon = None
+
+        self._icon_cache[cache_key] = icon
+        return icon
 
     def _panel_rects(
         self,
@@ -99,23 +187,39 @@ class CombatHUD:
             if img:
                 screen.blit(img, (right.x + 10, right.y + 36))
 
-            # Stats
-            lines = [
-                f"HP {unit.current_hp}/{unit.stats.max_hp}",
-                f"Mana {unit.mana}/{unit.max_mana}",
-                f"ATK {unit.stats.attack_min}-{unit.stats.attack_max}",
+            # Stats with icons
+            stats = [
+                ("hp", f"{unit.current_hp}/{unit.stats.max_hp}"),
+                ("mana", f"{unit.mana}/{unit.max_mana}"),
+                ("attack", f"{unit.stats.attack_min}-{unit.stats.attack_max}"),
                 (
-                    f"DEF M/R/Mg {unit.stats.defence_melee}/"
-                    f"{unit.stats.defence_ranged}/{unit.stats.defence_magic}"
+                    "defence",
+                    f"M/R/Mg {unit.stats.defence_melee}/"
+                    f"{unit.stats.defence_ranged}/{unit.stats.defence_magic}",
                 ),
-                f"Spd {unit.stats.speed}  Init {unit.stats.initiative}",
+                ("speed", str(unit.stats.speed)),
+                ("initiative", str(unit.stats.initiative)),
+                ("morale", str(unit.stats.morale)),
+                ("luck", str(unit.stats.luck)),
             ]
-            for i, s in enumerate(lines):
-                txt = self.font.render(s, True, theme.PALETTE["text"])
-                screen.blit(txt, (right.x + 84, right.y + 42 + i * 18))
+            y_stats = right.y + 42
+            for name, value in stats:
+                icon_key = self.stat_icon_keys.get(name, name)
+                icon = self._load_icon(icon_key, 18)
+                if icon:
+                    screen.blit(icon, (right.x + 84, y_stats))
+                    txt_x = right.x + 84 + icon.get_width() + 4
+                    txt_val = value
+                else:
+                    # Fallback to text label when icon missing
+                    txt_x = right.x + 84
+                    txt_val = f"{name.title()} {value}"
+                txt = self.font.render(txt_val, True, theme.PALETTE["text"])
+                screen.blit(txt, (txt_x, y_stats))
+                y_stats += 18
 
             # Spells available to the unit
-            y = right.y + 42 + len(lines) * 18 + 10
+            y = y_stats + 10
             spells = []
             for name, cost in combat.UNIT_SPELLS.get(unit.stats.name, {}).items():
                 if name in combat.spells_by_name and unit.mana >= cost:
@@ -141,9 +245,26 @@ class CombatHUD:
                 )
                 y += 18
                 for name, turns in statuses.items():
-                    txt = self.small.render(f"{name} ({turns})", True, theme.PALETTE["text"])
-                    screen.blit(txt, (right.x + 20, y))
-                    y += 18
+                    icon = self._load_icon(f"status_{name}", 18)
+                    if icon:
+                        screen.blit(icon, (right.x + 20, y))
+                        txt = self.small.render(
+                            str(turns), True, theme.PALETTE["text"]
+                        )
+                        screen.blit(
+                            txt,
+                            (
+                                right.x + 20 + icon.get_width() + 4,
+                                y + (icon.get_height() - txt.get_height()) // 2,
+                            ),
+                        )
+                        y += icon.get_height() + 4
+                    else:
+                        txt = self.small.render(
+                            f"{name} ({turns})", True, theme.PALETTE["text"]
+                        )
+                        screen.blit(txt, (right.x + 20, y))
+                        y += 18
 
             # Turn order thumbnails
             y0 = y + 10
@@ -192,11 +313,21 @@ class CombatHUD:
 
         def add_btn(key: str, label: str) -> None:
             nonlocal x
-            r = pygame.Rect(x, bottom.y + 4, 110, bottom.height - 8)
-            pygame.draw.rect(screen, (52, 55, 63), r)
-            pygame.draw.rect(screen, LINE, r, 1)
-            txt = self.small.render(label, True, theme.PALETTE["text"])
-            screen.blit(txt, txt.get_rect(center=r.center))
+            size = bottom.height - 8
+            icon_key = self.action_icon_keys.get(key, f"action_{key}")
+            icon = self._load_icon(icon_key, size - 4)
+            if icon:
+                r = pygame.Rect(x, bottom.y + 4, size, size)
+                pygame.draw.rect(screen, (52, 55, 63), r)
+                pygame.draw.rect(screen, LINE, r, 1)
+                screen.blit(icon, icon.get_rect(center=r.center))
+            else:
+                txt = self.small.render(label, True, theme.PALETTE["text"])
+                w = max(40, txt.get_width() + 12)
+                r = pygame.Rect(x, bottom.y + 4, w, size)
+                pygame.draw.rect(screen, (52, 55, 63), r)
+                pygame.draw.rect(screen, LINE, r, 1)
+                screen.blit(txt, txt.get_rect(center=r.center))
             action_buttons[key] = r
             x = r.x + r.width + 6
 
