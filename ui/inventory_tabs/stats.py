@@ -49,7 +49,7 @@ def _load_icon(name: str, size: int) -> Optional[pygame.Surface]:
     transform = getattr(pygame, "transform", None)
     try:
         if isinstance(info, str):
-            path = Path("assets/icons") / info
+            path = Path(info)
             if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
                 icon = img_mod.load(path)
                 if hasattr(icon, "convert_alpha"):
@@ -59,7 +59,7 @@ def _load_icon(name: str, size: int) -> Optional[pygame.Surface]:
                 _ICON_CACHE[name] = icon
                 return icon
         elif isinstance(info, dict) and "file" in info:
-            path = Path("assets") / info["file"]
+            path = Path(info["file"])
             if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
                 icon = img_mod.load(path)
                 if hasattr(icon, "convert_alpha"):
@@ -69,7 +69,7 @@ def _load_icon(name: str, size: int) -> Optional[pygame.Surface]:
                 _ICON_CACHE[name] = icon
                 return icon
         elif isinstance(info, dict) and "sheet" in info:
-            sheet_path = Path("assets") / info["sheet"]
+            sheet_path = Path(info["sheet"])
             coords = info.get("coords", [0, 0])
             tile = info.get("tile", [0, 0])
             if (

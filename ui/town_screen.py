@@ -97,19 +97,19 @@ class TownScreen:
             info = self._icon_manifest.get(f"resource_{name}")
             try:
                 if isinstance(info, str):
-                    path = Path("assets/icons") / info
+                    path = Path(info)
                     if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
                         surf = img_mod.load(path)
                         if hasattr(surf, "convert_alpha"):
                             surf = surf.convert_alpha()
                 elif isinstance(info, dict) and "file" in info:
-                    path = Path("assets") / info["file"]
+                    path = Path(info["file"])
                     if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
                         surf = img_mod.load(path)
                         if hasattr(surf, "convert_alpha"):
                             surf = surf.convert_alpha()
                 elif isinstance(info, dict) and "sheet" in info:
-                    sheet_path = Path("assets") / info["sheet"]
+                    sheet_path = Path(info["sheet"])
                     coords = info.get("coords", [0, 0])
                     tile = info.get("tile", [0, 0])
                     if (

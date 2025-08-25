@@ -87,9 +87,9 @@ class CombatHUD:
         info = self._icon_manifest.get(key)
         icon: Optional[pygame.Surface] = None
         try:
-            assets_root = Path(__file__).resolve().parents[1] / "assets"
+            assets_root = Path(__file__).resolve().parents[1]
             if isinstance(info, str):
-                path = assets_root / "icons" / info
+                path = assets_root / info
                 if path.exists() and hasattr(pygame.image, "load"):
                     icon = pygame.image.load(str(path))
                     if hasattr(icon, "convert_alpha"):
