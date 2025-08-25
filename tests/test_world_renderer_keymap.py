@@ -17,7 +17,7 @@ class DummyWorld:
 def test_handle_event_uses_settings_keymap(monkeypatch):
     monkeypatch.setattr(pygame, "KEYDOWN", 1, raising=False)
     monkeypatch.setattr(pygame, "K_f", 70, raising=False)
-    settings.KEYMAP["pan_left"] = ["K_f"]
+    monkeypatch.setitem(settings.KEYMAP, "pan_left", ["K_f"])
     renderer = WorldRenderer({})
     renderer.surface = pygame.Surface((100, 100))
     renderer.world = DummyWorld()
