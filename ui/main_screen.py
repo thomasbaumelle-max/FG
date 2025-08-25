@@ -78,10 +78,12 @@ class MainScreen:
         self.menu_buttons: List[IconButton] = []
 
         def add_btn(icon_id: str, callback) -> None:
-            rect = pygame.Rect(0, 0, 48, 48)
+            rect = pygame.Rect(0, 0, *MENU_BUTTON_SIZE)
             cb = callback if callable(callback) else (lambda: None)
             tooltip = icon_id.replace("poi_", "").replace("_", " ").title()
-            self.menu_buttons.append(IconButton(rect, icon_id, cb, tooltip=tooltip))
+            self.menu_buttons.append(
+                IconButton(rect, icon_id, cb, tooltip=tooltip, size=MENU_BUTTON_SIZE)
+            )
 
         add_btn("poi_menu", getattr(game, "open_pause_menu", None))
         add_btn("poi_settings", getattr(game, "open_options", None))

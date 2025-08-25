@@ -26,6 +26,7 @@ class IconButton:
         callback: Callable[[], None],
         hotkey: Optional[int] = None,
         tooltip: str = "",
+        size: tuple[int, int] | None = None,
         enabled: bool = True,
     ) -> None:
         self.rect = rect
@@ -33,6 +34,7 @@ class IconButton:
         self.callback = callback
         self.hotkey = hotkey
         self.tooltip = tooltip
+        self.size = rect.size if size is None else size
         self.hovered = False
         self.pressed = False
         self.enabled = enabled
@@ -52,7 +54,9 @@ class IconButton:
         surface.fill(bg, self.rect)
         theme.draw_frame(surface, self.rect, frame_state)
 
-        icon = IconLoader.get(self.icon_id, self.rect.w)
+        width, height = self.size
+        size_min = min(width, height)
+        icon = IconLoader.get(self.icon_id, size_min)
         if icon is not None:
             icon_rect = icon.get_rect()
             icon_rect.center = self.rect.center
