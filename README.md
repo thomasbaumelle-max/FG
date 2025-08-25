@@ -182,6 +182,9 @@ run one at a time. Run the parallelisable tests with:
 pytest -n auto -m "not serial"
 ```
 
+In continuous integration environments, add `--log-file=pytest.log` to
+write test logs to a file when needed.
+
 Execute the remaining serial tests separately with:
 
 ```bash
