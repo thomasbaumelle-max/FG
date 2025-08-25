@@ -1,9 +1,9 @@
 [
-  {"id": "swordsman", "image": "units/swordsman.png", "anchor_px": [32, 64], "shadow_baked": false, "battlefield_scale": 1.0},
-  {"id": "archer", "image": "units/archer.png", "anchor_px": [32, 64], "shadow_baked": false, "battlefield_scale": 1.0},
-  {"id": "mage", "image": "units/mage.png", "anchor_px": [32, 64], "shadow_baked": false, "battlefield_scale": 1.0},
-  {"id": "dragon", "image": "units/dragon.png", "anchor_px": [32, 64], "shadow_baked": false, "battlefield_scale": 1.75},
-  {"id": "priest", "image": "units/priest.png", "anchor_px": [32, 64], "shadow_baked": false, "battlefield_scale": 1.0},
-  {"id": "cavalry", "image": "units/cavalry.png", "anchor_px": [32, 64], "shadow_baked": false, "battlefield_scale": 1.0}
+  {"id": "swordsman", "image": "units/swordsman.png", "anchor_px": [32, 64], "shadow_baked": true, "battlefield_scale": 1.0},
+  {"id": "archer", "image": "units/archer.png", "anchor_px": [32, 64], "shadow_baked": true, "battlefield_scale": 1.0},
+  {"id": "mage", "image": "units/mage.png", "anchor_px": [32, 64], "shadow_baked": true, "battlefield_scale": 1.0},
+  {"id": "dragon", "image": "units/dragon.png", "anchor_px": [32, 64], "shadow_baked": true, "battlefield_scale": 1.75},
+  {"id": "priest", "image": "units/priest.png", "anchor_px": [32, 64], "shadow_baked": true, "battlefield_scale": 1.0},
+  {"id": "cavalry", "image": "units/cavalry.png", "anchor_px": [32, 64], "shadow_baked": true, "battlefield_scale": 1.3}
 ]
 
