@@ -695,6 +695,7 @@ SWORDSMAN_STATS = UnitStats(
     role="Sturdy melee combatant for the front line",
     unit_type="non-magic",
     mana=1,
+    battlefield_scale=1.0,
 )
 
 ARCHER_STATS = UnitStats(
@@ -719,6 +720,7 @@ ARCHER_STATS = UnitStats(
     role="Mobile shooter, effective against low-Def. range targets",
     unit_type="non-magic",
     mana=1,
+    battlefield_scale=1.0,
 )
 
 MAGE_STATS = UnitStats(
@@ -743,6 +745,7 @@ MAGE_STATS = UnitStats(
     role="Versatile spellcaster wielding powerful magic",
     unit_type="magic",
     mana=10,
+    battlefield_scale=1.0,
 )
 
 CAVALRY_STATS = UnitStats(
@@ -767,6 +770,7 @@ CAVALRY_STATS = UnitStats(
     role="Fast attacker that excels at charging",
     unit_type="non-magic",
     mana=1,
+    battlefield_scale=1.0,
 )
 
 DRAGON_STATS = UnitStats(
@@ -791,6 +795,7 @@ DRAGON_STATS = UnitStats(
     role="Flying powerhouse with devastating breath",
     unit_type="magic",
     mana=5,
+    battlefield_scale=1.75,
 )
 
 PRIEST_STATS = UnitStats(
@@ -815,6 +820,7 @@ PRIEST_STATS = UnitStats(
     role="Support caster able to heal allies",
     unit_type="magic",
     mana=10,
+    battlefield_scale=1.0,
 )
 
 # Units that can be recruited in towns
@@ -859,6 +865,7 @@ FUMEROLLE_LIZARD_STATS = UnitStats(
     role="Skirmisher rapide, harcèlement feu à courte portée",
     unit_type="beast-elemental",
     mana=1,
+    battlefield_scale=1.0,
 )
 
 # Ombreloup des feuilles — faible, très mobile, embuscade
@@ -888,6 +895,7 @@ SHADOWLEAF_WOLF_STATS = UnitStats(
     role="Assassin de brousse, projection/embuscade",
     unit_type="beast",
     mana=0,
+    battlefield_scale=1.0,
 )
 
 # Corbeau sanglier — plus fort, heurte/renverse
@@ -917,6 +925,7 @@ BOAR_RAVEN_STATS = UnitStats(
     role="Briseur de ligne, charge et repousser",
     unit_type="beast",
     mana=0,
+    battlefield_scale=1.0,
 )
 
 # Hurlombe — faible en PV, esprit volant, cri terrifiant
@@ -946,6 +955,7 @@ HURLOMBE_STATS = UnitStats(
     role="Contrôle mental léger, harcèlement mobile",
     unit_type="undead-spirit",
     mana=2,
+    battlefield_scale=1.0,
 )
 
 # Serpent des récifs — créature marine ne vivant que dans l'océan
@@ -974,6 +984,7 @@ REEF_SERPENT_STATS = UnitStats(
     role="Prédateur marin à l'étreinte constrictive",
     unit_type="beast",
     mana=0,
+    battlefield_scale=1.75,
 )
 
 
