@@ -51,6 +51,7 @@ from core.spell import (
     Spell as SpellDef,
 )
 from core.faction import FactionDef
+from ui.widgets.icon_button import IconButton
 
 # Units with explicit hero/enemy image overrides. Other units default to an
 # asset whose identifier matches ``UnitStats.name``.
@@ -198,8 +199,8 @@ class Combat:
         self.selected_unit: Optional[Unit] = None
         # Action chosen by the player during the hero's turn
         self.selected_action: Optional[str] = None
-        # Rectangles for action buttons, populated during render.draw()
-        self.action_buttons: Dict[str, pygame.Rect] = {}
+        # Icon buttons for combat actions, populated during render.draw()
+        self.action_buttons: Dict[str, IconButton] = {}
         # When casting a spell, store the caster and wait for target selection
         self.casting_spell: bool = False
         self.spell_caster: Optional[Unit] = None
@@ -267,7 +268,7 @@ class Combat:
         self._dragging = False
         # Automatic control flag and button
         self.auto_mode: bool = False
-        self.auto_button: Optional[pygame.Rect] = None
+        self.auto_button: Optional[IconButton] = None
         # Damage statistics for post battle summary
         self.damage_stats: Dict[Unit, Dict[str, int]] = {
             u: {"dealt": 0, "taken": 0} for u in self.units

@@ -1,12 +1,13 @@
 """User interface drawing for the combat screen."""
 
 from __future__ import annotations
-from typing import Dict, Tuple, Optional
+from typing import Callable, Dict, Tuple, Optional, List
 import json
 from pathlib import Path
 import pygame
 import theme
 import settings
+from ui.widgets.icon_button import IconButton
 
 BUTTON_H = 28
 # Slightly wider and taller panel to fit spells/statuses
@@ -152,7 +153,7 @@ class CombatHUD:
 
     def draw(
         self, screen: pygame.Surface, combat
-    ) -> Tuple[Dict[str, pygame.Rect], Optional[pygame.Rect]]:
+    ) -> Tuple[Dict[str, IconButton], Optional[IconButton]]:
         """Draw the HUD and return ``(action_buttons, auto_button)``."""
         # Determine the grid area from current offsets and zoom
         grid_w = int(combat.grid_pixel_width * combat.zoom)
@@ -167,8 +168,8 @@ class CombatHUD:
         screen.fill(theme.PALETTE.get("panel", (32, 34, 40)), bottom)
         pygame.draw.rect(screen, LINE, bottom, 1)
 
-        action_buttons: Dict[str, pygame.Rect] = {}
-        auto_button: Optional[pygame.Rect] = None
+        action_buttons: Dict[str, IconButton] = {}
+        auto_button: Optional[IconButton] = None
 
         # ---- Right panel: unit card and turn order ----
         if combat.turn_order:
@@ -286,79 +287,100 @@ class CombatHUD:
 
             # Buttons below the turn order
             y += 10
-            auto_button = pygame.Rect(right.x + 10, y, right.width - 20, BUTTON_H)
-            pygame.draw.rect(screen, (52, 55, 63), auto_button)
-            pygame.draw.rect(screen, LINE, auto_button, 1)
-            lab = self.small.render(
-                "AUTO" if not combat.auto_mode else "HUMAN",
-                True,
-                theme.PALETTE["text"],
+            auto_rect = pygame.Rect(right.x + 10, y, right.width - 20, BUTTON_H)
+            auto_button = IconButton(
+                auto_rect,
+                "action_auto_resolve",
+                lambda: setattr(combat, "auto_mode", not combat.auto_mode),
+                tooltip="Auto resolve",
             )
-            screen.blit(lab, lab.get_rect(center=auto_button.center))
-            y = auto_button.bottom + 6
+            auto_button.draw(screen)
+            y = auto_rect.bottom + 6
 
-            r = pygame.Rect(right.x + 10, y, right.width - 20, BUTTON_H)
-            colour = (52, 55, 63) if combat.hero_spells else (40, 42, 48)
-            pygame.draw.rect(screen, colour, r)
-            pygame.draw.rect(screen, LINE, r, 1)
-            txt = self.small.render("Spellbook", True, theme.PALETTE["text"])
-            screen.blit(txt, txt.get_rect(center=r.center))
-            action_buttons["spellbook"] = r
+            spell_rect = pygame.Rect(right.x + 10, y, right.width - 20, BUTTON_H)
+            spell_btn = IconButton(
+                spell_rect,
+                "action_cast",
+                lambda: combat.hero_spells and combat.show_spellbook(),
+                tooltip="Spellbook",
+                enabled=bool(combat.hero_spells),
+            )
+            spell_btn.draw(screen)
+            action_buttons["spellbook"] = spell_btn
         # ---- Action bar (bottom) ----
         x = bottom.x + 8
 
-        def add_btn(key: str, label: str) -> None:
+        def add_btn(key: str, callback: Callable[[], None]) -> None:
             nonlocal x
             size = bottom.height - 8
             icon_key = self.action_icon_keys.get(key, f"action_{key}")
-            icon = self._load_icon(icon_key, size - 4)
-            if icon:
-                r = pygame.Rect(x, bottom.y + 4, size, size)
-                pygame.draw.rect(screen, (52, 55, 63), r)
-                pygame.draw.rect(screen, LINE, r, 1)
-                screen.blit(icon, icon.get_rect(center=r.center))
-            else:
-                txt = self.small.render(label, True, theme.PALETTE["text"])
-                w = max(40, txt.get_width() + 12)
-                r = pygame.Rect(x, bottom.y + 4, w, size)
-                pygame.draw.rect(screen, (52, 55, 63), r)
-                pygame.draw.rect(screen, LINE, r, 1)
-                screen.blit(txt, txt.get_rect(center=r.center))
-            action_buttons[key] = r
-            x = r.x + r.width + 6
+            rect = pygame.Rect(x, bottom.y + 4, size, size)
+            btn = IconButton(
+                rect,
+                icon_key,
+                callback,
+                tooltip=self.action_labels.get(key, key.title()),
+            )
+            btn.draw(screen)
+            action_buttons[key] = btn
+            x = rect.x + rect.width + 6
 
-        actions = combat.get_available_actions(
-            combat.turn_order[combat.current_index]
-        )
+        current = combat.turn_order[combat.current_index]
+
+        def wait_action() -> None:
+            current.acted = True
+            combat.advance_turn()
+            combat.selected_unit = None
+            combat.selected_action = None
+
+        callbacks = {
+            "move": lambda: setattr(combat, "selected_action", "move"),
+            "melee": lambda: setattr(combat, "selected_action", "melee"),
+            "ranged": lambda: setattr(combat, "selected_action", "ranged"),
+            "spell": lambda: setattr(combat, "selected_action", "spell"),
+            "wait": wait_action,
+        }
+
+        actions = combat.get_available_actions(current)
         # Stable ordering for readability
         wanted = ["move", "melee", "ranged", "spell", "wait"]
         for a in wanted:
             if a in actions:
-                add_btn(a, self.action_labels.get(a, a.title()))
+                add_btn(a, callbacks[a])
 
         # Spell submenu when "spell" is selected
         if combat.selected_action == "spell":
             spells = sorted(combat.spells_by_name.keys())
             # Only show spells usable by the current unit
-            caster = combat.turn_order[combat.current_index]
+            caster = current
             allow = set(combat.UNIT_SPELLS.get(caster.stats.name, {}).keys())
             spells = [s for s in spells if s in allow]
             # Fold-out menu
             x2 = x
             for s in spells:
-                r = pygame.Rect(x2, bottom.y + 4, 140, bottom.height - 8)
-                pygame.draw.rect(screen, (70, 72, 82), r)
-                pygame.draw.rect(screen, LINE, r, 1)
+                rect = pygame.Rect(x2, bottom.y + 4, 140, bottom.height - 8)
+                btn = IconButton(
+                    rect,
+                    "action_cast",
+                    lambda s=s: combat.start_spell(caster, s),
+                    tooltip=s,
+                )
+                btn.draw(screen)
                 txt = self.small.render(s, True, theme.PALETTE["text"])
-                screen.blit(txt, txt.get_rect(center=r.center))
-                action_buttons[s] = r
-                x2 = r.x + r.width + 4
+                screen.blit(txt, txt.get_rect(center=rect.center))
+                action_buttons[s] = btn
+                x2 = rect.x + rect.width + 4
             # Back button
-            r = pygame.Rect(x2, bottom.y + 4, 70, bottom.height - 8)
-            pygame.draw.rect(screen, (70, 72, 82), r)
-            pygame.draw.rect(screen, LINE, r, 1)
+            rect = pygame.Rect(x2, bottom.y + 4, 70, bottom.height - 8)
+            back_btn = IconButton(
+                rect,
+                "action_move",
+                lambda: setattr(combat, "selected_action", None),
+                tooltip="Back",
+            )
+            back_btn.draw(screen)
             txt = self.small.render("Back", True, theme.PALETTE["text"])
-            screen.blit(txt, txt.get_rect(center=r.center))
-            action_buttons["back"] = r
+            screen.blit(txt, txt.get_rect(center=rect.center))
+            action_buttons["back"] = back_btn
 
         return action_buttons, auto_button

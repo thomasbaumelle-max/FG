@@ -378,28 +378,12 @@ def handle_button_click(combat, current_unit, pos: Tuple[int, int]) -> bool:
     Returns ``True`` if the click was consumed by the UI.
     """
     mx, my = pos
-    if combat.auto_button and combat.auto_button.collidepoint(mx, my):
-        combat.auto_mode = not combat.auto_mode
+    if combat.auto_button and combat.auto_button.rect.collidepoint(mx, my):
+        combat.auto_button.callback()
         return True
 
-    for action, rect in combat.action_buttons.items():
-        if rect.collidepoint(mx, my):
-            if action == "spellbook":
-                if combat.hero_spells:
-                    combat.show_spellbook()
-                    return True
-                return False
-            elif combat.selected_action == "spell":
-                if action == "back":
-                    combat.selected_action = None
-                    break
-                combat.start_spell(current_unit, action)
-            elif action == "wait":
-                current_unit.acted = True
-                combat.advance_turn()
-                combat.selected_unit = None
-                combat.selected_action = None
-            else:
-                combat.selected_action = action
+    for btn in combat.action_buttons.values():
+        if btn.enabled and btn.rect.collidepoint(mx, my):
+            btn.callback()
             return True
     return False

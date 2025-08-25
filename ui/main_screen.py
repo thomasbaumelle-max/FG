@@ -19,9 +19,12 @@ from .widgets.desc_bar import DescBar
 from .widgets.resources_bar import ResourcesBar
 from .widgets.minimap import Minimap
 from .widgets.hero_list import HeroList
-from .widgets.buttons_column import ButtonsColumn
 from .widgets.hero_army_panel import HeroArmyPanel
+from .widgets.icon_button import IconButton
 from .widgets.turn_bar import TurnBar
+
+MENU_BUTTON_SIZE = (48, 48)
+MENU_PADDING = 4
 from .state.event_bus import (
     EVENT_BUS,
     ON_CAMERA_CHANGED,
@@ -71,12 +74,22 @@ class MainScreen:
         heroes = list(getattr(getattr(game, "state", None), "heroes", []))
         armies = list(getattr(getattr(game, "world", None), "player_armies", []))
         self.hero_list.set_heroes(heroes + armies)
-        self.buttons = ButtonsColumn(
-            on_end_turn=getattr(game, "end_turn", None),
-            open_town=getattr(game, "open_town", None),
-            open_journal=getattr(game, "open_journal", None),
-            open_options=getattr(game, "open_options", None),
-        )
+
+        self.menu_buttons: List[IconButton] = []
+
+        def add_btn(icon_id: str, callback) -> None:
+            rect = pygame.Rect(0, 0, 48, 48)
+            cb = callback if callable(callback) else (lambda: None)
+            tooltip = icon_id.replace("poi_", "").replace("_", " ").title()
+            self.menu_buttons.append(IconButton(rect, icon_id, cb, tooltip=tooltip))
+
+        add_btn("poi_menu", getattr(game, "open_pause_menu", None))
+        add_btn("poi_settings", getattr(game, "open_options", None))
+        add_btn("poi_save", None)
+        add_btn("poi_load", None)
+        add_btn("poi_journal", getattr(game, "open_journal", None))
+        add_btn("poi_town", getattr(game, "open_town", None))
+
         self.army_panel = HeroArmyPanel(hero=getattr(game, "hero", None))
         self.turn_bar = TurnBar(
             calendar=getattr(getattr(game, "state", None), "turn", None)
@@ -141,8 +154,8 @@ class MainScreen:
         mid_h = int(0.38 * side_h)
 
         # Determine if buttons can fit next to the hero list; otherwise stack
-        btn_count = len(self.buttons.buttons)
-        btn_total_h = btn_count * self.buttons.BUTTON_SIZE[1] + (btn_count - 1) * self.buttons.PADDING
+        btn_count = len(self.menu_buttons)
+        btn_total_h = btn_count * MENU_BUTTON_SIZE[1] + (btn_count - 1) * MENU_PADDING
         if buttons_below is None:
             buttons_below = mid_h < btn_total_h - M
 
@@ -173,6 +186,13 @@ class MainScreen:
             "6": buttons_rect,      # boutons
             "7": army_rect,         # armée du héros
         }
+
+    def _position_menu_buttons(self, rect: pygame.Rect) -> None:
+        y = rect.y
+        for btn in self.menu_buttons:
+            btn.rect.topleft = (rect.x, y)
+            btn.rect.size = MENU_BUTTON_SIZE
+            y += MENU_BUTTON_SIZE[1] + MENU_PADDING
 
     def _on_sea_chain_progress(self, current: int, total: int) -> None:
         """Display progress for sea quest chain in the description bar."""
@@ -208,16 +228,9 @@ class MainScreen:
 
         buttons_rect = self.widgets.get("6")
         if buttons_rect:
-            mouse_get_pos = getattr(getattr(pygame, "mouse", None), "get_pos", lambda: (0, 0))
-            if event.type in (MOUSEBUTTONDOWN, MOUSEMOTION):
-                pos = getattr(event, "pos", mouse_get_pos())
-                if buttons_rect.collidepoint(pos):
-                    self.buttons.handle_event(event, buttons_rect)
-                    return True
-            elif event.type == KEYDOWN:
-                pos = mouse_get_pos()
-                if buttons_rect.collidepoint(pos):
-                    self.buttons.handle_event(event, buttons_rect)
+            self._position_menu_buttons(buttons_rect)
+            for btn in self.menu_buttons:
+                if btn.handle(event):
                     return True
 
         if event.type == MOUSEBUTTONDOWN:
@@ -282,7 +295,6 @@ class MainScreen:
             "3": self.resources_bar,
             # minimap handled above
             "5": self.hero_list,
-            "6": self.buttons,
             "7": self.army_panel,
             "8": self.turn_bar,
         }
@@ -325,7 +337,10 @@ class MainScreen:
         self.hero_list.draw(screen, self.widgets["5"]); dirty.append(self.widgets["5"])
     
         panel(self.widgets["6"], hover=(self.hovered == "6"))
-        self.buttons.draw(screen, self.widgets["6"]); dirty.append(self.widgets["6"])
+        self._position_menu_buttons(self.widgets["6"])
+        for btn in self.menu_buttons:
+            btn.draw(screen)
+        dirty.append(self.widgets["6"])
     
         # Armée du héros
         panel(self.widgets["7"], hover=(self.hovered == "7"))
