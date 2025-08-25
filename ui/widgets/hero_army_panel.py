@@ -38,6 +38,13 @@ class HeroArmyPanel:
     GRID_COLS = max(cols + (offset + 1) // 2 for cols, offset in GRID_LAYOUT)
     GRID_CELLS = sum(cols for cols, _ in GRID_LAYOUT)
 
+    FORMATION_BUTTON_HEIGHT = 20
+    FORMATIONS = [
+        ("relâchée", "relachee"),
+        ("serrée", "serree"),
+        ("carrée", "carree"),
+    ]
+
     def __init__(
         self,
         hero: Optional[UnitCarrier] = None,
@@ -59,6 +66,7 @@ class HeroArmyPanel:
         self.drag: Optional[_DragState] = None
         # Update displayed hero when selection changes
         EVENT_BUS.subscribe(ON_SELECT_HERO, self.set_hero)
+        self.selected_formation = "serree"
 
     # ------------------------------------------------------------------
     def set_hero(self, hero: UnitCarrier) -> None:
@@ -68,6 +76,7 @@ class HeroArmyPanel:
         self.grid = list(army[: self.GRID_CELLS])
         while len(self.grid) < self.GRID_CELLS:
             self.grid.append(None)
+        self.selected_formation = getattr(hero, "formation", "serree")
         portrait = getattr(hero, "portrait", None)
         if isinstance(portrait, str):
             try:
@@ -122,6 +131,25 @@ class HeroArmyPanel:
         return r.x <= x < r.x + r.width and r.y <= y < r.y + r.height
 
 
+    def _formation_rects(self, rect: pygame.Rect) -> List[pygame.Rect]:
+        """Return rectangles for the formation selection buttons."""
+        width = rect.width - self.PORTRAIT_SIZE - 2 * self.PADDING
+        btn_w = (width - 2 * self.PADDING) // 3
+        x = rect.x + self.PORTRAIT_SIZE + self.PADDING
+        y = rect.y + rect.height - self.FORMATION_BUTTON_HEIGHT - self.PADDING
+        rects = []
+        for i in range(3):
+            rects.append(
+                pygame.Rect(
+                    x + i * (btn_w + self.PADDING),
+                    y,
+                    btn_w,
+                    self.FORMATION_BUTTON_HEIGHT,
+                )
+            )
+        return rects
+
+
     def _cell_rect(self, index: int, rect: pygame.Rect) -> pygame.Rect:
         gx, gy = self._grid_origin(rect)
         idx = index
@@ -156,6 +184,13 @@ class HeroArmyPanel:
             button = getattr(evt, "button", 0)
             pos = getattr(evt, "pos", (0, 0))
             if button == 1:
+                # Formation buttons
+                for (label, key), brect in zip(self.FORMATIONS, self._formation_rects(rect)):
+                    if self._point_in_rect(pos, brect):
+                        self.selected_formation = key
+                        if self.hero is not None:
+                            setattr(self.hero, "formation", key)
+                        return
                 if self._point_in_rect(pos, self._portrait_rect(rect)):
                     if getattr(evt, "clicks", 1) >= 2 and self.hero and self.on_open_hero:
                         self.on_open_hero(self.hero)
@@ -233,3 +268,19 @@ class HeroArmyPanel:
                 pygame.draw.rect(surface, (90,30,30), bar)
                 inner = pygame.Rect(bar.x, bar.y, int(bar.width*cur_hp/max_hp), bar.height)
                 pygame.draw.rect(surface, (80,180,80), inner)
+
+        # formation buttons
+        if self.font:
+            for (label, key), brect in zip(self.FORMATIONS, self._formation_rects(rect)):
+                surface.fill((36, 38, 44), brect)
+                pygame.draw.rect(surface, (74, 76, 86), brect, 1)
+                if self.selected_formation == key:
+                    pygame.draw.rect(surface, (200, 200, 80), brect, 2)
+                text = self.font.render(label, True, (230, 230, 235))
+                surface.blit(
+                    text,
+                    (
+                        brect.x + (brect.width - text.get_width()) // 2,
+                        brect.y + (brect.height - text.get_height()) // 2,
+                    ),
+                )
