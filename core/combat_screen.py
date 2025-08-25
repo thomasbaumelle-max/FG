@@ -9,7 +9,9 @@ import theme
 import settings
 
 BUTTON_H = 28
-PANEL_W = 260
+# Slightly wider and taller panel to fit spells/statuses
+PANEL_W = 300
+PANEL_EXTRA_H = 120
 MARGIN = 10
 LINE = (74, 76, 86)
 
@@ -54,7 +56,7 @@ class CombatHUD:
             x,
             grid_rect.y - combat.top_margin,
             PANEL_W,
-            grid_rect.height + combat.top_margin,
+            grid_rect.height + combat.top_margin + PANEL_EXTRA_H,
         )
         bottom = pygame.Rect(
             grid_rect.x,
@@ -112,8 +114,39 @@ class CombatHUD:
                 txt = self.font.render(s, True, theme.PALETTE["text"])
                 screen.blit(txt, (right.x + 84, right.y + 42 + i * 18))
 
+            # Spells available to the unit
+            y = right.y + 42 + len(lines) * 18 + 10
+            spells = []
+            for name, cost in combat.UNIT_SPELLS.get(unit.stats.name, {}).items():
+                if name in combat.spells_by_name and unit.mana >= cost:
+                    spells.append((name, cost))
+            if spells:
+                screen.blit(
+                    self.small.render("Spells:", True, theme.PALETTE["text"]),
+                    (right.x + 10, y),
+                )
+                y += 18
+                for name, cost in spells:
+                    txt = self.small.render(f"{name} ({cost})", True, theme.PALETTE["text"])
+                    screen.blit(txt, (right.x + 20, y))
+                    y += 18
+
+            # Active statuses on the unit
+            statuses = combat.statuses.get(unit, {})
+            if statuses:
+                y += 6
+                screen.blit(
+                    self.small.render("Status:", True, theme.PALETTE["text"]),
+                    (right.x + 10, y),
+                )
+                y += 18
+                for name, turns in statuses.items():
+                    txt = self.small.render(f"{name} ({turns})", True, theme.PALETTE["text"])
+                    screen.blit(txt, (right.x + 20, y))
+                    y += 18
+
             # Turn order thumbnails
-            y0 = right.y + 150
+            y0 = y + 10
             screen.blit(
                 self.small.render("Next:", True, theme.PALETTE["text"]),
                 (right.x + 10, y0),
