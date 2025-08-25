@@ -1,3 +1,6 @@
+import pytest
+pytestmark = pytest.mark.worldgen
+
 import os
 import tempfile
 

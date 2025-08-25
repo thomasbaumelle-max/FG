@@ -1,3 +1,6 @@
+import pytest
+pytestmark = pytest.mark.worldgen
+
 from pathlib import Path
 
 from core.world import WorldMap
