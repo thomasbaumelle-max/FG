@@ -335,7 +335,10 @@ def handle_button_click(combat, current_unit, pos: Tuple[int, int]) -> bool:
     for action, rect in combat.action_buttons.items():
         if rect.collidepoint(mx, my):
             if action == "spellbook":
-                combat.show_spellbook()
+                if combat.hero_spells:
+                    combat.show_spellbook()
+                    return True
+                return False
             elif combat.selected_action == "spell":
                 if action == "back":
                     combat.selected_action = None

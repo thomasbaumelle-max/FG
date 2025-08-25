@@ -145,13 +145,13 @@ class CombatHUD:
             screen.blit(lab, lab.get_rect(center=auto_button.center))
             y = auto_button.bottom + 6
 
-            if combat.hero_spells:
-                r = pygame.Rect(right.x + 10, y, right.width - 20, BUTTON_H)
-                pygame.draw.rect(screen, (52, 55, 63), r)
-                pygame.draw.rect(screen, LINE, r, 1)
-                txt = self.small.render("Spellbook", True, theme.PALETTE["text"])
-                screen.blit(txt, txt.get_rect(center=r.center))
-                action_buttons["spellbook"] = r
+            r = pygame.Rect(right.x + 10, y, right.width - 20, BUTTON_H)
+            colour = (52, 55, 63) if combat.hero_spells else (40, 42, 48)
+            pygame.draw.rect(screen, colour, r)
+            pygame.draw.rect(screen, LINE, r, 1)
+            txt = self.small.render("Spellbook", True, theme.PALETTE["text"])
+            screen.blit(txt, txt.get_rect(center=r.center))
+            action_buttons["spellbook"] = r
         # ---- Action bar (bottom) ----
         x = bottom.x + 8
 
