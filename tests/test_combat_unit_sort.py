@@ -1,5 +1,5 @@
 import pygame
-from core.combat import Combat
+import pygame
 from core.entities import UnitStats, Unit
 from core import combat_render
 from tests.test_overlay_rendering import _ensure_stub_functions
@@ -24,7 +24,7 @@ def _make_unit(name: str, side: str = "hero") -> Unit:
     return Unit(stats, 1, side)
 
 
-def test_units_drawn_in_coordinate_order(monkeypatch):
+def test_units_drawn_in_coordinate_order(monkeypatch, simple_combat):
     _ensure_stub_functions(monkeypatch)
     screen = pygame.Surface((800, 600))
 
@@ -35,7 +35,7 @@ def test_units_drawn_in_coordinate_order(monkeypatch):
 
     assets = {"u1": pygame.Surface((10, 10)), "u2": pygame.Surface((10, 10)), "u3": pygame.Surface((10, 10))}
 
-    combat = Combat(screen, assets, [u1, u2, u3], [])
+    combat = simple_combat([u1, u2, u3], [], screen=screen, assets=assets)
 
     # Place units in an unsorted order
     combat.units[0].x, combat.units[0].y = 1, 0  # u1
