@@ -189,43 +189,69 @@ class Game:
             search_paths.append(extra)
         self.ctx = Context(repo_root=repo_root, search_paths=search_paths, asset_loader=self.assets)
 
-        # Load factions and register any unique buildings
-        self.factions: Dict[str, FactionDef] = load_factions(self.ctx)
-        self.faction: FactionDef = self.factions.get(self.faction_id, next(iter(self.factions.values()))) if self.factions else FactionDef("default", "Default")
+        fast_tests = os.environ.get("FG_FAST_TESTS") == "1"
 
-        BiomeCatalog.load(self.ctx, "biomes/biomes.json")
-        init_biome_images()
-        self.load_assets()
+        if not fast_tests:
+            # Load factions and register any unique buildings
+            self.factions: Dict[str, FactionDef] = load_factions(self.ctx)
+            self.faction: FactionDef = (
+                self.factions.get(self.faction_id, next(iter(self.factions.values())))
+                if self.factions
+                else FactionDef("default", "Default")
+            )
 
-        battlefield_manifest = os.path.join(
-            repo_root, "assets", "battlefields", "battlefields.json"
-        )
-        self.battlefields: Dict[str, BattlefieldDef] = load_battlefields(
-            battlefield_manifest, self.assets
-        )
+            BiomeCatalog.load(self.ctx, "biomes/biomes.json")
+            init_biome_images()
+            self.load_assets()
 
-        self.biome_tilesets: Dict[str, BiomeTileset] = {
-            b.id: load_tileset(self.ctx, b, tile_size=constants.COMBAT_TILE_SIZE)
-            for b in BiomeCatalog._biomes.values()
-        }
+            battlefield_manifest = os.path.join(
+                repo_root, "assets", "battlefields", "battlefields.json"
+            )
+            self.battlefields: Dict[str, BattlefieldDef] = load_battlefields(
+                battlefield_manifest, self.assets
+            )
 
-        self.flora_loader = FloraLoader(self.ctx, tile_size=constants.TILE_SIZE)
-        self.flora_loader.load_manifest("flora/flora.json")
+            self.biome_tilesets: Dict[str, BiomeTileset] = {
+                b.id: load_tileset(self.ctx, b, tile_size=constants.COMBAT_TILE_SIZE)
+                for b in BiomeCatalog._biomes.values()
+            }
 
-        self.resources: Dict[str, ResourceDef] = load_resources(
-            self.ctx, "resources/resources.json", tile_size=constants.TILE_SIZE
-        )
+            self.flora_loader = FloraLoader(self.ctx, tile_size=constants.TILE_SIZE)
+            self.flora_loader.load_manifest("flora/flora.json")
 
-        try:
-            self.unit_defs = units_loader.load_units(self.ctx, "units/units.json")
-        except Exception:
+            self.resources: Dict[str, ResourceDef] = load_resources(
+                self.ctx, "resources/resources.json", tile_size=constants.TILE_SIZE
+            )
+
+            try:
+                self.unit_defs = units_loader.load_units(
+                    self.ctx, "units/units.json"
+                )
+            except Exception:
+                self.unit_defs = {}
+            try:
+                self.boat_defs: Dict[str, BoatDef] = load_boats(
+                    self.ctx, "boats.json"
+                )
+            except Exception:
+                self.boat_defs = {}
+
+            # Initialise audio system and load sound effects
+            audio.init()
+        else:
+            self.factions = {}
+            self.faction = FactionDef("default", "Default")
+            self.battlefields = {}
+            self.biome_tilesets = {}
+            self.flora_loader = FloraLoader(
+                self.ctx, tile_size=constants.TILE_SIZE
+            )
+            self.resources = {}
             self.unit_defs = {}
-        try:
-            self.boat_defs: Dict[str, BoatDef] = load_boats(self.ctx, "boats.json")
-        except Exception:
             self.boat_defs = {}
-        # Initialise audio system and load sound effects
-        audio.init()
+            self.tile_variants = {}
+            self.coast_edges = {}
+            self.coast_corners = {}
         try:
             self.ap_font = theme.get_font(24) or pygame.font.Font(None, 24)
         except Exception:
