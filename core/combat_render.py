@@ -378,12 +378,12 @@ def handle_button_click(combat, current_unit, pos: Tuple[int, int]) -> bool:
     Returns ``True`` if the click was consumed by the UI.
     """
     mx, my = pos
-    if combat.auto_button and combat.auto_button.rect.collidepoint(mx, my):
+    if combat.auto_button and combat.auto_button.collidepoint((mx, my)):
         combat.auto_button.callback()
         return True
 
     for btn in combat.action_buttons.values():
-        if btn.enabled and btn.rect.collidepoint(mx, my):
+        if btn.enabled and btn.collidepoint((mx, my)):
             btn.callback()
             return True
     return False

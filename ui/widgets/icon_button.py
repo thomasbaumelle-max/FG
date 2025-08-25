@@ -41,6 +41,10 @@ class IconButton:
         self.font = theme.get_font(16)
 
     # ------------------------------------------------------------------
+    def collidepoint(self, pos: tuple[int, int]) -> bool:
+        return self.rect.collidepoint(pos)
+
+    # ------------------------------------------------------------------
     def draw(self, surface: pygame.Surface) -> None:
         """Render the button to ``surface``."""
 
@@ -75,15 +79,15 @@ class IconButton:
         if not self.enabled:
             return False
         if event.type == MOUSEMOTION:
-            self.hovered = self.rect.collidepoint(getattr(event, "pos", (0, 0)))
+            self.hovered = self.collidepoint(getattr(event, "pos", (0, 0)))
         elif event.type == MOUSEBUTTONDOWN and getattr(event, "button", 0) == 1:
-            if self.rect.collidepoint(getattr(event, "pos", (0, 0))):
+            if self.collidepoint(getattr(event, "pos", (0, 0))):
                 self.pressed = True
                 return True
         elif event.type == MOUSEBUTTONUP and getattr(event, "button", 0) == 1:
             if self.pressed:
                 self.pressed = False
-                if self.rect.collidepoint(getattr(event, "pos", (0, 0))):
+                if self.collidepoint(getattr(event, "pos", (0, 0))):
                     if self.callback:
                         self.callback()
                     return True
