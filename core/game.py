@@ -585,6 +585,9 @@ class Game:
 
     def load_assets(self) -> None:
         """Load all images referenced in constants.  If a file is missing, skip it."""
+        if os.environ.get("FG_FAST_TESTS") == "1":
+            self._asset_paths = {}
+            return
         # Build a mapping of relative path -> full path by walking all
         # directories known to the asset manager.  Paths earlier in
         # ``search_paths`` take precedence, ensuring externally supplied assets
