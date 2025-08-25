@@ -74,6 +74,19 @@ UNIT_SPELLS: Dict[str, Dict[str, int]] = {
     'Dragon': {'Dragon Breath': 2},
 }
 
+# Slot -> (x, y) coordinates for hero formations
+FORMATION_COORDS: Dict[str, List[Tuple[int, int]]] = {
+    "serree": [
+        (0, 0), (0, 2), (0, 4), (0, 6), (1, 1), (1, 3), (1, 5)
+    ],
+    "relachee": [
+        (0, 0), (0, 2), (0, 4), (0, 6), (2, 1), (2, 3), (2, 5)
+    ],
+    "carree": [
+        (0, 0), (0, 2), (1, 0), (1, 2), (2, 0), (2, 2), (0, 4)
+    ],
+}
+
 
 def water_battlefield_template() -> List[List[str]]:
     """Return a combat grid filled entirely with water tiles.
@@ -559,34 +572,34 @@ class Combat:
         for y in range(constants.COMBAT_GRID_HEIGHT):
             for x in range(constants.COMBAT_GRID_WIDTH):
                 self.grid[y][x] = None
-        # Place hero units on the leftmost columns
-        hero_cols = [0, 1]
-        for unit in self.hero_units:
-            placed = False
-            for col in hero_cols:
-                for row in range(constants.COMBAT_GRID_HEIGHT):
-                    if self.grid[row][col] is None:
-                        self.grid[row][col] = unit
-                        unit.x = col
-                        unit.y = row
-                        placed = True
-                        break
-                if placed:
-                    break
-        # Place enemy units on the rightmost columns
-        enemy_cols = [constants.COMBAT_GRID_WIDTH - 1, constants.COMBAT_GRID_WIDTH - 2]
-        for unit in self.enemy_units:
-            placed = False
-            for col in enemy_cols:
-                for row in range(constants.COMBAT_GRID_HEIGHT):
-                    if self.grid[row][col] is None:
-                        self.grid[row][col] = unit
-                        unit.x = col
-                        unit.y = row
-                        placed = True
-                        break
-                if placed:
-                    break
+
+        # Hero formation
+        hero_obj = getattr(self, "hero", None)
+        formation = getattr(hero_obj, "formation", "serree")
+        coords = FORMATION_COORDS.get(formation, FORMATION_COORDS["serree"])
+        for idx, unit in enumerate(self.hero_units):
+            if idx >= len(coords):
+                break
+            x, y = coords[idx]
+            if 0 <= x < constants.COMBAT_GRID_WIDTH and 0 <= y < constants.COMBAT_GRID_HEIGHT:
+                if self.grid[y][x] is None:
+                    self.grid[y][x] = unit
+                    unit.x = x
+                    unit.y = y
+
+        # Enemy uses tight formation mirrored horizontally
+        enemy_coords = [
+            (constants.COMBAT_GRID_WIDTH - 1 - x, y) for x, y in FORMATION_COORDS["serree"]
+        ]
+        for idx, unit in enumerate(self.enemy_units):
+            if idx >= len(enemy_coords):
+                break
+            x, y = enemy_coords[idx]
+            if 0 <= x < constants.COMBAT_GRID_WIDTH and 0 <= y < constants.COMBAT_GRID_HEIGHT:
+                if self.grid[y][x] is None:
+                    self.grid[y][x] = unit
+                    unit.x = x
+                    unit.y = y
 
     def reset_turn_order(self) -> None:
         """Initialise a new round by sorting units by initiative and resetting acted flag."""
