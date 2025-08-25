@@ -20,6 +20,7 @@ def marine_world() -> WorldMap:
 
 
 @pytest.mark.slow
+@pytest.mark.worldgen
 def test_starting_area_has_buildings_and_town(plaine_world):
     world = plaine_world
     assert world.starting_area is not None
@@ -52,6 +53,7 @@ def test_starting_area_has_buildings_and_town(plaine_world):
     assert world.grid[sy][sx].building is None
 
 @pytest.mark.slow
+@pytest.mark.worldgen
 def test_building_images_loaded(plaine_world):
     import sys
     import types
@@ -132,6 +134,7 @@ def test_building_images_loaded(plaine_world):
 
 
 @pytest.mark.slow
+@pytest.mark.worldgen
 def test_marine_islands_have_required_buildings(marine_world):
     world = marine_world
     assert world.starting_area is not None
