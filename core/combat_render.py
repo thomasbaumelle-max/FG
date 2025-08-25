@@ -123,7 +123,7 @@ def draw(combat, frame: int = 0) -> None:
     for x in range(constants.COMBAT_GRID_WIDTH):
         for y in range(constants.COMBAT_GRID_HEIGHT):
             rect = combat.cell_rect(x, y)
-            draw_hex(overlay, rect, constants.WHITE, 40, width=1)
+            draw_hex(overlay, rect, constants.GREY, 25, width=1)
 
     # Highlight reachable squares when preparing a movement action
     if (
