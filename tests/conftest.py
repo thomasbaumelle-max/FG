@@ -7,6 +7,13 @@ import random
 import pytest
 from types import SimpleNamespace
 
+# Ensure specific environment variables for tests
+@pytest.fixture(scope="session", autouse=True)
+def _configure_test_environment():
+    os.environ.setdefault("FG_FAST_TESTS", "1")
+    os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
+    yield
+
 # Provide a lightweight pygame stub so tests run without the real library
 _STUB = os.path.join(os.path.dirname(__file__), "pygame_stub", "__init__.py")
 spec = importlib.util.spec_from_file_location("pygame", _STUB)
