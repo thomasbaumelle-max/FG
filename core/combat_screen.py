@@ -46,17 +46,18 @@ class CombatHUD:
         self,
         screen: pygame.Surface,
         grid_rect: pygame.Rect,
+        combat,
     ) -> Tuple[pygame.Rect, pygame.Rect]:
         """Return rectangles for the side and bottom panels."""
         right = pygame.Rect(
             grid_rect.x + grid_rect.width + MARGIN,
-            grid_rect.y,
+            grid_rect.y - combat.top_margin,
             PANEL_W,
-            grid_rect.height,
+            grid_rect.height + combat.top_margin,
         )
         bottom = pygame.Rect(
             grid_rect.x,
-            grid_rect.y + grid_rect.height + MARGIN,
+            grid_rect.y - combat.top_margin + grid_rect.height + MARGIN,
             grid_rect.width,
             BUTTON_H + 8,
         )
@@ -71,7 +72,7 @@ class CombatHUD:
         grid_h = int(combat.grid_pixel_height * combat.zoom)
         grid_rect = pygame.Rect(combat.offset_x, combat.offset_y, grid_w, grid_h)
 
-        right, bottom = self._panel_rects(screen, grid_rect)
+        right, bottom = self._panel_rects(screen, grid_rect, combat)
 
         # Backgrounds
         screen.fill(theme.PALETTE.get("panel", (32, 34, 40)), right)
