@@ -1,9 +1,11 @@
 import random
 
+import pytest
 from mapgen.continents import generate_continent_map
 from core.world import WorldMap
 
 
+@pytest.mark.slow
 def test_starting_area_has_buildings_and_town():
     random.seed(0)
     rows = generate_continent_map(30, 30, seed=0)
@@ -37,6 +39,7 @@ def test_starting_area_has_buildings_and_town():
     assert abs(sx - tx) + abs(sy - ty) == 1
     assert world.grid[sy][sx].building is None
 
+@pytest.mark.slow
 def test_building_images_loaded():
     import sys
     import types
@@ -119,6 +122,7 @@ def test_building_images_loaded():
         sys.modules.pop("pygame.draw", None)
 
 
+@pytest.mark.slow
 def test_marine_islands_have_required_buildings():
     random.seed(0)
     rows = generate_continent_map(30, 30, seed=0, map_type="marine")

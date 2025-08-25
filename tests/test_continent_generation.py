@@ -1,8 +1,10 @@
 import random
 
+import pytest
 from mapgen.continents import generate_continent_map
 
 
+@pytest.mark.slow
 def test_generate_continent_map_contains_land_and_ocean():
     random.seed(0)
     width, height = 20, 15
@@ -15,6 +17,7 @@ def test_generate_continent_map_contains_land_and_ocean():
     assert land_chars  # at least one land tile
 
 
+@pytest.mark.slow
 def test_biome_adjacency_respects_rules():
     random.seed(0)
     width, height = 20, 15

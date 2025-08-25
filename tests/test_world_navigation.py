@@ -5,6 +5,7 @@ from core.entities import Boat
 from loaders.boat_loader import BoatDef
 import audio
 import random
+import pytest
 
 from mapgen.continents import generate_continent_map
 from core.world import WorldMap
@@ -110,6 +111,7 @@ def _generate_world(map_type: str) -> WorldMap:
     return WorldMap(map_data=rows)
 
 
+@pytest.mark.slow
 def test_plaine_map_is_land_heavy():
     world = _generate_world("plaine")
     total = world.width * world.height
@@ -122,6 +124,7 @@ def test_plaine_map_is_land_heavy():
     assert land / total > 0.6
 
 
+@pytest.mark.slow
 def test_marine_map_features_and_starting_islands():
     world = _generate_world("marine")
     total = world.width * world.height
