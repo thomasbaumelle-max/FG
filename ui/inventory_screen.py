@@ -542,7 +542,7 @@ class InventoryScreen:
                     if e.button == 1:
                         # Tabs
                         for name, btn in self.tab_buttons.items():
-                            if btn.rect.collidepoint(pos):
+                            if btn.collidepoint(pos):
                                 btn.callback()
                                 break
                         else:

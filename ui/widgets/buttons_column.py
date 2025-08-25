@@ -141,7 +141,7 @@ class ButtonsColumn:
         if getattr(event, "type", None) == MOUSEMOTION:
             idx: Optional[int] = None
             for i, entry in enumerate(self.buttons):
-                if entry.button.rect.collidepoint(getattr(event, "pos", (0, 0))):
+                if entry.button.collidepoint(getattr(event, "pos", (0, 0))):
                     idx = i
                     break
             if idx != self.hover_index:
@@ -157,7 +157,7 @@ class ButtonsColumn:
     def get_tooltip(self, pos: Tuple[int, int], rect: pygame.Rect) -> Optional[str]:
         self._position_buttons(rect)
         for entry in self.buttons:
-            if entry.button.rect.collidepoint(pos) and entry.button.enabled:
+            if entry.button.collidepoint(pos) and entry.button.enabled:
                 return entry.button.tooltip
         return None
 
