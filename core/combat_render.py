@@ -7,7 +7,8 @@ from typing import Tuple
 import pygame
 import constants
 import theme
-from .combat_screen import PANEL_W, BUTTON_H, MARGIN as HUD_MARGIN
+from .combat_screen import BUTTON_H, MARGIN as HUD_MARGIN
+from .status_utils import categorize_status
 
 
 def draw_hex(
@@ -110,9 +111,7 @@ def draw(combat, frame: int = 0) -> None:
         img = getattr(combat.hero, "battlefield_image", None)
         if isinstance(img, pygame.Surface):
             w, h = img.get_size()
-            target_h = int(
-                combat.hex_width * constants.HERO_HEX_FACTOR * combat.zoom
-            )
+            target_h = int(combat.hex_width * constants.HERO_HEX_FACTOR * combat.zoom)
             if h != target_h:
                 scale = target_h / h
                 img = pygame.transform.scale(img, (int(w * scale), target_h))
@@ -140,7 +139,7 @@ def draw(combat, frame: int = 0) -> None:
     ):
         reachable = combat.reachable_squares(combat.selected_unit)
         highlight_img = combat.assets.get("move_overlay")
-        for (cx, cy) in reachable:
+        for cx, cy in reachable:
             rect = combat.cell_rect(cx, cy)
             if highlight_img:
                 img = highlight_img
@@ -179,7 +178,7 @@ def draw(combat, frame: int = 0) -> None:
                     if combat.grid[y][x] is None and (x, y) not in combat.obstacles
                 ]
         highlight_img = combat.assets.get("spell_overlay")
-        for (cx, cy) in targets:
+        for cx, cy in targets:
             rect = combat.cell_rect(cx, cy)
             if highlight_img:
                 img = highlight_img
@@ -199,18 +198,16 @@ def draw(combat, frame: int = 0) -> None:
             combat.selected_unit, combat.selected_action
         )
         if combat.selected_action == "melee":
-            highlight_img = (
-                combat.assets.get("melee_overlay")
-                or combat.assets.get("melee_range")
+            highlight_img = combat.assets.get("melee_overlay") or combat.assets.get(
+                "melee_range"
             )
             colour = constants.RED
         else:
-            highlight_img = (
-                combat.assets.get("ranged_overlay")
-                or combat.assets.get("ranged_range")
+            highlight_img = combat.assets.get("ranged_overlay") or combat.assets.get(
+                "ranged_range"
             )
             colour = constants.YELLOW
-        for (cx, cy) in targets:
+        for cx, cy in targets:
             rect = combat.cell_rect(cx, cy)
             if highlight_img:
                 img = highlight_img
@@ -227,7 +224,7 @@ def draw(combat, frame: int = 0) -> None:
         combat.screen.blit(overlay, (0, 0))
 
     # Draw obstacles
-    for (cx, cy) in combat.obstacles:
+    for cx, cy in combat.obstacles:
         rect = combat.cell_rect(cx, cy)
         img = combat.assets.get(constants.IMG_OBSTACLE)
         if img and rect.size != img.get_size():
@@ -238,7 +235,7 @@ def draw(combat, frame: int = 0) -> None:
             pygame.draw.rect(combat.screen, theme.PALETTE["panel"], rect)
 
     # Draw active ice walls
-    for (cx, cy) in combat.ice_walls:
+    for cx, cy in combat.ice_walls:
         rect = combat.cell_rect(cx, cy)
         img = combat.assets.get("ice_wall")
         if img:
@@ -298,15 +295,32 @@ def draw(combat, frame: int = 0) -> None:
                 combat.screen.blit(shadow, (shadow_x, shadow_y))
             combat.screen.blit(img, (x, y))
         else:
-            colour = (
-                combat.hero_colour if unit.side == "hero" else constants.RED
-            )
+            colour = combat.hero_colour if unit.side == "hero" else constants.RED
             pygame.draw.circle(combat.screen, colour, rect.center, rect.width // 3)
-        font = pygame.font.SysFont(None, int(18 * combat.zoom))
-        text = font.render(str(unit.count), True, constants.WHITE)
-        combat.screen.blit(
-            text, (rect.x + int(2 * combat.zoom), rect.y + int(2 * combat.zoom))
-        )
+        stack_w = int(30 * combat.zoom)
+        stack_h = int(20 * combat.zoom)
+        stack_rect = pygame.Rect(0, 0, stack_w, stack_h)
+        stack_rect.centerx = rect.centerx
+        stack_rect.top = rect.bottom
+        pygame.draw.rect(combat.screen, theme.PALETTE["panel"], stack_rect)
+        font = pygame.font.SysFont(None, int(14 * combat.zoom))
+        text = font.render(str(unit.count), True, theme.PALETTE["text"])
+        text_rect = text.get_rect(center=stack_rect.center)
+        combat.screen.blit(text, text_rect)
+        statuses = combat.statuses.get(unit, {})
+        has_buff = any(categorize_status(s) == "buff" for s in statuses)
+        has_debuff = any(categorize_status(s) == "debuff" for s in statuses)
+        ind = int(6 * combat.zoom)
+        if has_buff:
+            buff = pygame.Rect(0, 0, ind, ind)
+            buff.centery = stack_rect.centery
+            buff.right = stack_rect.left - int(2 * combat.zoom)
+            pygame.draw.rect(combat.screen, constants.BLUE, buff)
+        if has_debuff:
+            debuff = pygame.Rect(0, 0, ind, ind)
+            debuff.centery = stack_rect.centery
+            debuff.left = stack_rect.right + int(2 * combat.zoom)
+            pygame.draw.rect(combat.screen, constants.PURPLE, debuff)
 
     # Highlight the unit whose turn it is with a visual overlay
     if combat.turn_order:
