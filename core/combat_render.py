@@ -303,17 +303,19 @@ def draw(combat, frame: int = 0) -> None:
         stack_rect = pygame.Rect(0, 0, stack_w, stack_h)
         stack_rect.centerx = rect.centerx
         stack_rect.top = rect.bottom
-        bar_h = max(1, int(1.5 * combat.zoom))
+        bar_h = max(2, round(1.5 * combat.zoom))
         hp_rect = pygame.Rect(0, 0, stack_rect.width, bar_h)
         hp_rect.midbottom = stack_rect.midtop
-        pygame.draw.rect(combat.screen, constants.RED, hp_rect)
+        pygame.draw.rect(combat.screen, constants.BLACK, hp_rect)
         max_hp = getattr(unit.stats, "max_hp", 0) or 0
         if max_hp > 0:
             ratio = unit.current_hp / max_hp
             ratio = max(0.0, min(1.0, ratio))
             green_w = int(hp_rect.width * ratio)
             if green_w > 0:
-                green_rect = pygame.Rect(hp_rect.left, hp_rect.top, green_w, hp_rect.height)
+                green_rect = pygame.Rect(
+                    hp_rect.left, hp_rect.top, green_w, hp_rect.height
+                )
                 pygame.draw.rect(combat.screen, constants.GREEN, green_rect)
         pygame.draw.rect(combat.screen, theme.PALETTE["panel"], hp_rect, 1)
         colour = constants.BLUE if unit.side == "hero" else constants.RED
