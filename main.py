@@ -25,14 +25,17 @@ def _compute_window_size() -> tuple[int, int]:
     window_width = constants.WINDOW_WIDTH
     window_height = constants.WINDOW_HEIGHT
     max_cols = rows = None
+    map_width = map_height = None
     if os.path.isfile(map_path):
         with open(map_path, "r", encoding="utf-8") as f:
             lines = [line.rstrip("\n") for line in f]
         if lines:
             max_cols = max(len(line) for line in lines)
             rows = len(lines)
-            window_width = max_cols * constants.TILE_SIZE
-            window_height = rows * constants.TILE_SIZE + constants.UI_HEIGHT
+            map_width = max_cols * constants.TILE_SIZE
+            map_height = rows * constants.TILE_SIZE + constants.UI_HEIGHT
+            window_width = max(window_width, map_width)
+            window_height = max(window_height, map_height)
     display_info = pygame.display.Info()
     screen_w, screen_h = display_info.current_w, display_info.current_h
     if window_width > screen_w or window_height > screen_h:
@@ -40,12 +43,16 @@ def _compute_window_size() -> tuple[int, int]:
         constants.TILE_SIZE = max(1, int(constants.TILE_SIZE * scale))
         constants.COMBAT_TILE_SIZE = max(1, int(constants.COMBAT_TILE_SIZE * scale))
         constants.UI_HEIGHT = int(constants.UI_HEIGHT * scale)
-        if max_cols and rows:
-            window_width = min(screen_w, max_cols * constants.TILE_SIZE)
-            window_height = min(screen_h, rows * constants.TILE_SIZE + constants.UI_HEIGHT)
+        width_from_default = not map_width or map_width <= constants.WINDOW_WIDTH
+        height_from_default = not map_height or map_height <= constants.WINDOW_HEIGHT
+        if width_from_default:
+            window_width = int(constants.WINDOW_WIDTH * scale)
         else:
-            window_width = int(window_width * scale)
-            window_height = int(window_height * scale)
+            window_width = min(screen_w, max_cols * constants.TILE_SIZE)
+        if height_from_default:
+            window_height = int(constants.WINDOW_HEIGHT * scale)
+        else:
+            window_height = min(screen_h, rows * constants.TILE_SIZE + constants.UI_HEIGHT)
     else:
         window_width = min(window_width, screen_w)
         window_height = min(window_height, screen_h)
