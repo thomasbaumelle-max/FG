@@ -147,6 +147,7 @@ def test_guardian_stays_put():
     assert (ai.x, ai.y) == (2, 2)
 
 
+@pytest.mark.slow
 def test_roamer_patrols():
     world = _make_world(5, 5)
     units = [Unit(SWORDSMAN_STATS, 5, "enemy")]

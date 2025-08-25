@@ -22,6 +22,7 @@ def test_random_size_and_weights():
             assert tile.biome == "scarletia_echo_plain"
 
 
+@pytest.mark.slow
 def test_resource_and_building_placement():
     random.seed(0)
     wm_res = WorldMap(
