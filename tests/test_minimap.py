@@ -113,8 +113,8 @@ def test_minimap_viewport_clamped(monkeypatch):
     assert view.y + view.height <= rect.y + rect.height
 
 
-def test_game_updates_minimap_fog(monkeypatch):
-    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch)
+def test_game_updates_minimap_fog(monkeypatch, pygame_stub):
+    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch, pygame_stub)
     world = WorldMap(
         width=9,
         height=1,
@@ -161,31 +161,27 @@ def test_game_updates_minimap_fog(monkeypatch):
 
 
 @pytest.mark.skip("requires game assets not present in test environment")
-def test_minimap_fog_initialized_on_game_start(monkeypatch, tmp_path):
+def test_minimap_fog_initialized_on_game_start(monkeypatch, tmp_path, pygame_stub):
     """Fog rectangles should be populated immediately after starting a game."""
 
     from types import SimpleNamespace
     import sys
-    from tests.test_army_actions import make_pygame_stub
 
-    pygame_stub = make_pygame_stub()
-    # Provide drawing helpers used during Game initialisation
-    pygame_stub.draw.circle = lambda *a, **k: None
-    pygame_stub.draw.rect = lambda *a, **k: None
-    pygame_stub.draw.polygon = lambda *a, **k: None
-    pygame_stub.draw.line = lambda *a, **k: None
-    pygame_stub.transform.flip = lambda surf, xbool, ybool: surf
-    pygame_stub.BLEND_RGBA_MULT = 0
-    pygame_stub.BLEND_RGBA_ADD = 0
-    pygame_stub.font.Font = lambda *a, **k: types.SimpleNamespace(
-        render=lambda *a2, **k2: pygame_stub.Surface((1, 1))
-    )
+    pg = pygame_stub()
+    pg.draw.circle = lambda *a, **k: None
+    pg.draw.rect = lambda *a, **k: None
+    pg.draw.polygon = lambda *a, **k: None
+    pg.draw.line = lambda *a, **k: None
+    pg.transform.flip = lambda surf, xbool, ybool: surf
+    pg.BLEND_RGBA_MULT = 0
+    pg.BLEND_RGBA_ADD = 0
+    pg.font.Font = lambda *a, **k: SimpleNamespace(render=lambda *a2, **k2: pg.Surface((1, 1)))
 
-    DummySurface = pygame_stub.Surface((1, 1)).__class__
+    DummySurface = pg.Surface((1, 1)).__class__
     DummySurface.get_size = lambda self: (self.get_width(), self.get_height())
     DummySurface.copy = lambda self: self
 
-    Rect = pygame_stub.Rect
+    Rect = pg.Rect
     Rect.bottom = property(lambda self: self.y + self.height)
     Rect.top = property(lambda self: self.y)
     Rect.right = property(lambda self: self.x + self.width)
@@ -195,10 +191,10 @@ def test_minimap_fog_initialized_on_game_start(monkeypatch, tmp_path):
     Rect.center = property(lambda self: (self.centerx, self.centery))
     Rect.size = property(lambda self: (self.width, self.height))
 
-    monkeypatch.setitem(sys.modules, "pygame", pygame_stub)
-    monkeypatch.setitem(sys.modules, "pygame.draw", pygame_stub.draw)
-    monkeypatch.setattr("ui.widgets.minimap.pygame", pygame_stub)
-    monkeypatch.setattr("theme.pygame", pygame_stub, raising=False)
+    monkeypatch.setitem(sys.modules, "pygame", pg)
+    monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
+    monkeypatch.setattr("ui.widgets.minimap.pygame", pg)
+    monkeypatch.setattr("theme.pygame", pg, raising=False)
     monkeypatch.setitem(
         sys.modules,
         "audio",

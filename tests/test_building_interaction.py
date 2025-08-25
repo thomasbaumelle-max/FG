@@ -3,62 +3,20 @@ import types
 from core.entities import Unit, SWORDSMAN_STATS
 
 
-def make_pygame_stub():
-    class Rect:
-        def __init__(self, x, y, w, h):
-            self.x, self.y, self.width, self.height = x, y, w, h
-
-        def collidepoint(self, pos):
-            return True
-
-    class DummySurface:
-        def convert_alpha(self):
-            return self
-
-        def get_width(self):
-            return 10
-
-        def get_height(self):
-            return 10
-
-        def get_rect(self):
-            return Rect(0, 0, 10, 10)
-
-        def blit(self, *args, **kwargs):
-            pass
-
-        def fill(self, *args, **kwargs):
-            pass
-
-    def load(path):
-        return DummySurface()
-
-    pygame_stub = types.SimpleNamespace(
-        image=types.SimpleNamespace(load=load),
-        transform=types.SimpleNamespace(scale=lambda surf, size: surf, smoothscale=lambda surf, size: surf),
-        Surface=lambda size, flags=0: DummySurface(),
-        SRCALPHA=1,
-        Rect=Rect,
-        draw=types.SimpleNamespace(
-            ellipse=lambda surf, color, rect: None,
-            rect=lambda *args, **kwargs: None,
+def setup_game_with_building(monkeypatch, pygame_stub):
+    pg = pygame_stub(
+        image=types.SimpleNamespace(load=lambda path: None),
+        transform=types.SimpleNamespace(
+            scale=lambda surf, size: surf, smoothscale=lambda surf, size: surf
         ),
-        time=types.SimpleNamespace(Clock=lambda: types.SimpleNamespace(tick=lambda fps: None)),
-        event=types.SimpleNamespace(get=lambda: []),
-        display=types.SimpleNamespace(flip=lambda: None, set_mode=lambda size: DummySurface()),
-        font=types.SimpleNamespace(
-            SysFont=lambda *args, **kwargs: types.SimpleNamespace(render=lambda *a, **k: DummySurface())
-        ),
-        init=lambda: None,
-        quit=lambda: None,
     )
-    return pygame_stub
-
-
-def setup_game_with_building(monkeypatch):
-    pygame_stub = make_pygame_stub()
-    monkeypatch.setitem(sys.modules, "pygame", pygame_stub)
-    monkeypatch.setitem(sys.modules, "pygame.draw", pygame_stub.draw)
+    monkeypatch.setattr(pg.image, "load", lambda path: pg.Surface((10, 10)))
+    monkeypatch.setattr(pg.Rect, "collidepoint", lambda self, pos: True)
+    monkeypatch.setattr(pg.Surface, "convert_alpha", lambda self: self)
+    monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
+    monkeypatch.setitem(sys.modules, "pygame.image", pg.image)
+    monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
+    monkeypatch.setitem(sys.modules, "pygame", pg)
     from core.world import WorldMap
     from core.entities import Hero, Unit, SWORDSMAN_STATS
     from core.buildings import create_building
@@ -96,10 +54,20 @@ def setup_game_with_building(monkeypatch):
     return game, building, Game, constants
 
 
-def setup_game_with_town(monkeypatch):
-    pygame_stub = make_pygame_stub()
-    monkeypatch.setitem(sys.modules, "pygame", pygame_stub)
-    monkeypatch.setitem(sys.modules, "pygame.draw", pygame_stub.draw)
+def setup_game_with_town(monkeypatch, pygame_stub):
+    pg = pygame_stub(
+        image=types.SimpleNamespace(load=lambda path: None),
+        transform=types.SimpleNamespace(
+            scale=lambda surf, size: surf, smoothscale=lambda surf, size: surf
+        ),
+    )
+    monkeypatch.setattr(pg.image, "load", lambda path: pg.Surface((10, 10)))
+    monkeypatch.setattr(pg.Rect, "collidepoint", lambda self, pos: True)
+    monkeypatch.setattr(pg.Surface, "convert_alpha", lambda self: self)
+    monkeypatch.setitem(sys.modules, "pygame", pg)
+    monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
+    monkeypatch.setitem(sys.modules, "pygame.image", pg.image)
+    monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
     from core.world import WorldMap
     from core.entities import Hero, Unit, SWORDSMAN_STATS
     from core.buildings import Town
@@ -137,8 +105,8 @@ def setup_game_with_town(monkeypatch):
     return game, town, Game, constants
 
 
-def test_try_move_into_building_interacts(monkeypatch):
-    game, building, Game, constants = setup_game_with_building(monkeypatch)
+def test_try_move_into_building_interacts(monkeypatch, pygame_stub):
+    game, building, Game, constants = setup_game_with_building(monkeypatch, pygame_stub)
     called = {}
     building.interact = lambda hero: called.setdefault('done', True)
     monkeypatch.setattr(Game, "prompt_building_interaction", lambda self, b: "take")
@@ -148,8 +116,8 @@ def test_try_move_into_building_interacts(monkeypatch):
     assert (game.hero.x, game.hero.y) == (0, 0)
 
 
-def test_try_move_into_building_leave(monkeypatch):
-    game, building, Game, constants = setup_game_with_building(monkeypatch)
+def test_try_move_into_building_leave(monkeypatch, pygame_stub):
+    game, building, Game, constants = setup_game_with_building(monkeypatch, pygame_stub)
     called = {}
     building.interact = lambda hero: called.setdefault('done', True)
     monkeypatch.setattr(Game, "prompt_building_interaction", lambda self, b: "leave")
@@ -159,8 +127,8 @@ def test_try_move_into_building_leave(monkeypatch):
     assert (game.hero.x, game.hero.y) == (0, 0)
 
 
-def test_handle_world_click_on_building_sets_path(monkeypatch):
-    game, building, Game, constants = setup_game_with_building(monkeypatch)
+def test_handle_world_click_on_building_sets_path(monkeypatch, pygame_stub):
+    game, building, Game, constants = setup_game_with_building(monkeypatch, pygame_stub)
     pos = (constants.TILE_SIZE * 1 + 1, constants.TILE_SIZE * 0 + 1)
     game.handle_world_click(pos)
     assert game.path == [(1, 0)]
@@ -168,8 +136,8 @@ def test_handle_world_click_on_building_sets_path(monkeypatch):
     assert game.move_queue == []
 
 
-def test_try_move_into_town_interacts_and_opens(monkeypatch):
-    game, town, Game, constants = setup_game_with_town(monkeypatch)
+def test_try_move_into_town_interacts_and_opens(monkeypatch, pygame_stub):
+    game, town, Game, constants = setup_game_with_town(monkeypatch, pygame_stub)
     called = {}
     orig_interact = town.interact
     town.interact = lambda hero: (called.setdefault('interact', True), orig_interact(hero))
@@ -188,8 +156,8 @@ def test_try_move_into_town_interacts_and_opens(monkeypatch):
     assert town.owner == 0
 
 
-def test_garrison_fight_and_capture(monkeypatch):
-    game, building, Game, constants = setup_game_with_building(monkeypatch)
+def test_garrison_fight_and_capture(monkeypatch, pygame_stub):
+    game, building, Game, constants = setup_game_with_building(monkeypatch, pygame_stub)
     building.garrison = [Unit(SWORDSMAN_STATS, 1, 'enemy')]
 
     def fake_combat(self, enemy, initiated_by='hero'):
@@ -204,8 +172,8 @@ def test_garrison_fight_and_capture(monkeypatch):
     assert game.hero.ap == 1
 
 
-def test_garrison_defeat_retains_garrison(monkeypatch):
-    game, building, Game, constants = setup_game_with_building(monkeypatch)
+def test_garrison_defeat_retains_garrison(monkeypatch, pygame_stub):
+    game, building, Game, constants = setup_game_with_building(monkeypatch, pygame_stub)
     building.garrison = [Unit(SWORDSMAN_STATS, 1, 'enemy')]
 
     def fake_combat(self, enemy, initiated_by='hero'):
@@ -221,8 +189,8 @@ def test_garrison_defeat_retains_garrison(monkeypatch):
     assert game.hero.ap == 2
 
 
-def test_garrison_autoresolve_clears_garrison(monkeypatch):
-    game, building, Game, constants = setup_game_with_building(monkeypatch)
+def test_garrison_autoresolve_clears_garrison(monkeypatch, pygame_stub):
+    game, building, Game, constants = setup_game_with_building(monkeypatch, pygame_stub)
     building.garrison = [Unit(SWORDSMAN_STATS, 1, 'enemy')]
 
     def fake_combat(self, enemy, initiated_by='hero'):
@@ -236,8 +204,8 @@ def test_garrison_autoresolve_clears_garrison(monkeypatch):
     assert building.garrison == []
 
 
-def test_try_move_into_owned_town_skips_interact(monkeypatch):
-    game, town, Game, constants = setup_game_with_town(monkeypatch)
+def test_try_move_into_owned_town_skips_interact(monkeypatch, pygame_stub):
+    game, town, Game, constants = setup_game_with_town(monkeypatch, pygame_stub)
     town.owner = 0
     called = {}
     orig_interact = town.interact

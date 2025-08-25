@@ -1,8 +1,8 @@
 from tests.test_army_actions import setup_game
 
 
-def setup_extended(monkeypatch):
-    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch)
+def setup_extended(monkeypatch, pygame_stub):
+    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch, pygame_stub)
     from core.world import WorldMap
     wm = WorldMap(
         width=4,
@@ -22,8 +22,8 @@ def setup_extended(monkeypatch):
     return game, constants, Army, Unit, S_STATS
 
 
-def test_selection_moves_correct_actor(monkeypatch):
-    game, constants, Army, Unit, S_STATS = setup_extended(monkeypatch)
+def test_selection_moves_correct_actor(monkeypatch, pygame_stub):
+    game, constants, Army, Unit, S_STATS = setup_extended(monkeypatch, pygame_stub)
     army = Army(0, 0, [Unit(S_STATS, 1, "hero")], ap=5)
     game.world.player_armies.append(army)
 
@@ -62,8 +62,8 @@ def test_selection_moves_correct_actor(monkeypatch):
     assert (game.hero.x, game.hero.y) == (2, 0)
 
 
-def test_path_clears_on_selection_and_end_turn(monkeypatch):
-    game, constants, Army, Unit, S_STATS = setup_extended(monkeypatch)
+def test_path_clears_on_selection_and_end_turn(monkeypatch, pygame_stub):
+    game, constants, Army, Unit, S_STATS = setup_extended(monkeypatch, pygame_stub)
     army = Army(0, 0, [Unit(S_STATS, 1, "hero")], ap=5)
     game.world.player_armies.append(army)
 

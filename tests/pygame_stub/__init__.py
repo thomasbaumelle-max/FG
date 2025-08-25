@@ -2,6 +2,12 @@ class Surface:
     def __init__(self, size, flags=0):  # flags ignored
         self._width, self._height = size
 
+    def convert_alpha(self):
+        return self
+
+    def get_size(self):
+        return (self._width, self._height)
+
     def get_width(self):
         return self._width
 
@@ -15,6 +21,8 @@ class Surface:
         """Dummy fill method for tests."""
         pass
 
+    def copy(self):
+        return Surface((self._width, self._height))
     def get_rect(self, **kwargs):  # noqa: D401 - dummy method
         """Return a simple rect covering the surface."""
         return Rect(0, 0, self._width, self._height)
@@ -100,7 +108,7 @@ class font:
         return font._init
 
     @staticmethod
-    def SysFont(name, size):
+    def SysFont(name, size, *args, **kwargs):
         class DummyFont:
             def render(self, text, aa, colour):
                 return Surface((10, 10))

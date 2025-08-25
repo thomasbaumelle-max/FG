@@ -1,8 +1,8 @@
 from tests.test_army_actions import setup_game
 
 
-def test_army_movement_updates_visibility(monkeypatch):
-    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch)
+def test_army_movement_updates_visibility(monkeypatch, pygame_stub):
+    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch, pygame_stub)
     from core.world import WorldMap
 
     wm = WorldMap(

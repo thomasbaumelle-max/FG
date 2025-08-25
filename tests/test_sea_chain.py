@@ -3,8 +3,8 @@ from tests.test_army_actions import setup_game
 from state.event_bus import EVENT_BUS, ON_SEA_CHAIN_PROGRESS
 
 
-def test_sea_chain_full_path(monkeypatch):
-    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch)
+def test_sea_chain_full_path(monkeypatch, pygame_stub):
+    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch, pygame_stub)
     # make all tiles water
     for x in range(3):
         game.world.grid[0][x].biome = "ocean"

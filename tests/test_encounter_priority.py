@@ -1,63 +1,17 @@
 import types
 import sys
-
-
-def make_pygame_stub():
-    class Rect:
-        def __init__(self, x, y, w, h):
-            self.x, self.y, self.width, self.height = x, y, w, h
-
-        def collidepoint(self, pos):
-            return True
-
-    class DummySurface:
-        def convert_alpha(self):
-            return self
-
-        def get_width(self):
-            return 10
-
-        def get_height(self):
-            return 10
-
-        def get_rect(self):
-            return Rect(0, 0, 10, 10)
-
-        def blit(self, *args, **kwargs):
-            pass
-
-        def fill(self, *args, **kwargs):
-            pass
-
-    def load(path):
-        return DummySurface()
-
-    return types.SimpleNamespace(
-        image=types.SimpleNamespace(load=load),
+def setup_basic_game(monkeypatch, pygame_stub):
+    pg = pygame_stub(
+        image=types.SimpleNamespace(load=lambda path: None),
         transform=types.SimpleNamespace(
             scale=lambda surf, size: surf, smoothscale=lambda surf, size: surf
         ),
-        Surface=lambda size, flags=0: DummySurface(),
-        SRCALPHA=1,
-        Rect=Rect,
-        draw=types.SimpleNamespace(
-            ellipse=lambda surf, color, rect: None, rect=lambda *a, **k: None
-        ),
-        time=types.SimpleNamespace(Clock=lambda: types.SimpleNamespace(tick=lambda fps: None)),
-        event=types.SimpleNamespace(get=lambda: []),
-        display=types.SimpleNamespace(flip=lambda: None, set_mode=lambda size: DummySurface()),
-        font=types.SimpleNamespace(
-            SysFont=lambda *a, **k: types.SimpleNamespace(render=lambda *a, **k: DummySurface())
-        ),
-        init=lambda: None,
-        quit=lambda: None,
     )
-
-
-def setup_basic_game(monkeypatch):
-    pygame_stub = make_pygame_stub()
-    monkeypatch.setitem(sys.modules, "pygame", pygame_stub)
-    monkeypatch.setitem(sys.modules, "pygame.draw", pygame_stub.draw)
+    monkeypatch.setattr(pg.image, "load", lambda path: pg.Surface((10, 10)))
+    monkeypatch.setattr(pg.Rect, "collidepoint", lambda self, pos: True)
+    monkeypatch.setattr(pg.Surface, "convert_alpha", lambda self: self)
+    monkeypatch.setitem(sys.modules, "pygame", pg)
+    monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
 
     from core.world import WorldMap
     from core.entities import Hero, Unit, SWORDSMAN_STATS
@@ -108,8 +62,8 @@ def setup_basic_game(monkeypatch):
     return game, constants, Hero, Unit, SWORDSMAN_STATS
 
 
-def test_enemy_before_treasure(monkeypatch):
-    game, constants, Hero, Unit, S_STATS = setup_basic_game(monkeypatch)
+def test_enemy_before_treasure(monkeypatch, pygame_stub):
+    game, constants, Hero, Unit, S_STATS = setup_basic_game(monkeypatch, pygame_stub)
 
     tile = game.world.grid[0][1]
     tile.treasure = {"gold": (5, 5)}
@@ -134,10 +88,10 @@ def test_enemy_before_treasure(monkeypatch):
     assert game.hero.gold == start_gold + 5
 
 
-def test_building_before_treasure(monkeypatch):
+def test_building_before_treasure(monkeypatch, pygame_stub):
     from tests.test_building_interaction import setup_game_with_building
 
-    game, building, Game, constants = setup_game_with_building(monkeypatch)
+    game, building, Game, constants = setup_game_with_building(monkeypatch, pygame_stub)
     tile = game.world.grid[0][1]
     tile.treasure = {"gold": (5, 5)}
     game.quit_to_menu = False

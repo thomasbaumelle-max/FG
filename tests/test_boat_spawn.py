@@ -1,13 +1,21 @@
 import types
 import sys
 
-from tests.test_open_town import make_pygame_stub
 
-
-def test_shipyard_purchases_spawn_boat(monkeypatch):
-    pygame_stub = make_pygame_stub()
-    monkeypatch.setitem(sys.modules, "pygame", pygame_stub)
-    monkeypatch.setitem(sys.modules, "pygame.draw", pygame_stub.draw)
+def test_shipyard_purchases_spawn_boat(monkeypatch, pygame_stub):
+    pg = pygame_stub(
+        KEYDOWN=2,
+        MOUSEBUTTONDOWN=1,
+        K_u=117,
+        K_ESCAPE=27,
+        transform=types.SimpleNamespace(smoothscale=lambda img, size: img),
+    )
+    monkeypatch.setattr(pg.Rect, "collidepoint", lambda self, pos: True)
+    monkeypatch.setattr(
+        pg.Surface, "get_size", lambda self: (self.get_width(), self.get_height())
+    )
+    monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
+    monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
     from core.world import WorldMap
     from core.entities import Hero
     from core.buildings import Shipyard

@@ -1,8 +1,8 @@
 from tests.test_army_actions import setup_game
 
 
-def test_town_reveals_tiles(monkeypatch):
-    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch)
+def test_town_reveals_tiles(monkeypatch, pygame_stub):
+    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch, pygame_stub)
     from core.world import WorldMap
     from core.buildings import Town
 
