@@ -83,7 +83,7 @@ class ResourcesBar:
         info = self._icon_manifest.get(f"resource_{name}")
         try:
             if isinstance(info, str):
-                path = Path("assets/icons") / info
+                path = Path(info)
                 if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
                     icon = img_mod.load(path)
                     if hasattr(icon, "convert_alpha"):
@@ -92,7 +92,7 @@ class ResourcesBar:
                         icon = transform.scale(icon, (size, size))
                     return icon
             elif isinstance(info, dict) and "file" in info:
-                path = Path("assets") / info["file"]
+                path = Path(info["file"])
                 if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
                     icon = img_mod.load(path)
                     if hasattr(icon, "convert_alpha"):

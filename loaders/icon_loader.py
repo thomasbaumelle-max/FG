@@ -8,12 +8,13 @@ from typing import Dict, Set
 
 import pygame
 
-# Load icon mapping once at import time
+# Load icon mapping once at import time.  The manifest stores explicit paths
+# (e.g. ``assets/icons/end_turn.png``) so we only need the project root to
+# resolve them.
 _ROOT = Path(__file__).resolve().parent.parent
 _ASSETS_DIR = _ROOT / "assets"
-_ICONS_DIR = _ASSETS_DIR / "icons"
 
-with open(_ICONS_DIR / "icons.json", "r", encoding="utf-8") as f:
+with open(_ASSETS_DIR / "icons" / "icons.json", "r", encoding="utf-8") as f:
     _ICON_MAP: Dict[str, str] = json.load(f)
 
 # Cache for loaded pygame surfaces
@@ -37,9 +38,7 @@ def get(icon_id: str, size: int) -> pygame.Surface:
 
     if icon_id not in _CACHE:
         filename = _ICON_MAP.get(icon_id)
-        path = _ICONS_DIR / filename if isinstance(filename, str) else None
-        if path and not path.is_file():
-            path = _ASSETS_DIR / filename
+        path = _ROOT / filename if isinstance(filename, str) else None
         try:
             if path and path.is_file():
                 surf = pygame.image.load(path)
