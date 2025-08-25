@@ -45,7 +45,14 @@ class ButtonsColumn:
             tooltip: str,
         ) -> None:
             rect = pygame.Rect(0, len(self.buttons) * (self.BUTTON_SIZE[1] + self.PADDING), *self.BUTTON_SIZE)
-            btn = IconButton(rect, icon_id, callback or (lambda: None), hotkey=hotkey, tooltip=tooltip)
+            btn = IconButton(
+                rect,
+                icon_id,
+                callback or (lambda: None),
+                hotkey=hotkey,
+                tooltip=tooltip,
+                size=self.BUTTON_SIZE,
+            )
             self.buttons.append(ButtonEntry(name, btn))
 
         add_button(
@@ -112,6 +119,7 @@ class ButtonsColumn:
                 cb or (lambda: None),
                 hotkey=hotkey,
                 tooltip=tooltip,
+                size=self.BUTTON_SIZE,
             )
             self.buttons.append(ButtonEntry(name, btn))
 
