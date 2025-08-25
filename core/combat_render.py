@@ -315,7 +315,8 @@ def draw(combat, frame: int = 0) -> None:
                 green_rect = pygame.Rect(hp_rect.left, hp_rect.top, green_w, hp_rect.height)
                 pygame.draw.rect(combat.screen, constants.GREEN, green_rect)
         pygame.draw.rect(combat.screen, theme.PALETTE["panel"], hp_rect, 1)
-        pygame.draw.rect(combat.screen, theme.PALETTE["panel"], stack_rect)
+        colour = constants.BLUE if unit.side == "hero" else constants.RED
+        pygame.draw.rect(combat.screen, colour, stack_rect)
         font = pygame.font.SysFont(None, int(14 * combat.zoom))
         text = font.render(str(unit.count), True, theme.PALETTE["text"])
         text_rect = text.get_rect(center=stack_rect.center)
