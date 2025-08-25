@@ -79,8 +79,8 @@ def test_enemy_captures_town_from_adjacent():
     assert enemy.ap == start_ap - 1
 
 
-def test_enemy_targets_hero_after_resource_collected():
-    constants.AI_DIFFICULTY = "Novice"
+def test_enemy_targets_hero_after_resource_collected(monkeypatch):
+    monkeypatch.setattr(constants, "AI_DIFFICULTY", "Novice")
     game, enemy = _create_game_with_resource()
     Game.move_enemy_heroes(game)
     assert (enemy.x, enemy.y) == (0, 1)
@@ -88,8 +88,8 @@ def test_enemy_targets_hero_after_resource_collected():
     assert step in [(0, 0), (1, 1)]
 
 
-def test_enemy_targets_hero_after_building_capture():
-    constants.AI_DIFFICULTY = "Intermédiaire"
+def test_enemy_targets_hero_after_building_capture(monkeypatch):
+    monkeypatch.setattr(constants, "AI_DIFFICULTY", "Intermédiaire")
     world = _make_world(3, 1)
     hero = Hero(2, 0, [Unit(SWORDSMAN_STATS, 1, 'hero')])
     enemy = EnemyHero(0, 0, [Unit(SWORDSMAN_STATS, 1, 'enemy')])

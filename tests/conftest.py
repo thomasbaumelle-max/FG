@@ -46,6 +46,15 @@ def _reset_event_bus():
     EVENT_BUS.reset()
 
 
+@pytest.fixture(autouse=True)
+def _restore_ai_difficulty():
+    """Reset :data:`constants.AI_DIFFICULTY` after each test."""
+
+    saved = constants.AI_DIFFICULTY
+    yield
+    constants.AI_DIFFICULTY = saved
+
+
 @pytest.fixture
 def simple_combat():
     """Return a factory that builds a minimal :class:`Combat` instance.
