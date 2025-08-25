@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "type": "grid",
+  "image": "ui/icons/icons_speed_initiative_resources.png",
+  "tile_w": 512,
+  "tile_h": 512,
+  "rows": 2,
+  "cols": 2,
+  "names": [
+    ["speed", "gold"],
+    ["wood", "crystal"],
+  ]
+}

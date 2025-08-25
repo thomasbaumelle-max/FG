@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "type": "grid",
+  "image": "ui/icons/ui_nav_sheet.png",
+  "tile_w": 512,
+  "tile_h": 512,
+  "rows": 4,
+  "cols": 3,
+  "names": [
+    ["menu", "settings", "save"],
+    ["load", "journal", "world_map"],
+    ["town", "hero_screen", "inventory"],
+    ["skill_tree", "end_day", "pause"]
+  ]
+}
