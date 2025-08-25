@@ -57,10 +57,12 @@ class ButtonsColumn:
 
     def __init__(
         self,
-    on_end_turn: Optional[Callable[[], None]] = None,
+        on_end_turn: Optional[Callable[[], None]] = None,
         open_town: Optional[Callable[[], None]] = None,
         open_journal: Optional[Callable[[], None]] = None,
         open_options: Optional[Callable[[], None]] = None,
+        actions: Optional[List[str]] = None,
+        action_callbacks: Optional[Dict[str, Callable[[], None]]] = None,
     ) -> None:
         self.font = theme.get_font(20)
         self.hotkey_font = theme.get_font(12)
@@ -103,6 +105,25 @@ class ButtonsColumn:
                 tooltip="Options (O)",
             ),
         ]
+
+        # Definitions for optional turn-action buttons
+        self._action_defs: Dict[str, str] = {
+            "move": "M",
+            "wait": "W",
+            "defend": "D",
+            "attack": "A",
+            "shoot": "S",
+            "cast": "C",
+            "use_ability": "U",
+            "swap": "X",
+            "flee": "F",
+            "surrender": "R",
+            "auto_resolve": "A",
+            "next_unit": "N",
+        }
+        if actions:
+            self.add_actions(actions, action_callbacks)
+
         self.hover_index: Optional[int] = None
         # Cache rendered button surfaces keyed by (name, enabled)
         self._cache: Dict[Tuple[str, bool], pygame.Surface] = {}
@@ -151,7 +172,7 @@ class ButtonsColumn:
             )
 
         icon_drawn = False
-        info = self._icons.get(btn.name)
+        info = self._icons.get(btn.name) or self._icons.get(f"action_{btn.name}")
         if isinstance(info, dict):
             img_mod = getattr(pygame, "image", None)
             transform = getattr(pygame, "transform", None)
@@ -240,6 +261,33 @@ class ButtonsColumn:
 
     # ------------------------------------------------------------------
     # Public API
+    def add_actions(
+        self,
+        names: List[str],
+        callbacks: Optional[Dict[str, Callable[[], None]]] = None,
+    ) -> None:
+        """Add action buttons listed in ``names``.
+
+        ``callbacks`` maps names to callables. Buttons are appended and cached
+        when possible.
+        """
+
+        for name in names:
+            label = self._action_defs.get(name, name[:1].upper())
+            key = getattr(pygame, f"K_{label.lower()}", ord(label.lower()))
+            cb = callbacks.get(name) if callbacks and name in callbacks else None
+            btn = _Button(
+                name=name,
+                label=label,
+                callback=cb,
+                hotkey=key,
+                tooltip=f"{name.replace('_', ' ').title()} ({label})",
+            )
+            self.buttons.append(btn)
+            if hasattr(self, "_cache"):
+                self._cache[(btn.name, True)] = self._render_button(btn, True)
+                self._cache[(btn.name, False)] = self._render_button(btn, False)
+
     def set_enabled(self, name: str, enabled: bool) -> None:
         """Enable or disable a button by ``name``."""
         for btn in self.buttons:
