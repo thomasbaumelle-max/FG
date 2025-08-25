@@ -5,7 +5,6 @@ from core.game import Game
 import core.exploration_ai as exploration_ai
 import constants
 from core.ai.creature_ai import GuardianAI, RoamingAI
-import random
 import pytest
 from mapgen.continents import generate_continent_map
 
@@ -142,9 +141,9 @@ def test_roamer_patrols():
 @pytest.mark.slow
 @pytest.mark.worldgen
 @pytest.mark.combat
-def test_marine_maps_have_guardian_clusters_and_fewer_roamers():
-    random.seed(0)
-    rows_marine = generate_continent_map(15, 15, seed=0, map_type="marine")
+def test_marine_maps_have_guardian_clusters_and_fewer_roamers(rng):
+    seed_marine = rng.randrange(2**32)
+    rows_marine = generate_continent_map(15, 15, seed=seed_marine, map_type="marine")
     world_marine = WorldMap(map_data=rows_marine)
     for row in world_marine.grid:
         for tile in row:
@@ -159,7 +158,7 @@ def test_marine_maps_have_guardian_clusters_and_fewer_roamers():
     base = max(1, free_land // (15 if land_ratio < 0.5 else 9))
     roamer_count = base // 3
     guardian_count = base - roamer_count
-    world_marine._generate_clusters(random, guardian_count, roamer_count)
+    world_marine._generate_clusters(rng, guardian_count, roamer_count)
     guardians = [c for c in world_marine.creatures if isinstance(c, GuardianAI)]
     roamers = [c for c in world_marine.creatures if isinstance(c, RoamingAI)]
     for g in guardians:
@@ -174,8 +173,8 @@ def test_marine_maps_have_guardian_clusters_and_fewer_roamers():
             for dy in (-1, 0, 1)
         )
 
-    random.seed(0)
-    rows_plaine = generate_continent_map(15, 15, seed=0, map_type="plaine")
+    seed_plaine = rng.randrange(2**32)
+    rows_plaine = generate_continent_map(15, 15, seed=seed_plaine, map_type="plaine")
     world_plaine = WorldMap(map_data=rows_plaine)
     for row in world_plaine.grid:
         for tile in row:
@@ -190,6 +189,6 @@ def test_marine_maps_have_guardian_clusters_and_fewer_roamers():
     base_p = max(1, free_land_p // (15 if land_ratio_p < 0.5 else 9))
     roamer_count_p = base_p // 3
     guardian_count_p = base_p - roamer_count_p
-    world_plaine._generate_clusters(random, guardian_count_p, roamer_count_p)
+    world_plaine._generate_clusters(rng, guardian_count_p, roamer_count_p)
     roamers_plain = [c for c in world_plaine.creatures if isinstance(c, RoamingAI)]
     assert len(roamers) < len(roamers_plain)

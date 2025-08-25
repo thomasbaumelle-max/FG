@@ -4,7 +4,6 @@ from core.game import Game as GameClass
 from core.entities import Boat
 from loaders.boat_loader import BoatDef
 import audio
-import random
 import pytest
 
 from mapgen.continents import generate_continent_map
@@ -12,17 +11,15 @@ from core.world import WorldMap
 import constants
 
 
-@pytest.fixture(scope="module")
-def plaine_world() -> WorldMap:
-    random.seed(0)
-    rows = generate_continent_map(30, 30, seed=0, map_type="plaine")
+@pytest.fixture
+def plaine_world(rng) -> WorldMap:
+    rows = generate_continent_map(30, 30, seed=rng.randrange(2**32), map_type="plaine")
     return WorldMap(map_data=rows)
 
 
-@pytest.fixture(scope="module")
-def marine_world() -> WorldMap:
-    random.seed(0)
-    rows = generate_continent_map(30, 30, seed=0, map_type="marine")
+@pytest.fixture
+def marine_world(rng) -> WorldMap:
+    rows = generate_continent_map(30, 30, seed=rng.randrange(2**32), map_type="marine")
     return WorldMap(map_data=rows)
 
 

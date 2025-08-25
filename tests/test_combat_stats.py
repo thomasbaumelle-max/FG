@@ -43,25 +43,21 @@ def test_apply_defence_has_minimum_one():
     assert apply_defence(5, unit, "magic") == 1
 
 
-def test_damage_output_positive_luck():
+def test_damage_output_positive_luck(rng):
     unit = _create_unit(luck=1)
-    rng = random.Random(0)
     assert unit.damage_output(rng) == 10
 
 
-def test_damage_output_negative_luck():
+def test_damage_output_negative_luck(rng):
     unit = _create_unit(luck=-1)
-    rng = random.Random(0)
     assert unit.damage_output(rng) == 2
 
 
-def test_damage_output_positive_morale():
+def test_damage_output_positive_morale(rng):
     unit = _create_unit(morale=1)
-    rng = random.Random(0)
     assert unit.damage_output(rng) == 10
 
 
-def test_damage_output_negative_morale():
+def test_damage_output_negative_morale(rng):
     unit = _create_unit(morale=-1)
-    rng = random.Random(0)
     assert unit.damage_output(rng) == 0

@@ -1,21 +1,16 @@
-import random
-
 import pytest
 from mapgen.continents import generate_continent_map
 from core.world import WorldMap
 
-
-@pytest.fixture(scope="module")
-def plaine_world() -> WorldMap:
-    random.seed(0)
-    rows = generate_continent_map(30, 30, seed=0)
+@pytest.fixture
+def plaine_world(rng) -> WorldMap:
+    rows = generate_continent_map(30, 30, seed=rng.randrange(2**32))
     return WorldMap(map_data=rows)
 
 
-@pytest.fixture(scope="module")
-def marine_world() -> WorldMap:
-    random.seed(0)
-    rows = generate_continent_map(30, 30, seed=0, map_type="marine")
+@pytest.fixture
+def marine_world(rng) -> WorldMap:
+    rows = generate_continent_map(30, 30, seed=rng.randrange(2**32), map_type="marine")
     return WorldMap(map_data=rows)
 
 
