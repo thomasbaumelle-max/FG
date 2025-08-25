@@ -303,8 +303,9 @@ def draw(combat, frame: int = 0) -> None:
         stack_rect = pygame.Rect(0, 0, stack_w, stack_h)
         stack_rect.centerx = rect.centerx
         stack_rect.top = rect.bottom
-        bar_h = max(2, int(3 * combat.zoom))
-        hp_rect = pygame.Rect(rect.left, stack_rect.top - bar_h, rect.width, bar_h)
+        bar_h = max(1, int(1.5 * combat.zoom))
+        hp_rect = pygame.Rect(0, 0, stack_rect.width, bar_h)
+        hp_rect.midbottom = stack_rect.midtop
         pygame.draw.rect(combat.screen, constants.RED, hp_rect)
         max_hp = getattr(unit.stats, "max_hp", 0) or 0
         if max_hp > 0:
