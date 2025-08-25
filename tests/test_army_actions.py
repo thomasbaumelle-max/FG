@@ -1,58 +1,22 @@
 import sys
+import sys
 import types
 
 
-def make_pygame_stub():
-    class Rect:
-        def __init__(self, x, y, w, h):
-            self.x, self.y, self.width, self.height = x, y, w, h
-
-        def collidepoint(self, pos):
-            return True
-
-    class DummySurface:
-        def convert_alpha(self):
-            return self
-
-        def get_width(self):
-            return 10
-
-        def get_height(self):
-            return 10
-
-        def get_rect(self):
-            return Rect(0, 0, 10, 10)
-
-        def blit(self, *args, **kwargs):
-            pass
-
-        def fill(self, *args, **kwargs):
-            pass
-
-    def load(path):
-        return DummySurface()
-
-    pygame_stub = types.SimpleNamespace(
-        image=types.SimpleNamespace(load=load),
-        transform=types.SimpleNamespace(scale=lambda surf, size: surf, smoothscale=lambda surf, size: surf),
-        Surface=lambda size, flags=0: DummySurface(),
-        SRCALPHA=1,
-        Rect=Rect,
-        draw=types.SimpleNamespace(ellipse=lambda surf, color, rect: None, rect=lambda *a, **k: None),
-        time=types.SimpleNamespace(Clock=lambda: types.SimpleNamespace(tick=lambda fps: None)),
-        event=types.SimpleNamespace(get=lambda: []),
-        display=types.SimpleNamespace(flip=lambda: None, set_mode=lambda size: DummySurface()),
-        font=types.SimpleNamespace(SysFont=lambda *a, **k: types.SimpleNamespace(render=lambda *a, **k: DummySurface())),
-        init=lambda: None,
-        quit=lambda: None,
+def setup_game(monkeypatch, pygame_stub):
+    pg = pygame_stub(
+        image=types.SimpleNamespace(load=lambda path: None),
+        transform=types.SimpleNamespace(
+            scale=lambda surf, size: surf, smoothscale=lambda surf, size: surf
+        ),
     )
-    return pygame_stub
-
-
-def setup_game(monkeypatch):
-    pygame_stub = make_pygame_stub()
-    monkeypatch.setitem(sys.modules, "pygame", pygame_stub)
-    monkeypatch.setitem(sys.modules, "pygame.draw", pygame_stub.draw)
+    monkeypatch.setattr(pg.image, "load", lambda path: pg.Surface((10, 10)))
+    monkeypatch.setattr(pg.Rect, "collidepoint", lambda self, pos: True)
+    monkeypatch.setattr(pg.Surface, "convert_alpha", lambda self: self)
+    monkeypatch.setitem(sys.modules, "pygame", pg)
+    monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
+    monkeypatch.setitem(sys.modules, "pygame.image", pg.image)
+    monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
 
     from core.world import WorldMap
     from core.entities import Hero, Army, Unit, SWORDSMAN_STATS
@@ -102,8 +66,8 @@ def setup_game(monkeypatch):
     return game, constants, Army, Unit, SWORDSMAN_STATS
 
 
-def test_army_collects_resource(monkeypatch):
-    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch)
+def test_army_collects_resource(monkeypatch, pygame_stub):
+    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch, pygame_stub)
     game.world.grid[0][1].resource = "wood"
     army = Army(0, 0, [Unit(S_STATS, 1, "hero")], ap=5)
     game.world.player_armies.append(army)
@@ -115,8 +79,8 @@ def test_army_collects_resource(monkeypatch):
     assert (army.x, army.y) == (1, 0)
 
 
-def test_army_auto_combat_neutral(monkeypatch):
-    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch)
+def test_army_auto_combat_neutral(monkeypatch, pygame_stub):
+    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch, pygame_stub)
     enemy_tile = game.world.grid[0][1]
     enemy_tile.enemy_units = [Unit(S_STATS, 1, "enemy")]
     army = Army(0, 0, [Unit(S_STATS, 1, "hero")], ap=5)
@@ -136,9 +100,9 @@ def test_army_auto_combat_neutral(monkeypatch):
     assert (army.x, army.y) == (1, 0)
 
 
-def test_end_turn_with_army_selected(monkeypatch):
+def test_end_turn_with_army_selected(monkeypatch, pygame_stub):
     """Ensure ending the turn with an army selected does not crash."""
-    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch)
+    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch, pygame_stub)
     army = Army(0, 0, [Unit(S_STATS, 1, "hero")], ap=2, max_ap=5)
     game.world.player_armies.append(army)
     # Select the army; hero should remain the roster hero
@@ -154,9 +118,9 @@ def test_end_turn_with_army_selected(monkeypatch):
     assert game.active_actor is game.hero
 
 
-def test_army_full_flow(monkeypatch):
+def test_army_full_flow(monkeypatch, pygame_stub):
     """Simulate selection, movement, resource gathering, combat and turn end."""
-    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch)
+    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch, pygame_stub)
     tile = game.world.grid[0][1]
     tile.resource = "wood"
     tile.enemy_units = [Unit(S_STATS, 1, "enemy")]
@@ -180,8 +144,8 @@ def test_army_full_flow(monkeypatch):
     assert (army.x, army.y) == (1, 0)
 
 
-def test_army_prompt_and_cleanup(monkeypatch):
-    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch)
+def test_army_prompt_and_cleanup(monkeypatch, pygame_stub):
+    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch, pygame_stub)
     enemy_tile = game.world.grid[0][1]
     enemy_tile.enemy_units = [Unit(S_STATS, 1, "enemy")]
     army = Army(0, 0, [Unit(S_STATS, 1, "hero")], ap=5)

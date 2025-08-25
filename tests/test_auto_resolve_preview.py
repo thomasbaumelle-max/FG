@@ -3,7 +3,32 @@ import types
 import copy
 
 
-def make_pygame_stub(rendered):
+
+def test_preview_returns_losses(monkeypatch):
+    from core.entities import Unit, SWORDSMAN_STATS
+    import core.auto_resolve as ar
+
+    def fake_sim(hero_units, enemy_units):
+        heroes = [copy.deepcopy(u) for u in hero_units]
+        enemies = [copy.deepcopy(u) for u in enemy_units]
+        for u in heroes:
+            u.count -= 1
+        for u in enemies:
+            u.count -= 2
+        return heroes, enemies, True, 10
+
+    monkeypatch.setattr(ar, "_simulate", fake_sim)
+    h_loss, e_loss, xp = ar.preview(
+        [Unit(SWORDSMAN_STATS, 5, "h")], [Unit(SWORDSMAN_STATS, 5, "e")], iterations=1
+    )
+    assert h_loss == 1
+    assert e_loss == 2
+    assert xp == 10
+
+
+def test_prompt_displays_losses(monkeypatch, pygame_stub):
+    rendered = []
+
     class Rect:
         def __init__(self, x, y, w, h):
             self.x, self.y, self.width, self.height = x, y, w, h
@@ -88,53 +113,27 @@ def make_pygame_stub(rendered):
         def get_linesize(self):
             return 12
 
-    pygame_stub = types.SimpleNamespace(
-        image=types.SimpleNamespace(load=lambda p: DummySurface()),
-        transform=types.SimpleNamespace(scale=lambda surf, size: surf, smoothscale=lambda surf, size: surf, flip=lambda *a, **k: DummySurface()),
-        Surface=lambda size, flags=0: DummySurface(size, flags),
-        SRCALPHA=1,
+    pg = pygame_stub(
         Rect=Rect,
-        draw=types.SimpleNamespace(rect=lambda *a, **k: None, ellipse=lambda *a, **k: None),
-        time=types.SimpleNamespace(Clock=lambda: types.SimpleNamespace(tick=lambda fps: None)),
-        event=types.SimpleNamespace(get=lambda: []),
-        display=types.SimpleNamespace(flip=lambda: None, set_mode=lambda size: DummySurface(size)),
+        Surface=lambda size, flags=0: DummySurface(size, flags),
+        image=types.SimpleNamespace(load=lambda p: DummySurface()),
+        transform=types.SimpleNamespace(
+            scale=lambda surf, size: surf,
+            smoothscale=lambda surf, size: surf,
+            flip=lambda *a, **k: DummySurface(),
+        ),
         font=types.SimpleNamespace(SysFont=lambda *a, **k: Font(), Font=lambda *a, **k: Font()),
-        init=lambda: None,
-        quit=lambda: None,
     )
-    return pygame_stub
-
-
-def test_preview_returns_losses(monkeypatch):
-    from core.entities import Unit, SWORDSMAN_STATS
-    import core.auto_resolve as ar
-
-    def fake_sim(hero_units, enemy_units):
-        heroes = [copy.deepcopy(u) for u in hero_units]
-        enemies = [copy.deepcopy(u) for u in enemy_units]
-        for u in heroes:
-            u.count -= 1
-        for u in enemies:
-            u.count -= 2
-        return heroes, enemies, True, 10
-
-    monkeypatch.setattr(ar, "_simulate", fake_sim)
-    h_loss, e_loss, xp = ar.preview(
-        [Unit(SWORDSMAN_STATS, 5, "h")], [Unit(SWORDSMAN_STATS, 5, "e")], iterations=1
-    )
-    assert h_loss == 1
-    assert e_loss == 2
-    assert xp == 10
-
-
-def test_prompt_displays_losses(monkeypatch):
-    rendered = []
-    pygame_stub = make_pygame_stub(rendered)
+    monkeypatch.setitem(sys.modules, "pygame", pg)
+    monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
+    monkeypatch.setitem(sys.modules, "pygame.image", pg.image)
+    monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
+    monkeypatch.setitem(sys.modules, "pygame.font", pg.font)
 
     import theme
     import core.game as game_mod
-    monkeypatch.setattr(theme, "pygame", pygame_stub)
-    monkeypatch.setattr(game_mod, "pygame", pygame_stub)
+    monkeypatch.setattr(theme, "pygame", pg)
+    monkeypatch.setattr(game_mod, "pygame", pg)
     from core.entities import Unit, SWORDSMAN_STATS, Hero
     Game = game_mod.Game
     import core.auto_resolve as ar
@@ -148,8 +147,8 @@ def test_prompt_displays_losses(monkeypatch):
     )
 
     game = Game.__new__(Game)
-    game.screen = pygame_stub.Surface((800, 600))
-    game.clock = pygame_stub.time.Clock()
+    game.screen = pg.Surface((800, 600))
+    game.clock = pg.time.Clock()
     game.draw_world = lambda *a, **k: None
     game.anim_frame = 0
     game.hero = Hero(0, 0, [Unit(SWORDSMAN_STATS, 1, "h")])

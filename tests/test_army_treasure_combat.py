@@ -6,8 +6,8 @@ from tests.test_army_actions import setup_game
 from ui.widgets.hero_list import HeroList
 
 
-def test_army_without_hero_treasure_and_combat(monkeypatch):
-    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch)
+def test_army_without_hero_treasure_and_combat(monkeypatch, pygame_stub):
+    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch, pygame_stub)
 
     # Replace Army.update_portrait to avoid file loading
     def fake_update_portrait(self):

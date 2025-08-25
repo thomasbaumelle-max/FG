@@ -1,47 +1,21 @@
 import sys
 import types
 
-def make_pygame_stub():
-    class Rect:
-        def __init__(self, x, y, w, h):
-            self.x, self.y, self.width, self.height = x, y, w, h
-        def collidepoint(self, pos):
-            return True
-    class DummySurface:
-        def convert_alpha(self):
-            return self
-        def get_width(self):
-            return 10
-        def get_height(self):
-            return 10
-        def get_rect(self):
-            return Rect(0, 0, 10, 10)
-        def blit(self, *args, **kwargs):
-            pass
-        def fill(self, *args, **kwargs):
-            pass
-    def load(path):
-        return DummySurface()
-    pygame_stub = types.SimpleNamespace(
-        image=types.SimpleNamespace(load=load),
-        transform=types.SimpleNamespace(scale=lambda surf, size: surf, smoothscale=lambda surf, size: surf),
-        Surface=lambda size, flags=0: DummySurface(),
-        SRCALPHA=1,
-        Rect=Rect,
-        draw=types.SimpleNamespace(ellipse=lambda surf, color, rect: None, rect=lambda *a, **k: None),
-        time=types.SimpleNamespace(Clock=lambda: types.SimpleNamespace(tick=lambda fps: None)),
-        event=types.SimpleNamespace(get=lambda: []),
-        display=types.SimpleNamespace(flip=lambda: None, set_mode=lambda size: DummySurface()),
-        font=types.SimpleNamespace(SysFont=lambda *a, **k: types.SimpleNamespace(render=lambda *a, **k: DummySurface())),
-        init=lambda: None,
-        quit=lambda: None,
-    )
-    return pygame_stub
 
-def setup_game(monkeypatch):
-    pygame_stub = make_pygame_stub()
-    monkeypatch.setitem(sys.modules, "pygame", pygame_stub)
-    monkeypatch.setitem(sys.modules, "pygame.draw", pygame_stub.draw)
+def setup_game(monkeypatch, pygame_stub):
+    pg = pygame_stub(
+        image=types.SimpleNamespace(load=lambda path: None),
+        transform=types.SimpleNamespace(
+            scale=lambda surf, size: surf, smoothscale=lambda surf, size: surf
+        ),
+    )
+    monkeypatch.setattr(pg.image, "load", lambda path: pg.Surface((10, 10)))
+    monkeypatch.setattr(pg.Rect, "collidepoint", lambda self, pos: True)
+    monkeypatch.setattr(pg.Surface, "convert_alpha", lambda self: self)
+    monkeypatch.setitem(sys.modules, "pygame", pg)
+    monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
+    monkeypatch.setitem(sys.modules, "pygame.image", pg.image)
+    monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
     from core.world import WorldMap
     from core.entities import Hero, Unit, SWORDSMAN_STATS
     from core.game import Game
@@ -74,14 +48,15 @@ def setup_game(monkeypatch):
     game.active_actor = hero
     return game, constants
 
-def test_terrain_cost_deducted(monkeypatch):
-    game, constants = setup_game(monkeypatch)
+
+def test_terrain_cost_deducted(monkeypatch, pygame_stub):
+    game, constants = setup_game(monkeypatch, pygame_stub)
     game.try_move_hero(1, 0)
     assert game.hero.ap == 3
     assert (game.hero.x, game.hero.y) == (1, 0)
 
-def test_road_cost_bonus(monkeypatch):
-    game, constants = setup_game(monkeypatch)
+def test_road_cost_bonus(monkeypatch, pygame_stub):
+    game, constants = setup_game(monkeypatch, pygame_stub)
     game.world.grid[0][1].road = True
     game.try_move_hero(1, 0)
     assert game.hero.ap == 5 - constants.ROAD_COST

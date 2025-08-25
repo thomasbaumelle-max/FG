@@ -69,22 +69,19 @@ def test_buttons_column_visible(size):
     assert gap == 8
 
 
-def test_highlight_moves_when_selecting_army(monkeypatch):
+def test_highlight_moves_when_selecting_army(monkeypatch, pygame_stub):
     """Selecting an army from the list moves the world highlight."""
 
-    from tests.test_army_actions import make_pygame_stub
     from state import event_bus as eb
     from ui.widgets.hero_list import HeroList
     from core.game import Game
 
-    # Use pygame stub to avoid needing a real display
-    pygame_stub = make_pygame_stub()
-    pygame_stub.BLEND_RGBA_ADD = 0
-    pygame_stub.transform.rotate = lambda surf, angle: surf
+    pg = pygame_stub(transform=SimpleNamespace(rotate=lambda surf, angle: surf))
+    pg.BLEND_RGBA_ADD = 0
     # Replace pygame module references in imported modules
-    monkeypatch.setattr("ui.main_screen.pygame", pygame_stub)
-    monkeypatch.setattr("ui.widgets.hero_list.pygame", pygame_stub)
-    monkeypatch.setattr("core.game.pygame", pygame_stub)
+    monkeypatch.setattr("ui.main_screen.pygame", pg)
+    monkeypatch.setattr("ui.widgets.hero_list.pygame", pg)
+    monkeypatch.setattr("core.game.pygame", pg)
 
     # Fresh event bus for isolation
     bus = eb.EventBus()
@@ -100,7 +97,7 @@ def test_highlight_moves_when_selecting_army(monkeypatch):
             self.y = y
             self.ap = 5
             self.army = []
-            self.portrait = pygame_stub.Surface((HeroList.CARD_SIZE, HeroList.CARD_SIZE))
+            self.portrait = pg.Surface((HeroList.CARD_SIZE, HeroList.CARD_SIZE))
 
     hero = DummyActor("Hero", 0, 0)
     army = DummyActor("Army", 1, 0)
@@ -114,7 +111,7 @@ def test_highlight_moves_when_selecting_army(monkeypatch):
 
         def draw(self, surface, assets, heroes, armies, sel, frame):
             selected.append(sel)
-            return pygame_stub.Surface((1, 1))
+            return pg.Surface((1, 1))
 
     game = Game.__new__(Game)
     screen = SimpleNamespace(

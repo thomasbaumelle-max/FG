@@ -3,14 +3,24 @@ import sys
 
 import pytest
 
-from tests.test_open_town import make_pygame_stub
-
 
 @pytest.mark.serial
-def test_drag_from_garrison_creates_army(monkeypatch):
-    pygame_stub = make_pygame_stub()
-    monkeypatch.setitem(sys.modules, "pygame", pygame_stub)
-    monkeypatch.setitem(sys.modules, "pygame.draw", pygame_stub.draw)
+def test_drag_from_garrison_creates_army(monkeypatch, pygame_stub):
+    pg = pygame_stub(
+        KEYDOWN=2,
+        MOUSEBUTTONDOWN=1,
+        K_u=117,
+        K_ESCAPE=27,
+        transform=types.SimpleNamespace(smoothscale=lambda img, size: img),
+    )
+    monkeypatch.setattr(pg.Rect, "collidepoint", lambda self, pos: True)
+    monkeypatch.setattr(
+        pg.Surface, "get_size", lambda self: (self.get_width(), self.get_height())
+    )
+    monkeypatch.setattr(pg.Surface, "convert_alpha", lambda self: self)
+    monkeypatch.setitem(sys.modules, "pygame", pg)
+    monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
+    monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
     from core.world import WorldMap
     from core.entities import Hero, Unit, SWORDSMAN_STATS
     from core.buildings import Town
@@ -37,7 +47,7 @@ def test_drag_from_garrison_creates_army(monkeypatch):
         def set_heroes(self, heroes):
             self.heroes = heroes
     game.main_screen = types.SimpleNamespace(hero_list=DummyHeroList())
-    screen = pygame_stub.display.set_mode((1, 1))
+    screen = pg.display.set_mode((1, 1))
     ts = TownScreen(screen, game, town, None, None, (0, 0))
     ts.town.garrison.append(Unit(SWORDSMAN_STATS, 1, "hero"))
     ts.drag_src = ("garrison", 0)
@@ -46,14 +56,25 @@ def test_drag_from_garrison_creates_army(monkeypatch):
     assert len(game.world.player_armies) == 1
     assert game.main_screen.hero_list.heroes[-1] is game.world.player_armies[0]
 
-def test_hero_army_exchange_merge_delete(monkeypatch):
-    pygame_stub = make_pygame_stub()
-    monkeypatch.setitem(sys.modules, "pygame", pygame_stub)
-    monkeypatch.setitem(sys.modules, "pygame.draw", pygame_stub.draw)
+def test_hero_army_exchange_merge_delete(monkeypatch, pygame_stub):
+    pg = pygame_stub(
+        KEYDOWN=2,
+        MOUSEBUTTONDOWN=1,
+        K_u=117,
+        K_ESCAPE=27,
+        transform=types.SimpleNamespace(smoothscale=lambda img, size: img),
+    )
+    monkeypatch.setattr(pg.Rect, "collidepoint", lambda self, pos: True)
+    monkeypatch.setattr(
+        pg.Surface, "get_size", lambda self: (self.get_width(), self.get_height())
+    )
+    monkeypatch.setattr(pg.Surface, "convert_alpha", lambda self: self)
+    monkeypatch.setitem(sys.modules, "pygame", pg)
+    monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
+    monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
     from core.world import WorldMap
     from core.entities import Hero, Army, Unit, SWORDSMAN_STATS, ARCHER_STATS
     from core.game import Game
-    import types
     from ui.hero_exchange_screen import HeroExchangeScreen
 
     game = Game.__new__(Game)
@@ -78,7 +99,7 @@ def test_hero_army_exchange_merge_delete(monkeypatch):
             self.heroes = list(heroes)
     game.main_screen = types.SimpleNamespace(hero_list=DummyHeroList())
 
-    screen = pygame_stub.display.set_mode((200, 200))
+    screen = pg.display.set_mode((200, 200))
     ex = HeroExchangeScreen(screen, hero, army)
 
     # Exchange archer from hero to army
@@ -109,10 +130,22 @@ def test_hero_army_exchange_merge_delete(monkeypatch):
 
 
 @pytest.mark.serial
-def test_army_reintegrated_removes_ghost(monkeypatch):
-    pygame_stub = make_pygame_stub()
-    monkeypatch.setitem(sys.modules, "pygame", pygame_stub)
-    monkeypatch.setitem(sys.modules, "pygame.draw", pygame_stub.draw)
+def test_army_reintegrated_removes_ghost(monkeypatch, pygame_stub):
+    pg = pygame_stub(
+        KEYDOWN=2,
+        MOUSEBUTTONDOWN=1,
+        K_u=117,
+        K_ESCAPE=27,
+        transform=types.SimpleNamespace(smoothscale=lambda img, size: img),
+    )
+    monkeypatch.setattr(pg.Rect, "collidepoint", lambda self, pos: True)
+    monkeypatch.setattr(
+        pg.Surface, "get_size", lambda self: (self.get_width(), self.get_height())
+    )
+    monkeypatch.setattr(pg.Surface, "convert_alpha", lambda self: self)
+    monkeypatch.setitem(sys.modules, "pygame", pg)
+    monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
+    monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
     from core.world import WorldMap
     from core.entities import Hero, Unit, SWORDSMAN_STATS
     from core.buildings import Town
@@ -149,7 +182,7 @@ def test_army_reintegrated_removes_ghost(monkeypatch):
 
     game.refresh_army_list = refresh
 
-    screen = pygame_stub.display.set_mode((1, 1))
+    screen = pg.display.set_mode((1, 1))
     ts = TownScreen(screen, game, town, None, None, (0, 0))
     ts.town.garrison.append(Unit(SWORDSMAN_STATS, 1, "hero"))
 

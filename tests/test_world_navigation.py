@@ -1,5 +1,4 @@
 import audio
-from tests.test_army_actions import setup_game
 from core.game import Game as GameClass
 from core.entities import Boat
 from loaders.boat_loader import BoatDef
@@ -36,8 +35,11 @@ def marine_world(_marine_world_base) -> WorldMap:
     return copy.deepcopy(_marine_world_base)
 
 
-def setup_water_game(monkeypatch):
-    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch)
+from tests.test_army_actions import setup_game
+
+
+def setup_water_game(monkeypatch, pygame_stub):
+    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch, pygame_stub)
     game.compute_path = GameClass.compute_path.__get__(game, GameClass)
     game._compute_path_cached = GameClass._compute_path_cached.__get__(game, GameClass)
     game.world.grid[0][0].biome = "scarletia_echo_plain"
@@ -52,9 +54,9 @@ def setup_water_game(monkeypatch):
     return game
 
 
-def setup_open_sea_game(monkeypatch):
+def setup_open_sea_game(monkeypatch, pygame_stub):
     """Create a game where the hero and a boat are at sea away from land."""
-    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch)
+    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch, pygame_stub)
     game.compute_path = GameClass.compute_path.__get__(game, GameClass)
     game._compute_path_cached = GameClass._compute_path_cached.__get__(game, GameClass)
     for x in range(3):
@@ -69,8 +71,8 @@ def setup_open_sea_game(monkeypatch):
     return game, boat
 
 
-def test_path_requires_boat(monkeypatch):
-    game = setup_water_game(monkeypatch)
+def test_path_requires_boat(monkeypatch, pygame_stub):
+    game = setup_water_game(monkeypatch, pygame_stub)
     assert game.compute_path((0, 0), (2, 0)) is None
     boat = game.world.grid[0][1].boat
     game.embark(game.hero, boat)
@@ -78,8 +80,8 @@ def test_path_requires_boat(monkeypatch):
     assert game.compute_path((1, 0), (2, 0)) == [(2, 0)]
 
 
-def test_embark_disembark_cost(monkeypatch):
-    game = setup_water_game(monkeypatch)
+def test_embark_disembark_cost(monkeypatch, pygame_stub):
+    game = setup_water_game(monkeypatch, pygame_stub)
     monkeypatch.setattr(audio, "play_sound", lambda *a, **k: None)
     boat = game.world.grid[0][1].boat
     start_ap = game.hero.ap
@@ -93,8 +95,8 @@ def test_embark_disembark_cost(monkeypatch):
     assert game.world.grid[0][1].boat is not None
 
 
-def test_move_without_boat_notifies(monkeypatch):
-    game = setup_water_game(monkeypatch)
+def test_move_without_boat_notifies(monkeypatch, pygame_stub):
+    game = setup_water_game(monkeypatch, pygame_stub)
     game.world.grid[0][1].boat = None
     monkeypatch.setattr(audio, "play_sound", lambda *a, **k: None)
     notices = []
@@ -104,8 +106,8 @@ def test_move_without_boat_notifies(monkeypatch):
     assert (game.hero.x, game.hero.y) == (0, 0)
 
 
-def test_move_onto_boat_auto_embark(monkeypatch):
-    game = setup_water_game(monkeypatch)
+def test_move_onto_boat_auto_embark(monkeypatch, pygame_stub):
+    game = setup_water_game(monkeypatch, pygame_stub)
     monkeypatch.setattr(audio, "play_sound", lambda *a, **k: None)
     start_ap = game.hero.ap
     game.try_move_hero(1, 0)
@@ -114,16 +116,16 @@ def test_move_onto_boat_auto_embark(monkeypatch):
     assert game.hero.naval_unit == "barge"
     assert game.world.grid[0][1].boat is None
 
-def test_embark_requires_adjacent_land(monkeypatch):
-    game, boat = setup_open_sea_game(monkeypatch)
+def test_embark_requires_adjacent_land(monkeypatch, pygame_stub):
+    game, boat = setup_open_sea_game(monkeypatch, pygame_stub)
     monkeypatch.setattr(audio, "play_sound", lambda *a, **k: None)
     assert not game.embark(game.hero, boat)
     assert game.hero.naval_unit == "barge"
     assert game.world.grid[0][1].boat is boat
 
 
-def test_disembark_requires_adjacent_land(monkeypatch):
-    game, _ = setup_open_sea_game(monkeypatch)
+def test_disembark_requires_adjacent_land(monkeypatch, pygame_stub):
+    game, _ = setup_open_sea_game(monkeypatch, pygame_stub)
     game.disembark(game.hero, 0, 0)
     assert game.hero.naval_unit == "barge"
     assert game.world.grid[0][0].boat is None

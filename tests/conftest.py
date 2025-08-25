@@ -24,6 +24,32 @@ from core.combat import Combat, water_battlefield_template
 from state.event_bus import EVENT_BUS
 
 
+@pytest.fixture
+def pygame_stub(monkeypatch):
+    """Return a configurable pygame stub module.
+
+    The returned callable reloads the base stub and applies attribute
+    overrides passed as keyword arguments using dotted paths.  The created
+    module is installed into ``sys.modules`` as ``pygame`` and returned so
+    tests can further monkeypatch or inspect it.
+    """
+
+    def _factory(**overrides):
+        spec = importlib.util.spec_from_file_location("pygame", _STUB)
+        stub = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(stub)
+        for name, value in overrides.items():
+            target = stub
+            parts = name.split(".")
+            for part in parts[:-1]:
+                target = getattr(target, part)
+            setattr(target, parts[-1], value)
+        monkeypatch.setitem(sys.modules, "pygame", stub)
+        return stub
+
+    return _factory
+
+
 @pytest.fixture(autouse=True)
 def _restore_pygame_module():
     """Ensure the pygame stub is present for each test.
