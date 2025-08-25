@@ -2,30 +2,18 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Optional
-import json
-import os
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pygame
 import constants
 from core.combat import Combat
+from loaders import icon_loader as IconLoader
 from ..inventory_screen import (
     COLOR_TEXT,
     COLOR_SLOT_BG,
     COLOR_SLOT_BD,
     COLOR_ACCENT,
 )
-
-# ---------------------------------------------------------------------------
-# Icon loading
-
-_ICON_CACHE: Dict[str, Optional[pygame.Surface]] = {}
-try:
-    with open(os.path.join("assets", "icons", "icons.json"), "r", encoding="utf8") as fh:
-        _ICON_MANIFEST = json.load(fh)
-except Exception:  # pragma: no cover - file missing or invalid
-    _ICON_MANIFEST = {}
 
 _STAT_ICON_IDS = {
     "HP": "status_regeneration",
@@ -38,65 +26,6 @@ _STAT_ICON_IDS = {
     "Morale": "round_morale",
     "Luck": "round_luck",
 }
-
-
-def _load_icon(name: str, size: int) -> Optional[pygame.Surface]:
-    """Load icon ``name`` at ``size`` pixels using the manifest."""
-    if name in _ICON_CACHE:
-        return _ICON_CACHE[name]
-    info = _ICON_MANIFEST.get(name)
-    img_mod = getattr(pygame, "image", None)
-    transform = getattr(pygame, "transform", None)
-    try:
-        if isinstance(info, str):
-            path = Path(info)
-            if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
-                icon = img_mod.load(path)
-                if hasattr(icon, "convert_alpha"):
-                    icon = icon.convert_alpha()
-                if transform and hasattr(transform, "scale"):
-                    icon = transform.scale(icon, (size, size))
-                _ICON_CACHE[name] = icon
-                return icon
-        elif isinstance(info, dict) and "file" in info:
-            path = Path(info["file"])
-            if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
-                icon = img_mod.load(path)
-                if hasattr(icon, "convert_alpha"):
-                    icon = icon.convert_alpha()
-                if transform and hasattr(transform, "scale"):
-                    icon = transform.scale(icon, (size, size))
-                _ICON_CACHE[name] = icon
-                return icon
-        elif isinstance(info, dict) and "sheet" in info:
-            sheet_path = Path(info["sheet"])
-            coords = info.get("coords", [0, 0])
-            tile = info.get("tile", [0, 0])
-            if (
-                img_mod
-                and hasattr(img_mod, "load")
-                and os.path.exists(sheet_path)
-                and tile[0]
-                and tile[1]
-            ):
-                sheet = img_mod.load(sheet_path)
-                if hasattr(sheet, "convert_alpha"):
-                    sheet = sheet.convert_alpha()
-                rect = pygame.Rect(
-                    coords[0] * tile[0],
-                    coords[1] * tile[1],
-                    tile[0],
-                    tile[1],
-                )
-                icon = sheet.subsurface(rect)
-                if transform and hasattr(transform, "scale"):
-                    icon = transform.scale(icon, (size, size))
-                _ICON_CACHE[name] = icon
-                return icon
-    except Exception:  # pragma: no cover - loading failed
-        pass
-    _ICON_CACHE[name] = None
-    return None
 
 if TYPE_CHECKING:  # pragma: no cover - only for type hints
     from ..inventory_screen import InventoryScreen
@@ -141,7 +70,7 @@ def draw(screen: "InventoryScreen") -> None:
     size = 24
     for j, (name, val) in enumerate(pairs):
         icon_id = _STAT_ICON_IDS.get(name)
-        icon = _load_icon(icon_id, size) if icon_id else None
+        icon = IconLoader.get(icon_id, size) if icon_id else None
         if icon:
             screen.screen.blit(icon, (x, y2 + j * 24))
         else:

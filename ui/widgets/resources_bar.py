@@ -13,14 +13,11 @@ for the animation to progress.
 """
 
 from dataclasses import dataclass
-from typing import Dict, List, Tuple, Optional
-
-import json
-import os
-from pathlib import Path
+from typing import Dict, List, Tuple
 
 import pygame
 
+from loaders import icon_loader as IconLoader
 from .. import constants, theme
 from ..state.game_state import PlayerResources
 from ..state.event_bus import EVENT_BUS, ON_RESOURCES_CHANGED
@@ -42,67 +39,11 @@ class ResourcesBar:
         self.font = theme.get_font(24)
         self.resources = PlayerResources()
         self.show_delta = show_delta
-
-        icons_file = os.path.join("assets", "icons", "icons.json")
-        try:
-            with open(icons_file, "r", encoding="utf8") as fh:
-                self._icon_manifest = json.load(fh)
-        except Exception:  # pragma: no cover - file missing or invalid
-            self._icon_manifest = {}
-
-        size = 24
-        self.icons: Dict[str, pygame.Surface] = {}
-        img_mod = getattr(pygame, "image", None)
-        transform = getattr(pygame, "transform", None)
-        for name in self.resources.as_dict().keys():
-            icon = self._load_icon(name, size, img_mod, transform)
-            if icon is None:
-                icon = self._placeholder_icon(size)
-            self.icons[name] = icon
+        self.icon_size = 24
 
         self._deltas: Dict[str, List[_DeltaAnim]] = {name: [] for name in self.resources.as_dict()}
         # Subscribe to resource change events
         EVENT_BUS.subscribe(ON_RESOURCES_CHANGED, self.set_resources)
-
-    # Internal helpers -------------------------------------------------
-    def _placeholder_icon(self, size: int) -> pygame.Surface:
-        surf = pygame.Surface((size, size), pygame.SRCALPHA)
-        try:
-            surf = surf.convert_alpha()
-        except Exception:  # pragma: no cover
-            pass
-        return surf
-
-    def _load_icon(
-        self,
-        name: str,
-        size: int,
-        img_mod: Optional[object],
-        transform: Optional[object],
-    ) -> Optional[pygame.Surface]:
-        info = self._icon_manifest.get(f"resource_{name}")
-        try:
-            if isinstance(info, str):
-                path = Path(info)
-                if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
-                    icon = img_mod.load(path)
-                    if hasattr(icon, "convert_alpha"):
-                        icon = icon.convert_alpha()
-                    if transform and hasattr(transform, "scale"):
-                        icon = transform.scale(icon, (size, size))
-                    return icon
-            elif isinstance(info, dict) and "file" in info:
-                path = Path(info["file"])
-                if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
-                    icon = img_mod.load(path)
-                    if hasattr(icon, "convert_alpha"):
-                        icon = icon.convert_alpha()
-                    if transform and hasattr(transform, "scale"):
-                        icon = transform.scale(icon, (size, size))
-                    return icon
-        except Exception:  # pragma: no cover - loading failed
-            return None
-        return None
 
     # Public API -------------------------------------------------------
     def set_resources(self, resources: PlayerResources) -> None:
@@ -136,11 +77,10 @@ class ResourcesBar:
         y_center = rect.y + rect.height // 2
         for name in ["gold", "wood", "stone", "crystal"]:
             value = getattr(self.resources, name, 0)
-            icon = self.icons.get(name)
-            if icon:
-                pos = (x, y_center - icon.get_height() // 2)
-                surface.blit(icon, pos)
-                x += icon.get_width() + 4
+            icon = IconLoader.get(f"resource_{name}", self.icon_size)
+            pos = (x, y_center - icon.get_height() // 2)
+            surface.blit(icon, pos)
+            x += icon.get_width() + 4
             txt_surface = self.font.render(str(value), True, theme.PALETTE["text"])
             surface.blit(txt_surface, (x, y_center - txt_surface.get_height() // 2))
             # Draw delta animations above the value

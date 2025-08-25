@@ -8,6 +8,7 @@ import pygame
 import theme
 import settings
 from ui.widgets.icon_button import IconButton
+from loaders import icon_loader as IconLoader
 
 BUTTON_H = 28
 # Slightly wider and taller panel to fit spells/statuses
@@ -25,21 +26,6 @@ class CombatHUD:
         self.small = pygame.font.SysFont(None, 16)
         self.title = pygame.font.SysFont(None, 22)
         self.action_labels = self._load_action_labels(settings.LANGUAGE)
-
-        # Load icon manifest describing action/stat/status icons
-        icons_file = (
-            Path(__file__).resolve().parents[1]
-            / "assets"
-            / "icons"
-            / "icons.json"
-        )
-        try:
-            with icons_file.open("r", encoding="utf8") as fh:
-                self._icon_manifest = json.load(fh)
-        except Exception:
-            self._icon_manifest = {}
-
-        self._icon_cache: Dict[Tuple[str, int], Optional[pygame.Surface]] = {}
 
         # Preload commonly used action and stat icons
         self.action_icon_keys = {
@@ -78,56 +64,6 @@ class CombatHUD:
         if language != default:
             labels.update(data.get(language, {}))
         return labels
-
-    def _load_icon(self, key: str, size: int) -> Optional[pygame.Surface]:
-        """Return icon ``key`` scaled to ``size`` or ``None`` on failure."""
-        cache_key = (key, size)
-        if cache_key in self._icon_cache:
-            return self._icon_cache[cache_key]
-
-        info = self._icon_manifest.get(key)
-        icon: Optional[pygame.Surface] = None
-        try:
-            assets_root = Path(__file__).resolve().parents[1]
-            if isinstance(info, str):
-                path = assets_root / info
-                if path.exists() and hasattr(pygame.image, "load"):
-                    icon = pygame.image.load(str(path))
-                    if hasattr(icon, "convert_alpha"):
-                        icon = icon.convert_alpha()
-            elif isinstance(info, dict) and "file" in info:
-                path = assets_root / info["file"]
-                if path.exists() and hasattr(pygame.image, "load"):
-                    icon = pygame.image.load(str(path))
-                    if hasattr(icon, "convert_alpha"):
-                        icon = icon.convert_alpha()
-            elif isinstance(info, dict) and "sheet" in info:
-                sheet_path = assets_root / info["sheet"]
-                coords = info.get("coords", [0, 0])
-                tile = info.get("tile", [0, 0])
-                if (
-                    sheet_path.exists()
-                    and tile[0]
-                    and tile[1]
-                    and hasattr(pygame.image, "load")
-                ):
-                    sheet = pygame.image.load(str(sheet_path))
-                    if hasattr(sheet, "convert_alpha"):
-                        sheet = sheet.convert_alpha()
-                    rect = pygame.Rect(
-                        coords[0] * tile[0],
-                        coords[1] * tile[1],
-                        tile[0],
-                        tile[1],
-                    )
-                    icon = sheet.subsurface(rect)
-            if icon and hasattr(pygame.transform, "scale"):
-                icon = pygame.transform.scale(icon, (size, size))
-        except Exception:
-            icon = None
-
-        self._icon_cache[cache_key] = icon
-        return icon
 
     def _panel_rects(
         self,
@@ -202,15 +138,10 @@ class CombatHUD:
             y_stats = right.y + 42
             for name, value in stats:
                 icon_key = self.stat_icon_keys.get(name, name)
-                icon = self._load_icon(icon_key, 18)
-                if icon:
-                    screen.blit(icon, (right.x + 84, y_stats))
-                    txt_x = right.x + 84 + icon.get_width() + 4
-                    txt_val = value
-                else:
-                    # Fallback to text label when icon missing
-                    txt_x = right.x + 84
-                    txt_val = f"{name.title()} {value}"
+                icon = IconLoader.get(icon_key, 18)
+                screen.blit(icon, (right.x + 84, y_stats))
+                txt_x = right.x + 84 + icon.get_width() + 4
+                txt_val = value
                 txt = self.font.render(txt_val, True, theme.PALETTE["text"])
                 screen.blit(txt, (txt_x, y_stats))
                 y_stats += 18
@@ -242,26 +173,17 @@ class CombatHUD:
                 )
                 y += 18
                 for name, turns in statuses.items():
-                    icon = self._load_icon(f"status_{name}", 18)
-                    if icon:
-                        screen.blit(icon, (right.x + 20, y))
-                        txt = self.small.render(
-                            str(turns), True, theme.PALETTE["text"]
-                        )
-                        screen.blit(
-                            txt,
-                            (
-                                right.x + 20 + icon.get_width() + 4,
-                                y + (icon.get_height() - txt.get_height()) // 2,
-                            ),
-                        )
-                        y += icon.get_height() + 4
-                    else:
-                        txt = self.small.render(
-                            f"{name} ({turns})", True, theme.PALETTE["text"]
-                        )
-                        screen.blit(txt, (right.x + 20, y))
-                        y += 18
+                    icon = IconLoader.get(f"status_{name}", 18)
+                    screen.blit(icon, (right.x + 20, y))
+                    txt = self.small.render(str(turns), True, theme.PALETTE["text"])
+                    screen.blit(
+                        txt,
+                        (
+                            right.x + 20 + icon.get_width() + 4,
+                            y + (icon.get_height() - txt.get_height()) // 2,
+                        ),
+                    )
+                    y += icon.get_height() + 4
 
             # Turn order thumbnails
             y0 = y + 10

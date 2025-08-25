@@ -1,10 +1,9 @@
 from __future__ import annotations
 from typing import Optional, List, Dict, Tuple
 import os
-import json
-from pathlib import Path
 import logging
 import pygame
+from loaders import icon_loader as IconLoader
 from core.entities import (
     Hero,
     HeroStats,
@@ -81,65 +80,7 @@ class TownScreen:
         self.font_small = pygame.font.SysFont(FONT_NAME, 14)
         self.font_big = pygame.font.SysFont(FONT_NAME, 20, bold=True)
 
-        icons_file = os.path.join("assets", "icons", "icons.json")
-        try:
-            with open(icons_file, "r", encoding="utf8") as fh:
-                self._icon_manifest = json.load(fh)
-        except Exception:  # pragma: no cover - file missing or invalid
-            self._icon_manifest = {}
-
         self._res_icons = ["gold", "wood", "stone", "crystal"]
-        self._res_icon_surfaces: Dict[str, pygame.Surface] = {}
-        img_mod = getattr(pygame, "image", None)
-        transform = getattr(pygame, "transform", None)
-        for name in self._res_icons:
-            surf = None
-            info = self._icon_manifest.get(f"resource_{name}")
-            try:
-                if isinstance(info, str):
-                    path = Path(info)
-                    if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
-                        surf = img_mod.load(path)
-                        if hasattr(surf, "convert_alpha"):
-                            surf = surf.convert_alpha()
-                elif isinstance(info, dict) and "file" in info:
-                    path = Path(info["file"])
-                    if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
-                        surf = img_mod.load(path)
-                        if hasattr(surf, "convert_alpha"):
-                            surf = surf.convert_alpha()
-                elif isinstance(info, dict) and "sheet" in info:
-                    sheet_path = Path(info["sheet"])
-                    coords = info.get("coords", [0, 0])
-                    tile = info.get("tile", [0, 0])
-                    if (
-                        img_mod
-                        and hasattr(img_mod, "load")
-                        and os.path.exists(sheet_path)
-                        and tile[0]
-                        and tile[1]
-                    ):
-                        sheet = img_mod.load(sheet_path)
-                        if hasattr(sheet, "convert_alpha"):
-                            sheet = sheet.convert_alpha()
-                        rect = pygame.Rect(
-                            coords[0] * tile[0],
-                            coords[1] * tile[1],
-                            tile[0],
-                            tile[1],
-                        )
-                        surf = sheet.subsurface(rect)
-            except Exception:  # pragma: no cover - loading failed
-                surf = None
-            if surf is None:
-                surf = pygame.Surface((36, 36), pygame.SRCALPHA)
-                try:
-                    surf = surf.convert_alpha()
-                except Exception:  # pragma: no cover
-                    pass
-            elif transform and hasattr(transform, "scale"):
-                surf = transform.scale(surf, (36, 36))
-            self._res_icon_surfaces[name] = surf
 
         self.building_images: Dict[str, Optional[pygame.Surface]] = {}
         max_w = CARD_W - 20
@@ -300,10 +241,9 @@ class TownScreen:
         y_center = rect.y + rect.height // 2
         for key in self._res_icons:
             val = self._resources_dict().get(key, 0)
-            icon = self._res_icon_surfaces.get(key)
-            if icon:
-                self.screen.blit(icon, (x, y_center - icon.get_height() // 2))
-                x += icon.get_width() + 4
+            icon = IconLoader.get(f"resource_{key}", 36)
+            self.screen.blit(icon, (x, y_center - icon.get_height() // 2))
+            x += icon.get_width() + 4
             txt = self.font.render(str(val), True, COLOR_TEXT)
             self.screen.blit(txt, (x, y_center - txt.get_height() // 2))
             x += txt.get_width() + 28
