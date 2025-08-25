@@ -302,6 +302,18 @@ def draw(combat, frame: int = 0) -> None:
         stack_rect = pygame.Rect(0, 0, stack_w, stack_h)
         stack_rect.centerx = rect.centerx
         stack_rect.top = rect.bottom
+        bar_h = max(2, int(3 * combat.zoom))
+        hp_rect = pygame.Rect(rect.left, stack_rect.top - bar_h, rect.width, bar_h)
+        pygame.draw.rect(combat.screen, constants.RED, hp_rect)
+        max_hp = getattr(unit.stats, "max_hp", 0) or 0
+        if max_hp > 0:
+            ratio = unit.current_hp / max_hp
+            ratio = max(0.0, min(1.0, ratio))
+            green_w = int(hp_rect.width * ratio)
+            if green_w > 0:
+                green_rect = pygame.Rect(hp_rect.left, hp_rect.top, green_w, hp_rect.height)
+                pygame.draw.rect(combat.screen, constants.GREEN, green_rect)
+        pygame.draw.rect(combat.screen, theme.PALETTE["panel"], hp_rect, 1)
         pygame.draw.rect(combat.screen, theme.PALETTE["panel"], stack_rect)
         font = pygame.font.SysFont(None, int(14 * combat.zoom))
         text = font.render(str(unit.count), True, theme.PALETTE["text"])
