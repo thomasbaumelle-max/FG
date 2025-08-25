@@ -24,8 +24,8 @@ Default screen settings.  When a custom map file is loaded, the actual
 window size will be determined dynamically based on the map dimensions.
 """
 # These values are used as a fallback when no map file is provided.
-WINDOW_WIDTH = 1280
-WINDOW_HEIGHT = 720
+WINDOW_WIDTH = 1920
+WINDOW_HEIGHT = 1080
 
 # Height reserved for the UI/hud at the bottom of the screen (in pixels)
 UI_HEIGHT = 120
