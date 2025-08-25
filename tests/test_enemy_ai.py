@@ -21,6 +21,7 @@ def plaine_world() -> WorldMap:
 
 
 @pytest.mark.slow
+@pytest.mark.worldgen
 def test_enemy_starting_area_has_town(plaine_world):
     world = plaine_world
     assert world.enemy_starting_area is not None

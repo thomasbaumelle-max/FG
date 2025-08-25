@@ -120,6 +120,7 @@ def test_disembark_requires_adjacent_land(monkeypatch):
 
 
 @pytest.mark.slow
+@pytest.mark.worldgen
 def test_plaine_map_is_land_heavy(plaine_world):
     world = plaine_world
     total = world.width * world.height
@@ -133,6 +134,7 @@ def test_plaine_map_is_land_heavy(plaine_world):
 
 
 @pytest.mark.slow
+@pytest.mark.worldgen
 def test_marine_map_features_and_starting_islands(marine_world):
     world = marine_world
     total = world.width * world.height

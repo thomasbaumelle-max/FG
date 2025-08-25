@@ -140,6 +140,8 @@ def test_roamer_patrols():
 
 
 @pytest.mark.slow
+@pytest.mark.worldgen
+@pytest.mark.combat
 def test_marine_maps_have_guardian_clusters_and_fewer_roamers():
     random.seed(0)
     rows_marine = generate_continent_map(15, 15, seed=0, map_type="marine")

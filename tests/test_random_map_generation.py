@@ -55,6 +55,7 @@ def test_resource_and_building_placement():
 
 
 @pytest.mark.slow
+@pytest.mark.worldgen
 def test_river_generation_and_shoreline():
     random.seed(0)
     rows = generate_continent_map(10, 8, seed=0, biome_chars="GM")

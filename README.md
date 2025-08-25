@@ -180,6 +180,13 @@ generation, combat rules and save/load behaviour.  Run the tests with:
 pytest
 ```
 
+Slow tests that perform extensive world generation or long AI loops are marked with `slow` and either `worldgen` or `combat`. You can run a subset with:
+
+```bash
+pytest -m "not slow and not worldgen"
+```
+
+
 ## Configuration
 
 Runtime options are read from environment variables and the `settings.json`
