@@ -57,7 +57,7 @@ def test_resource_and_building_placement():
 @pytest.mark.slow
 def test_river_generation_and_shoreline():
     random.seed(0)
-    rows = generate_continent_map(30, 20, seed=0, biome_chars="GM")
+    rows = generate_continent_map(10, 8, seed=0, biome_chars="GM")
     grid = [[row[i] for i in range(0, len(row), 2)] for row in rows]
     assert any("R" in row for row in grid)
     height = len(grid)
