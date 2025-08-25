@@ -48,7 +48,17 @@ def _load_icon(name: str, size: int) -> Optional[pygame.Surface]:
     img_mod = getattr(pygame, "image", None)
     transform = getattr(pygame, "transform", None)
     try:
-        if isinstance(info, dict) and "file" in info:
+        if isinstance(info, str):
+            path = Path("assets/icons") / info
+            if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
+                icon = img_mod.load(path)
+                if hasattr(icon, "convert_alpha"):
+                    icon = icon.convert_alpha()
+                if transform and hasattr(transform, "scale"):
+                    icon = transform.scale(icon, (size, size))
+                _ICON_CACHE[name] = icon
+                return icon
+        elif isinstance(info, dict) and "file" in info:
             path = Path("assets") / info["file"]
             if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
                 icon = img_mod.load(path)

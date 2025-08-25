@@ -87,41 +87,39 @@ class CombatHUD:
         info = self._icon_manifest.get(key)
         icon: Optional[pygame.Surface] = None
         try:
-            if isinstance(info, dict):
-                if "file" in info:
-                    path = (
-                        Path(__file__).resolve().parents[1]
-                        / "assets"
-                        / info["file"]
+            assets_root = Path(__file__).resolve().parents[1] / "assets"
+            if isinstance(info, str):
+                path = assets_root / "icons" / info
+                if path.exists() and hasattr(pygame.image, "load"):
+                    icon = pygame.image.load(str(path))
+                    if hasattr(icon, "convert_alpha"):
+                        icon = icon.convert_alpha()
+            elif isinstance(info, dict) and "file" in info:
+                path = assets_root / info["file"]
+                if path.exists() and hasattr(pygame.image, "load"):
+                    icon = pygame.image.load(str(path))
+                    if hasattr(icon, "convert_alpha"):
+                        icon = icon.convert_alpha()
+            elif isinstance(info, dict) and "sheet" in info:
+                sheet_path = assets_root / info["sheet"]
+                coords = info.get("coords", [0, 0])
+                tile = info.get("tile", [0, 0])
+                if (
+                    sheet_path.exists()
+                    and tile[0]
+                    and tile[1]
+                    and hasattr(pygame.image, "load")
+                ):
+                    sheet = pygame.image.load(str(sheet_path))
+                    if hasattr(sheet, "convert_alpha"):
+                        sheet = sheet.convert_alpha()
+                    rect = pygame.Rect(
+                        coords[0] * tile[0],
+                        coords[1] * tile[1],
+                        tile[0],
+                        tile[1],
                     )
-                    if path.exists() and hasattr(pygame.image, "load"):
-                        icon = pygame.image.load(str(path))
-                        if hasattr(icon, "convert_alpha"):
-                            icon = icon.convert_alpha()
-                elif "sheet" in info:
-                    sheet_path = (
-                        Path(__file__).resolve().parents[1]
-                        / "assets"
-                        / info["sheet"]
-                    )
-                    coords = info.get("coords", [0, 0])
-                    tile = info.get("tile", [0, 0])
-                    if (
-                        sheet_path.exists()
-                        and tile[0]
-                        and tile[1]
-                        and hasattr(pygame.image, "load")
-                    ):
-                        sheet = pygame.image.load(str(sheet_path))
-                        if hasattr(sheet, "convert_alpha"):
-                            sheet = sheet.convert_alpha()
-                        rect = pygame.Rect(
-                            coords[0] * tile[0],
-                            coords[1] * tile[1],
-                            tile[0],
-                            tile[1],
-                        )
-                        icon = sheet.subsurface(rect)
+                    icon = sheet.subsurface(rect)
             if icon and hasattr(pygame.transform, "scale"):
                 icon = pygame.transform.scale(icon, (size, size))
         except Exception:
