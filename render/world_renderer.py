@@ -219,7 +219,6 @@ class WorldRenderer:
                     path = (
                         Path(__file__).resolve().parents[1]
                         / "assets"
-                        / "icons"
                         / info["file"]
                     )
                     if path.exists() and hasattr(pygame.image, "load"):
@@ -230,7 +229,6 @@ class WorldRenderer:
                     sheet_path = (
                         Path(__file__).resolve().parents[1]
                         / "assets"
-                        / "icons"
                         / info["sheet"]
                     )
                     coords = info.get("coords", [0, 0])
