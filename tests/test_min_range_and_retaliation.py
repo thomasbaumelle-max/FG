@@ -4,29 +4,13 @@ os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 
 from dataclasses import replace
 
-import constants
 from core.entities import Unit, ARCHER_STATS, SWORDSMAN_STATS
-from core.combat import Combat
 
 
-def _create_combat(hero_units, enemy_units):
-    import pygame
-
-    pygame.init()
-    screen = pygame.Surface(
-        (
-            constants.COMBAT_GRID_WIDTH * constants.COMBAT_TILE_SIZE,
-            constants.COMBAT_GRID_HEIGHT * constants.COMBAT_TILE_SIZE,
-        )
-    )
-    assets = {}
-    return Combat(screen, assets, hero_units, enemy_units)
-
-
-def test_archer_min_range_excludes_adjacent():
+def test_archer_min_range_excludes_adjacent(simple_combat):
     archer = Unit(ARCHER_STATS, 1, "hero")
     enemy = Unit(SWORDSMAN_STATS, 1, "enemy")
-    combat = _create_combat([archer], [enemy])
+    combat = simple_combat([archer], [enemy])
     a = combat.hero_units[0]
     e = combat.enemy_units[0]
     combat.move_unit(a, 0, 0)
@@ -38,7 +22,7 @@ def test_archer_min_range_excludes_adjacent():
     assert (2, 0) in squares
 
 
-def test_retaliation_limited_to_one():
+def test_retaliation_limited_to_one(simple_combat):
     stats = replace(
         SWORDSMAN_STATS,
         attack_min=1,
@@ -53,7 +37,7 @@ def test_retaliation_limited_to_one():
     )
     attacker = Unit(stats, 1, "hero")
     defender = Unit(stats, 1, "enemy")
-    combat = _create_combat([attacker], [defender])
+    combat = simple_combat([attacker], [defender])
     a = combat.hero_units[0]
     d = combat.enemy_units[0]
     combat.move_unit(a, 0, 0)

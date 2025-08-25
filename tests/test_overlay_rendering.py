@@ -37,6 +37,30 @@ def _ensure_stub_functions(monkeypatch):
             property(lambda self: (self.width, self.height)),
             raising=False,
         )
+    if not hasattr(pygame.Rect, "left"):
+        def _get_left(self):
+            return self.x
+        def _set_left(self, value):
+            self.x = value
+        monkeypatch.setattr(pygame.Rect, "left", property(_get_left, _set_left), raising=False)
+    if not hasattr(pygame.Rect, "top"):
+        def _get_top(self):
+            return self.y
+        def _set_top(self, value):
+            self.y = value
+        monkeypatch.setattr(pygame.Rect, "top", property(_get_top, _set_top), raising=False)
+    if not hasattr(pygame.Rect, "centerx"):
+        def _get_centerx(self):
+            return self.center[0]
+        def _set_centerx(self, value):
+            self.x = value - self.width // 2
+        monkeypatch.setattr(pygame.Rect, "centerx", property(_get_centerx, _set_centerx), raising=False)
+    if not hasattr(pygame.Rect, "centery"):
+        def _get_centery(self):
+            return self.center[1]
+        def _set_centery(self, value):
+            self.y = value - self.height // 2
+        monkeypatch.setattr(pygame.Rect, "centery", property(_get_centery, _set_centery), raising=False)
 
 
 def test_world_overlay_uses_additive_blending(monkeypatch):

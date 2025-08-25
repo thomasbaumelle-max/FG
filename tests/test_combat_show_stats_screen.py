@@ -3,7 +3,6 @@ from types import SimpleNamespace
 import pygame
 import theme
 
-from core.combat import Combat
 from core.entities import Unit, SWORDSMAN_STATS
 from ui import combat_summary
 
@@ -33,11 +32,11 @@ class DummyScreen:
         return (self._w, self._h)
 
 
-def _run_show_stats(monkeypatch):
+def _run_show_stats(monkeypatch, simple_combat):
     screen = DummyScreen((800, 600))
     hero = Unit(SWORDSMAN_STATS, 1, "hero")
     enemy = Unit(SWORDSMAN_STATS, 1, "enemy")
-    combat = Combat(screen, {}, [hero], [enemy])
+    combat = simple_combat([hero], [enemy], screen=screen)
 
     image_calls: list[Unit] = []
 
@@ -131,31 +130,31 @@ def _run_show_stats(monkeypatch):
     return screen, rendered, image_calls
 
 
-def test_show_stats_no_background_fill(monkeypatch):
-    screen, _, _ = _run_show_stats(monkeypatch)
+def test_show_stats_no_background_fill(monkeypatch, simple_combat):
+    screen, _, _ = _run_show_stats(monkeypatch, simple_combat)
     assert screen.fills == []
 
 
-def test_show_stats_renders_heading(monkeypatch):
-    _, rendered, _ = _run_show_stats(monkeypatch)
+def test_show_stats_renders_heading(monkeypatch, simple_combat):
+    _, rendered, _ = _run_show_stats(monkeypatch, simple_combat)
     assert any(text in ("Victoire", "Défaite") for text in rendered)
 
 
-def test_show_stats_columns(monkeypatch):
-    screen, _, _ = _run_show_stats(monkeypatch)
+def test_show_stats_columns(monkeypatch, simple_combat):
+    screen, _, _ = _run_show_stats(monkeypatch, simple_combat)
     width = screen.get_width()
     xs = [dest[0] for dest in screen.blit_calls if isinstance(dest, tuple)]
     assert any(x < width // 2 for x in xs)
     assert any(x > width // 2 for x in xs)
 
 
-def test_reward_section_before_table(monkeypatch):
-    _, rendered, _ = _run_show_stats(monkeypatch)
+def test_reward_section_before_table(monkeypatch, simple_combat):
+    _, rendered, _ = _run_show_stats(monkeypatch, simple_combat)
     assert rendered.index("Expérience gagnée : 0") < rendered.index("Unité")
 
 
-def test_header_uses_unit_images(monkeypatch):
-    _, _, calls = _run_show_stats(monkeypatch)
+def test_header_uses_unit_images(monkeypatch, simple_combat):
+    _, _, calls = _run_show_stats(monkeypatch, simple_combat)
     # One hero and one enemy unit -> header and table rows for each side
     assert len(calls) == 4
 

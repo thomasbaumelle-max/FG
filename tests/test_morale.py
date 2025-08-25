@@ -4,31 +4,14 @@ from dataclasses import replace
 
 os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
 
-import pygame
-
 from core.entities import Unit, SWORDSMAN_STATS
-from core.combat import Combat
-import constants
-
-pygame.init()
 
 
-def _create_combat(hero_units, enemy_units):
-    screen = pygame.Surface(
-        (
-            constants.COMBAT_GRID_WIDTH * constants.COMBAT_TILE_SIZE,
-            constants.COMBAT_GRID_HEIGHT * constants.COMBAT_TILE_SIZE,
-        )
-    )
-    assets = {}
-    return Combat(screen, assets, hero_units, enemy_units)
-
-
-def test_positive_morale_grants_extra_turn(monkeypatch):
+def test_positive_morale_grants_extra_turn(monkeypatch, simple_combat):
     hero_stats = replace(SWORDSMAN_STATS, morale=1)
     hero = Unit(hero_stats, 1, 'hero')
     enemy = Unit(SWORDSMAN_STATS, 1, 'enemy')
-    combat = _create_combat([hero], [enemy])
+    combat = simple_combat([hero], [enemy])
     hero_unit = combat.hero_units[0]
     enemy_unit = combat.enemy_units[0]
     combat.turn_order = [hero_unit, enemy_unit]
@@ -44,11 +27,11 @@ def test_positive_morale_grants_extra_turn(monkeypatch):
     assert combat.turn_order[combat.current_index] is hero_unit
 
 
-def test_negative_morale_skips_turn(monkeypatch):
+def test_negative_morale_skips_turn(monkeypatch, simple_combat):
     hero_stats = replace(SWORDSMAN_STATS, morale=-1)
     hero = Unit(hero_stats, 1, 'hero')
     enemy = Unit(SWORDSMAN_STATS, 1, 'enemy')
-    combat = _create_combat([hero], [enemy])
+    combat = simple_combat([hero], [enemy])
     hero_unit = combat.hero_units[0]
     enemy_unit = combat.enemy_units[0]
     combat.turn_order = [hero_unit, enemy_unit]
