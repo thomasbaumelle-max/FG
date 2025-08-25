@@ -13,6 +13,7 @@ import json
 import logging
 import os
 import random
+import copy
 from enum import Enum, auto
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple, Set, TYPE_CHECKING, Sequence
@@ -629,6 +630,75 @@ class WorldMap:
                     self.flora_prop_chunks[key] = props
                 else:
                     self.flora_prop_chunks.pop(key, None)
+
+    def clone(self) -> "WorldMap":
+        """Return a structured copy of this :class:`WorldMap`.
+
+        This performs an efficient copy of the map data structures without
+        relying on :func:`copy.deepcopy`.  Nested lists and tiles are rebuilt so
+        the returned map can be mutated independently from the original.
+        """
+
+        new_map = WorldMap.__new__(WorldMap)
+
+        for attr in (
+            "hero_start",
+            "enemy_start",
+            "hero_town",
+            "enemy_town",
+            "starting_area",
+            "enemy_starting_area",
+            "width",
+            "height",
+            "resource_density",
+        ):
+            setattr(new_map, attr, getattr(self, attr))
+
+        new_map.creatures = list(self.creatures)
+        new_map.player_armies = list(self.player_armies)
+
+        new_map.biomes = [row[:] for row in self.biomes]
+        new_map.obstacles = [row[:] for row in self.obstacles]
+
+        grid: List[List[Tile]] = []
+        for y, row in enumerate(self.grid):
+            new_row: List[Tile] = []
+            for x, tile in enumerate(row):
+                nt = Tile(new_map, x, y)
+                nt.treasure = dict(tile.treasure) if tile.treasure else None
+                nt.enemy_units = (
+                    [copy.copy(u) for u in tile.enemy_units]
+                    if tile.enemy_units is not None
+                    else None
+                )
+                nt.resource = tile.resource
+                nt.building = copy.copy(tile.building) if tile.building else None
+                nt.boat = copy.copy(tile.boat) if tile.boat else None
+                nt.owner = tile.owner
+                nt.road = tile.road
+                new_row.append(nt)
+            grid.append(new_row)
+        new_map.grid = grid
+
+        new_map.visible = {
+            pid: [row[:] for row in mat]
+            for pid, mat in self.visible.items()
+        }
+        new_map.explored = {
+            pid: [row[:] for row in mat]
+            for pid, mat in self.explored.items()
+        }
+        new_map.biome_grid = [row[:] for row in self.biome_grid]
+        new_map.water_map = [row[:] for row in self.water_map]
+        new_map.renderer = self.renderer
+        new_map.flora_loader = self.flora_loader
+        new_map.flora_props = list(self.flora_props)
+        new_map.collectibles = dict(self.collectibles)
+        new_map.flora_prop_chunks = {
+            k: list(v) for k, v in self.flora_prop_chunks.items()
+        }
+
+        return new_map
 
     def _ensure_player_fog(self, player_id: int) -> None:
         """Initialise fog of war matrices for ``player_id`` if missing."""

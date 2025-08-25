@@ -7,7 +7,6 @@ import constants
 from core.ai.creature_ai import GuardianAI, RoamingAI
 import pytest
 import random
-import copy
 from pathlib import Path
 
 @pytest.fixture(scope="module")
@@ -19,7 +18,7 @@ def _marine_world_base() -> WorldMap:
 
 @pytest.fixture
 def marine_world(_marine_world_base) -> WorldMap:
-    return copy.deepcopy(_marine_world_base)
+    return _marine_world_base.clone()
 
 
 @pytest.fixture(scope="module")
@@ -31,7 +30,7 @@ def _plaine_world_base() -> WorldMap:
 
 @pytest.fixture
 def plaine_world(_plaine_world_base) -> WorldMap:
-    return copy.deepcopy(_plaine_world_base)
+    return _plaine_world_base.clone()
 
 
 def _make_world(width, height):
