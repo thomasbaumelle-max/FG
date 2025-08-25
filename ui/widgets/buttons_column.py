@@ -18,6 +18,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 import json
 import os
+from pathlib import Path
 
 import pygame
 
@@ -178,7 +179,7 @@ class ButtonsColumn:
             transform = getattr(pygame, "transform", None)
             try:
                 if "file" in info:
-                    full_path = os.path.join("assets", "icons", info["file"])
+                    full_path = Path("assets") / info["file"]
                     if img_mod and hasattr(img_mod, "load") and os.path.exists(full_path):
                         icon = img_mod.load(full_path)
                         if hasattr(icon, "convert_alpha"):
@@ -191,7 +192,7 @@ class ButtonsColumn:
                         surf.blit(icon, (4, 4))
                         icon_drawn = True
                 elif "sheet" in info:
-                    sheet_path = os.path.join("assets", "icons", info["sheet"])
+                    sheet_path = Path("assets") / info["sheet"]
                     coords = info.get("coords", [0, 0])
                     tile = info.get("tile", [0, 0])
                     if (
@@ -222,24 +223,7 @@ class ButtonsColumn:
                 icon_drawn = False
 
         if not icon_drawn:
-            if self.font:
-                txt = self.font.render(btn.label, True, theme.PALETTE["text"])
-                surf.blit(
-                    txt,
-                    (
-                        (surf.get_width() - txt.get_width()) // 2,
-                        (surf.get_height() - txt.get_height()) // 2,
-                    ),
-                )
-            else:
-                # fallback : gros point pour montrer la présence du bouton
-                if hasattr(pygame, "draw") and hasattr(pygame.draw, "circle"):
-                    pygame.draw.circle(
-                        surf,
-                        (180, 180, 190),
-                        (self.BUTTON_SIZE[0] // 2, self.BUTTON_SIZE[1] // 2),
-                        10,
-                    )
+            pass
 
         if self.hotkey_font:
             hk = self.hotkey_font.render(btn.label, True, theme.PALETTE["text"])

@@ -17,6 +17,7 @@ from typing import Dict, List, Tuple, Optional
 
 import json
 import os
+from pathlib import Path
 
 import pygame
 
@@ -84,7 +85,7 @@ class ResourcesBar:
             return None
         try:
             if "file" in info:
-                path = os.path.join("assets", "icons", info["file"])
+                path = Path("assets") / info["file"]
                 if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
                     icon = img_mod.load(path)
                     if hasattr(icon, "convert_alpha"):
@@ -93,7 +94,7 @@ class ResourcesBar:
                         icon = transform.scale(icon, (size, size))
                     return icon
             elif "sheet" in info:
-                sheet_path = os.path.join("assets", "icons", info["sheet"])
+                sheet_path = Path("assets") / info["sheet"]
                 coords = info.get("coords", [0, 0])
                 tile = info.get("tile", [0, 0])
                 if (

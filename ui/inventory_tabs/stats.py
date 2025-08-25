@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, Optional
 import json
 import os
+from pathlib import Path
 
 import pygame
 import constants
@@ -48,7 +49,7 @@ def _load_icon(name: str, size: int) -> Optional[pygame.Surface]:
     transform = getattr(pygame, "transform", None)
     try:
         if isinstance(info, dict) and "file" in info:
-            path = os.path.join("assets", "icons", info["file"])
+            path = Path("assets") / info["file"]
             if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
                 icon = img_mod.load(path)
                 if hasattr(icon, "convert_alpha"):
@@ -58,7 +59,7 @@ def _load_icon(name: str, size: int) -> Optional[pygame.Surface]:
                 _ICON_CACHE[name] = icon
                 return icon
         elif isinstance(info, dict) and "sheet" in info:
-            sheet_path = os.path.join("assets", "icons", info["sheet"])
+            sheet_path = Path("assets") / info["sheet"]
             coords = info.get("coords", [0, 0])
             tile = info.get("tile", [0, 0])
             if (

@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Optional, List, Dict, Tuple
 import os
 import json
+from pathlib import Path
 import logging
 import pygame
 from core.entities import (
@@ -97,13 +98,13 @@ class TownScreen:
             if isinstance(info, dict):
                 try:
                     if "file" in info:
-                        path = os.path.join("assets", "icons", info["file"])
+                        path = Path("assets") / info["file"]
                         if img_mod and hasattr(img_mod, "load") and os.path.exists(path):
                             surf = img_mod.load(path)
                             if hasattr(surf, "convert_alpha"):
                                 surf = surf.convert_alpha()
                     elif "sheet" in info:
-                        sheet_path = os.path.join("assets", "icons", info["sheet"])
+                        sheet_path = Path("assets") / info["sheet"]
                         coords = info.get("coords", [0, 0])
                         tile = info.get("tile", [0, 0])
                         if (
