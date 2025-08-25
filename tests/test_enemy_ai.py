@@ -13,11 +13,16 @@ from state.game_state import GameState
 from core import economy
 
 
-@pytest.mark.slow
-def test_enemy_starting_area_has_town():
+@pytest.fixture(scope="module")
+def plaine_world() -> WorldMap:
     random.seed(0)
     rows = generate_continent_map(30, 30, seed=0)
-    world = WorldMap(map_data=rows)
+    return WorldMap(map_data=rows)
+
+
+@pytest.mark.slow
+def test_enemy_starting_area_has_town(plaine_world):
+    world = plaine_world
     assert world.enemy_starting_area is not None
     x0, y0, size = world.enemy_starting_area
     def base(name: str) -> str:
