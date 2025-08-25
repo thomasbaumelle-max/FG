@@ -1,9 +1,12 @@
 import types
 import sys
 
+import pytest
+
 from tests.test_open_town import make_pygame_stub
 
 
+@pytest.mark.serial
 def test_drag_from_garrison_creates_army(monkeypatch):
     pygame_stub = make_pygame_stub()
     monkeypatch.setitem(sys.modules, "pygame", pygame_stub)
@@ -105,6 +108,7 @@ def test_hero_army_exchange_merge_delete(monkeypatch):
     assert wm.player_armies == []
 
 
+@pytest.mark.serial
 def test_army_reintegrated_removes_ghost(monkeypatch):
     pygame_stub = make_pygame_stub()
     monkeypatch.setitem(sys.modules, "pygame", pygame_stub)

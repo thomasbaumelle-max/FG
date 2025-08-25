@@ -1,6 +1,8 @@
 import sys
 import types
 
+import pytest
+
 
 def make_pygame_stub():
     class Rect:
@@ -57,6 +59,7 @@ def setup_overlay(monkeypatch):
     return overlay, theme
 
 
+@pytest.mark.serial
 def test_overlay_lists_all_towns_and_uses_palette(monkeypatch):
     overlay, theme = setup_overlay(monkeypatch)
     overlay.draw()
@@ -67,6 +70,7 @@ def test_overlay_lists_all_towns_and_uses_palette(monkeypatch):
     assert overlay.TEXT == theme.PALETTE["text"]
 
 
+@pytest.mark.serial
 def test_click_opens_town_screen(monkeypatch):
     event_queue = [
         [],

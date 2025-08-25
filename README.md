@@ -174,11 +174,18 @@ feature codes—along with example continent layouts—is documented in
 ## Running Tests
 
 The project includes a small automated test suite that exercises map
-generation, combat rules and save/load behaviour.  Run the tests in
-parallel with:
+generation, combat rules and save/load behaviour. Most tests can be run in
+parallel; a few that rely on global state are marked with ``serial`` and must
+run one at a time. Run the parallelisable tests with:
 
 ```bash
-pytest -n auto
+pytest -n auto -m "not serial"
+```
+
+Execute the remaining serial tests separately with:
+
+```bash
+pytest -m serial
 ```
 
 Slow tests that perform extensive world generation or long AI loops are marked with `slow` and either `worldgen` or `combat`. You can run a subset with:

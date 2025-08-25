@@ -313,6 +313,8 @@ class Tile:
     # Optional boat anchored on this water tile
     boat: Optional["Boat"] = None
     owner: Optional[int] = None
+    # Road presence provides movement cost bonuses
+    road: bool = False
 
     @property
     def biome(self) -> str:

@@ -2,11 +2,14 @@
 
 import doctest
 
+import pytest
+
 import diplomacy
 import siege
 import weather
 
 
+@pytest.mark.serial
 def test_doctests() -> None:
     """Ensure placeholder modules expose documented structures."""
 

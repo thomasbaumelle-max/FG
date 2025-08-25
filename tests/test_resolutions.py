@@ -1,5 +1,8 @@
 import pygame
 from types import SimpleNamespace
+
+import pytest
+
 from ui.main_screen import MainScreen
 
 
@@ -15,6 +18,7 @@ def _dummy_game(width, height):
     )
 
 
+@pytest.mark.serial
 def test_layout_16_9_and_16_10():
     game = _dummy_game(1280, 720)
     ms = MainScreen(game)
@@ -38,6 +42,7 @@ def test_layout_16_9_and_16_10():
     assert ms.widgets["1"].height == expected_h
 
 
+@pytest.mark.serial
 def test_buttons_stack_when_short_height():
     game = _dummy_game(1280, 600)
     ms = MainScreen(game)

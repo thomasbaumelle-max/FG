@@ -10,6 +10,8 @@ import random
 import copy
 from pathlib import Path
 
+pytestmark = pytest.mark.serial
+
 @pytest.fixture(scope="module")
 def _marine_world_base() -> WorldMap:
     random.seed(0)
@@ -103,6 +105,7 @@ def test_enemy_captures_town_from_adjacent():
     assert enemy.ap == start_ap - 1
 
 
+@pytest.mark.serial
 def test_enemy_targets_hero_after_resource_collected(monkeypatch):
     monkeypatch.setattr(constants, "AI_DIFFICULTY", "Novice")
     game, enemy = _create_game_with_resource()
