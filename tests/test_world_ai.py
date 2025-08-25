@@ -6,6 +6,7 @@ import core.exploration_ai as exploration_ai
 import constants
 from core.ai.creature_ai import GuardianAI, RoamingAI
 import random
+import pytest
 from mapgen.continents import generate_continent_map
 
 
@@ -138,6 +139,7 @@ def test_roamer_patrols():
     assert moved
 
 
+@pytest.mark.slow
 def test_marine_maps_have_guardian_clusters_and_fewer_roamers():
     random.seed(0)
     rows_marine = generate_continent_map(30, 30, seed=0, map_type="marine")

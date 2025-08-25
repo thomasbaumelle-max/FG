@@ -1,6 +1,7 @@
 import random
 
 import pygame
+import pytest
 
 from mapgen.continents import generate_continent_map
 from core.world import WorldMap
@@ -12,6 +13,7 @@ from state.game_state import GameState
 from core import economy
 
 
+@pytest.mark.slow
 def test_enemy_starting_area_has_town():
     random.seed(0)
     rows = generate_continent_map(30, 30, seed=0)

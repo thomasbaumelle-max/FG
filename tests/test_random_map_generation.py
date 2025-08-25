@@ -1,5 +1,6 @@
 import random
 
+import pytest
 from core.world import WorldMap
 import constants
 from mapgen.continents import generate_continent_map
@@ -53,6 +54,7 @@ def test_resource_and_building_placement():
     assert buildings == ["buildings/mine/mine_0.png"]
 
 
+@pytest.mark.slow
 def test_river_generation_and_shoreline():
     random.seed(0)
     rows = generate_continent_map(30, 20, seed=0, biome_chars="GM")

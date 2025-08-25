@@ -1,10 +1,12 @@
 import random
 
+import pytest
 from mapgen.continents import generate_continent_map
 from core.world import WorldMap
 import constants
 
 
+@pytest.mark.slow
 def test_marine_world_scattered_ocean_features():
     random.seed(0)
     rows = generate_continent_map(30, 30, seed=0, map_type="marine")
