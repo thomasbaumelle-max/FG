@@ -3,6 +3,7 @@
     "id": "default_hero",
     "portrait": "hero/portrait_hero.png",
     "battlefield": "hero/bf_default.png",
-    "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
+    "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64},
+    "battlefield_scale": 1.0
   }
 ]
