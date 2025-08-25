@@ -60,6 +60,7 @@ def draw(combat, frame: int = 0) -> None:
     grid_h = int(combat.grid_pixel_height * combat.zoom)
     side_margin = 64
     top_margin = 128
+    combat.side_margin = side_margin
     combat.top_margin = top_margin
     combat.offset_x = HUD_MARGIN + side_margin
     combat.offset_y = screen_h - bottom_min - HUD_MARGIN - grid_h

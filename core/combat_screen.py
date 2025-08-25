@@ -49,8 +49,9 @@ class CombatHUD:
         combat,
     ) -> Tuple[pygame.Rect, pygame.Rect]:
         """Return rectangles for the side and bottom panels."""
+        x = grid_rect.x + grid_rect.width + combat.side_margin + MARGIN
         right = pygame.Rect(
-            grid_rect.x + grid_rect.width + MARGIN,
+            x,
             grid_rect.y - combat.top_margin,
             PANEL_W,
             grid_rect.height + combat.top_margin,
