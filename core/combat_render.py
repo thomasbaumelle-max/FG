@@ -62,8 +62,10 @@ def draw(combat, frame: int = 0) -> None:
     combat.top_margin = top_margin
     combat.offset_x = HUD_MARGIN + side_margin
     combat.offset_y = screen_h - bottom_min - HUD_MARGIN - grid_h
-    shadow_surf = pygame.Surface((tile_w, tile_h), pygame.SRCALPHA)
-    pygame.draw.ellipse(shadow_surf, (0, 0, 0, 100), shadow_surf.get_rect())
+    # Base shadow used for unit rendering; scaled per unit according to its
+    # battlefield size.
+    base_shadow = pygame.Surface((tile_w, tile_h), pygame.SRCALPHA)
+    pygame.draw.ellipse(base_shadow, (0, 0, 0, 100), base_shadow.get_rect())
     overlay = pygame.Surface(combat.screen.get_size(), pygame.SRCALPHA)
 
     # Draw battlefield background
@@ -286,7 +288,14 @@ def draw(combat, frame: int = 0) -> None:
             x = rect.center[0] - w // 2
             y = rect.bottom - h
             if not combat.unit_shadow_baked.get(key or "", False):
-                combat.screen.blit(shadow_surf, rect.topleft)
+                shadow_w = int(tile_w * unit.stats.battlefield_scale)
+                shadow_h = int(tile_h * unit.stats.battlefield_scale)
+                shadow = base_shadow
+                if shadow.get_size() != (shadow_w, shadow_h):
+                    shadow = pygame.transform.scale(base_shadow, (shadow_w, shadow_h))
+                shadow_x = rect.center[0] - shadow_w // 2
+                shadow_y = rect.bottom - shadow_h
+                combat.screen.blit(shadow, (shadow_x, shadow_y))
             combat.screen.blit(img, (x, y))
         else:
             colour = (

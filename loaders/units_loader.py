@@ -30,10 +30,14 @@ def load_units(ctx: Context, manifest: str = "units/units.json") -> Dict[str, di
         require_keys(entry, ["id", "stats"])
         unit = dict(entry)
         unit["abilities"] = _parse_abilities(entry.get("abilities", []))
+        # ``battlefield_scale`` may be defined either inside the ``stats``
+        # mapping or at the root of the unit entry.  Ensure the value ends up
+        # in the ``UnitStats`` constructor regardless of where it is specified.
+        bfs = unit.pop("battlefield_scale", None)
         stats = dict(entry["stats"])
-        stats["battlefield_scale"] = entry.get(
-            "battlefield_scale", stats.get("battlefield_scale", 1.0)
-        )
+        if bfs is not None:
+            stats["battlefield_scale"] = bfs
+        stats.setdefault("battlefield_scale", 1.0)
         unit["stats"] = UnitStats(**stats)
         units[unit["id"]] = unit
     return units
