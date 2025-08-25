@@ -4,6 +4,8 @@ from pathlib import Path
 
 from core.world import WorldMap
 
+pytestmark = pytest.mark.serial
+
 @pytest.fixture(scope="module")
 def _plaine_world_base() -> WorldMap:
     random.seed(0)
