@@ -7,9 +7,15 @@ from core.world import WorldMap
 from core.buildings import Town, create_building
 
 
-def _load_world() -> WorldMap:
+@pytest.fixture(scope="module")
+def _world_base() -> WorldMap:
     path = Path(__file__).parent / "fixtures" / "mini_continent_map.txt"
-    world = WorldMap.from_file(str(path))
+    return WorldMap.from_file(str(path))
+
+
+@pytest.fixture
+def world(_world_base: WorldMap) -> WorldMap:
+    world = _world_base.clone()
     # Place the hero's town on the first continent
     world.grid[2][4].building = Town()
     world.hero_town = (4, 2)
@@ -29,15 +35,13 @@ def _shipyard_positions(world: WorldMap):
     ]
 
 
-def test_starting_area_has_shipyard_when_near_water():
-    world = _load_world()
+def test_starting_area_has_shipyard_when_near_water(world: WorldMap):
     htx, hty = world.hero_town
     shipyards = _shipyard_positions(world)
     assert any(abs(x - htx) + abs(y - hty) <= 5 for x, y in shipyards)
 
 
-def test_each_continent_has_shipyard():
-    world = _load_world()
+def test_each_continent_has_shipyard(world: WorldMap):
     shipyards = set(_shipyard_positions(world))
     for continent in world._find_continents():
         assert any((x, y) in shipyards for x, y in continent)

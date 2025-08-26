@@ -8,12 +8,19 @@ from core.world import WorldMap
 from core.buildings import create_building
 
 
-def _load_world() -> WorldMap:
+@pytest.fixture(scope="module")
+def _marine_world_base() -> WorldMap:
     path = Path(__file__).parent / "fixtures" / "mini_marine_map.txt"
     world = WorldMap.from_file(str(path))
     # Reload original data to undo starting area modifications
     rows = [line.rstrip("\n") for line in open(path, "r", encoding="utf-8")]
     world._load_from_parsed_data([world._parse_row(r) for r in rows])
+    return world
+
+
+@pytest.fixture
+def marine_world(_marine_world_base: WorldMap) -> WorldMap:
+    world = _marine_world_base.clone()
     # Place buildings and features on the water
     world.grid[1][1].building = create_building("sea_sanctuary")
     world.grid[3][3].building = create_building("lighthouse")
@@ -22,8 +29,8 @@ def _load_world() -> WorldMap:
     return world
 
 
-def test_marine_world_scattered_ocean_features():
-    world = _load_world()
+def test_marine_world_scattered_ocean_features(marine_world: WorldMap):
+    world = marine_world
 
     buildings = {"sea_sanctuary": 0, "lighthouse": 0}
     water_resources = 0
