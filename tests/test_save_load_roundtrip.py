@@ -6,6 +6,7 @@ pygame_stub = types.SimpleNamespace()
 sys.modules.setdefault("pygame", pygame_stub)
 
 from core.game import Game
+from core import auto_resolve
 from core.entities import (
     Unit,
     SWORDSMAN_STATS,
@@ -85,4 +86,23 @@ def test_save_load_roundtrip(tmp_path):
             for tile in row:
                 tile.pop("building", None)
     assert original == loaded
+
+
+def test_save_load_after_combat(tmp_path):
+    game = Game.__new__(Game)
+    game.world = WorldMap(width=3, height=3, num_obstacles=0, num_treasures=0, num_enemies=0)
+    hero = Hero(0, 0, [Unit(SWORDSMAN_STATS, 10, "hero")])
+    game.hero = hero
+
+    enemy_units = [Unit(SWORDSMAN_STATS, 5, "enemy")]
+    _, _, heroes, _ = auto_resolve.resolve(hero.units, enemy_units)
+    for unit, res in zip(hero.units, heroes):
+        unit.count = res.count
+
+    save_path = tmp_path / "save.json"
+    game.save_game(save_path)
+
+    game2 = Game.__new__(Game)
+    game2.load_game(save_path)
+    assert game2.hero.units[0].count == game.hero.units[0].count
 

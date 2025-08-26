@@ -349,12 +349,16 @@ def main_menu(screen: pygame.Surface, can_resume: bool = False) -> pygame.Surfac
     """Display the main menu and act on the player's choice.
 
     Returns the (possibly new) screen surface.  When ``can_resume`` is True a
-    "Retour au jeu" option is added which exits the menu immediately.
+    "Retour au jeu" option is added which exits the menu immediately.  When no
+    game is active but a save slot exists a "Continuer" option is shown that
+    loads the first available slot.
     """
 
     initial_track = audio.get_current_music() or audio.get_default_music()
     if initial_track:
         audio.play_music(initial_track)
+
+    base_dir = os.path.dirname(__file__)
 
     while True:
         options = [
@@ -363,8 +367,18 @@ def main_menu(screen: pygame.Surface, can_resume: bool = False) -> pygame.Surfac
             MENU_TEXTS["options"],
             MENU_TEXTS["quit"],
         ]
+        # Determine whether a continue option should be displayed
+        available_slot = None
+        for idx, name in enumerate(SAVE_SLOT_FILES):
+            if os.path.exists(os.path.join(base_dir, name)):
+                available_slot = idx
+                break
+        show_continue = not can_resume and available_slot is not None
         if can_resume:
             options.insert(0, MENU_TEXTS["resume_game"])
+        elif show_continue:
+            options.insert(0, MENU_TEXTS.get("continue", MENU_TEXTS["load"]))
+
         choice, screen = simple_menu(screen, options)
         if choice is None:
             audio.stop_music()
@@ -372,8 +386,32 @@ def main_menu(screen: pygame.Surface, can_resume: bool = False) -> pygame.Surfac
         if can_resume and choice == 0:
             audio.stop_music()
             return screen
-            
-        offset = 1 if can_resume else 0
+
+        if show_continue and choice == 0:
+            audio.stop_music()
+            slot = available_slot or 0
+            save_path = os.path.join(base_dir, SAVE_SLOT_FILES[slot])
+            game = Game(screen, slot=slot)
+            try:
+                game.load_game(save_path)
+            except FileNotFoundError:
+                track = audio.get_current_music() or audio.get_default_music()
+                if track:
+                    audio.play_music(track)
+                _, screen = simple_menu(
+                    screen,
+                    [MENU_TEXTS["file_not_found"], MENU_TEXTS["back"]],
+                    title=MENU_TEXTS["error"],
+                )
+                continue
+            game.run()
+            screen = pygame.display.get_surface()
+            track = audio.get_current_music() or audio.get_default_music()
+            if track:
+                audio.play_music(track)
+            continue
+
+        offset = 1 if (can_resume or show_continue) else 0
         if choice == 0 + offset:  # New game
             config, screen = _new_game_flow(screen)
             if config is None:
