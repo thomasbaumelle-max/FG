@@ -849,8 +849,19 @@ class Combat:
         dist = self.hex_distance((attacker.x, attacker.y), (defender.x, defender.y))
         flank = combat_rules.flanking_bonus(attacker, defender)
 
+        blocked: set[Tuple[int, int]] = set(self.obstacles) | set(self.ice_walls)
+        for u in self.units:
+            if not u.is_alive:
+                continue
+            if u is attacker or u is defender:
+                continue
+            blocked.add((u.x, u.y))
         result = combat_rules.compute_damage(
-            attacker, defender, attack_type=attack_type, distance=dist
+            attacker,
+            defender,
+            attack_type=attack_type,
+            distance=dist,
+            obstacles=blocked,
         )
         base = result["value"]
         luck_mul = result.get("luck", 1.0)
