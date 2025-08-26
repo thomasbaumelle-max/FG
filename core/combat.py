@@ -671,7 +671,15 @@ class Combat:
                 if key and src and dst:
                     self.animate_projectile(key, src, dst)
             elif t == "status":
-                self.add_status(self._find_unit_by_id(e.get("target")), e.get("status",""), e.get("duration",1))
+                unit = self._find_unit_by_id(e.get("target"))
+                if unit:
+                    self.add_status(
+                        unit,
+                        e.get("status", ""),
+                        e.get("duration", 1),
+                        e.get("modifiers"),
+                        e.get("icon"),
+                    )
             elif t == "heal":
                 u = self._find_unit_by_id(e.get("target"))
                 if u:
