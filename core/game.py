@@ -81,7 +81,7 @@ from state.event_bus import (
 )
 from state.game_state import PlayerResources, GameState
 from state.quests import QuestManager
-from core import economy, auto_resolve
+from core import economy, auto_resolve, vision
 
 
 logger = logging.getLogger(__name__)
@@ -1905,37 +1905,8 @@ class Game:
         elif primary is None:
             actors.append(self.hero)
         actors.extend(getattr(self.world, "player_armies", []))
-        seen: set[int] = set()
-        first = True
-        for actor in actors:
-            ident = id(actor)
-            if ident in seen:
-                continue
-            if not self.world.in_bounds(actor.x, actor.y):
-                continue
-            self.world.update_visibility(0, actor, reset=first)
-            seen.add(ident)
-            first = False
-
-        for town in getattr(self.world, "towns", []):
-            if getattr(town, "owner", None) != 0:
-                continue
-            ox, oy = getattr(town, "origin", (0, 0))
-            for dx, dy in getattr(town, "footprint", [(0, 0)]):
-                tx, ty = ox + dx, oy + dy
-                self.world.reveal(0, tx, ty, radius=2)
-
         minimap = getattr(getattr(self, "main_screen", None), "minimap", None)
-        if minimap:
-            vis = self.world.visible.get(0)
-            exp = self.world.explored.get(0)
-            if vis:
-                fog = [
-                    [not vis[y][x] and not (exp[y][x] if exp else False) for x in range(len(vis[0]))]
-                    for y in range(len(vis))
-                ]
-                minimap.set_fog(fog)
-            minimap.invalidate()
+        vision.update_player_visibility(self.world, actors, minimap)
 
     def _try_move_hero(self, dx: int, dy: int) -> None:
         """Attempt to move hero on the map; handle encounters and collisions."""

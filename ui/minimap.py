@@ -1,0 +1,3 @@
+from .widgets.minimap import Minimap, MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION
+
+__all__ = ["Minimap", "MOUSEBUTTONDOWN", "MOUSEBUTTONUP", "MOUSEMOTION"]
