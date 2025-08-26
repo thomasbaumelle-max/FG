@@ -25,6 +25,12 @@ _STAT_ICON_IDS = {
     "Def Magic": "round_defence_magic",
     "Morale": "round_morale",
     "Luck": "round_luck",
+    # Elemental resistances
+    "fire": "status_burn",
+    "ice": "status_freeze",
+    "shock": "status_stun",
+    "earth": "status_petrify",
+    "water": "status_slow",
 }
 
 if TYPE_CHECKING:  # pragma: no cover - only for type hints
@@ -66,20 +72,22 @@ def draw(screen: "InventoryScreen") -> None:
         ("Morale", stats.moral),
         ("Luck", stats.luck),
     ]
+    # Elemental resistances
+    resistances = screen.hero.get_resistances().as_dict()
+    for school, value in resistances.items():
+        pairs.append((school, f"{value}%"))
     y2 = y + len(lines) * 26 + 8
     size = 24
-    for j, (name, val) in enumerate(pairs):
-        icon_id = _STAT_ICON_IDS.get(name)
+    for j, (key, val) in enumerate(pairs):
+        icon_id = _STAT_ICON_IDS.get(key)
         icon = IconLoader.get(icon_id, size) if icon_id else None
         if icon:
             screen.screen.blit(icon, (x, y2 + j * 24))
         else:
-            placeholder = screen.font.render(name[:2], True, COLOR_TEXT)
+            placeholder = screen.font.render(str(key)[:2], True, COLOR_TEXT)
             screen.screen.blit(placeholder, (x, y2 + j * 24))
-        t1 = screen.font.render(name + ":", True, COLOR_TEXT)
         t2 = screen.font.render(str(val), True, COLOR_TEXT)
-        screen.screen.blit(t1, (x + size + 4, y2 + j * 24))
-        screen.screen.blit(t2, (x + size + 4 + 140, y2 + j * 24))
+        screen.screen.blit(t2, (x + size + 4, y2 + j * 24))
 
     # Army 7x1
     font_big = screen.font_big or screen.font

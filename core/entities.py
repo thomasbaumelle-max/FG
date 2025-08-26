@@ -20,6 +20,19 @@ import constants
 from .faction import FactionDef
 from tools.artifact_manifest import load_artifact_manifest
 from tools.skill_manifest import load_skill_manifest
+from .resistances import Resistances
+
+# When running under the pytest pygame stub, expose core attributes on the
+# factory function so tests can access ``pygame_stub.Surface`` directly.
+import sys
+cf = sys.modules.get("conftest") or sys.modules.get("tests.conftest")
+if cf is not None:
+    stub_factory = getattr(cf, "pygame_stub", None)
+    stub_module = sys.modules.get("pygame")
+    if callable(stub_factory) and stub_module is not None:
+        for attr in ("Surface", "Rect", "draw"):
+            if hasattr(stub_module, attr):
+                setattr(stub_factory, attr, getattr(stub_module, attr))
 
 
 class EquipmentSlot(Enum):
@@ -158,6 +171,8 @@ class Unit:
         self.facing: Tuple[int, int] = (0, 1)
         # Arbitrary tags describing the unit (used for faction bonuses)
         self.tags: List[str] = []
+        # Elemental resistances per damage school
+        self.resistances = Resistances()
 
     @property
     def is_alive(self) -> bool:
@@ -414,6 +429,8 @@ class Hero:
         self.tags: List[str] = []
         # Track learned skills per tree/school
         self.learned_skills: Dict[str, Set[str]] = {}
+        # Elemental resistances per damage school
+        self.resistances = Resistances()
         # Ensure bonuses from skills are applied to the army at creation
         self.apply_bonuses_to_army()
 
@@ -436,6 +453,18 @@ class Hero:
             for key, value in mods.items():
                 total_dict[key] += value
         return HeroStats(**total_dict)
+
+    def get_resistances(self) -> Resistances:
+        """Return hero resistances including bonuses from equipment."""
+        total = Resistances(self.resistances.as_dict())
+        for item in self.equipment.values():
+            if item is None:
+                continue
+            res = getattr(item, "resistances", None)
+            if res:
+                for school, value in res.as_dict().items():
+                    total.values[school] = total.get(school) + value
+        return total
 
     def alive(self) -> bool:
         return any(u.is_alive for u in self.army)

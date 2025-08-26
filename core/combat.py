@@ -1419,11 +1419,18 @@ class Combat:
             if duration > 0:
                 start_rect = self.cell_rect(old_x, old_y)
                 end_rect = self.cell_rect(x, y)
-                start_pos = pygame.math.Vector2(start_rect.center)
-                end_pos = pygame.math.Vector2(end_rect.center)
+                if hasattr(pygame, "math"):
+                    start_pos = pygame.math.Vector2(start_rect.center)
+                    end_pos = pygame.math.Vector2(end_rect.center)
+                else:
+                    start_pos = start_rect.center
+                    end_pos = end_rect.center
                 img = self.get_unit_image(unit, start_rect.size)
                 if img is not None:
-                    velocity = (end_pos - start_pos) / duration
+                    velocity = (
+                        (end_pos[0] - start_pos[0]) / duration,
+                        (end_pos[1] - start_pos[1]) / duration,
+                    ) if not hasattr(pygame, "math") else (end_pos - start_pos) / duration
                     event = FXEvent(img, start_pos, duration, z=50, velocity=velocity)
                     self.fx_queue.add(event)
             self.grid[old_y][old_x] = None
@@ -1471,15 +1478,23 @@ class Combat:
         tile = int(constants.COMBAT_TILE_SIZE * self.zoom)
         w, h = img.get_size()
         scale = min(tile / w, tile / h, 1.0)
-        if scale != 1.0:
+        if scale != 1.0 and hasattr(pygame, "transform"):
             img = pygame.transform.scale(img, (int(w * scale), int(h * scale)))
 
         start_rect = self.cell_rect(*start)
         end_rect = self.cell_rect(*end)
-        start_pos = pygame.math.Vector2(start_rect.center)
-        end_pos = pygame.math.Vector2(end_rect.center)
+        if hasattr(pygame, "math"):
+            start_pos = pygame.math.Vector2(start_rect.center)
+            end_pos = pygame.math.Vector2(end_rect.center)
+            velocity = (end_pos - start_pos) / duration
+        else:
+            start_pos = start_rect.center
+            end_pos = end_rect.center
+            velocity = (
+                (end_pos[0] - start_pos[0]) / duration,
+                (end_pos[1] - start_pos[1]) / duration,
+            )
         duration = 10 / constants.FPS
-        velocity = (end_pos - start_pos) / duration
         event = FXEvent(img, start_pos, duration, z=100, velocity=velocity)
         self.fx_queue.add(event)
 
@@ -1492,9 +1507,13 @@ class Combat:
         img = random.choice(frames)
         w, h = img.get_size()
         scale = min(rect.width / w, rect.height / h, 1.0)
-        if scale != 1.0:
+        if scale != 1.0 and hasattr(pygame, "transform"):
             img = pygame.transform.scale(img, (int(w * scale), int(h * scale)))
-        img_pos = pygame.math.Vector2(rect.center)
+        center = rect.center
+        if hasattr(pygame, "math"):
+            img_pos = pygame.math.Vector2(center)
+        else:
+            img_pos = center
         duration = 1 / constants.FPS
         event = FXEvent(img, img_pos, duration, z=200)
         self.fx_queue.add(event)
@@ -1507,9 +1526,13 @@ class Combat:
         rect = self.cell_rect(*pos)
         w, h = img.get_size()
         scale = min(rect.width / w, rect.height / h, 1.0)
-        if scale != 1.0:
+        if scale != 1.0 and hasattr(pygame, "transform"):
             img = pygame.transform.scale(img, (int(w * scale), int(h * scale)))
-        img_pos = pygame.math.Vector2(rect.center)
+        center = rect.center
+        if hasattr(pygame, "math"):
+            img_pos = pygame.math.Vector2(center)
+        else:
+            img_pos = center
         duration = 1 / constants.FPS
         event = FXEvent(img, img_pos, duration, z=100)
         self.fx_queue.add(event)

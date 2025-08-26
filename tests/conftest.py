@@ -54,6 +54,9 @@ def pygame_stub(monkeypatch):
                 target = getattr(target, part)
             setattr(target, parts[-1], value)
         monkeypatch.setitem(sys.modules, "pygame", stub)
+        # Expose stub attributes on the factory for convenience
+        for attr in ("Surface", "Rect", "draw"):
+            setattr(_factory, attr, getattr(stub, attr))
         return stub
 
     return _factory

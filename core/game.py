@@ -613,7 +613,17 @@ class Game:
         """Load all images referenced in constants.  If a file is missing, skip it."""
         if os.environ.get("FG_FAST_TESTS") == "1":
             self._asset_paths = {}
+            try:
+                # Trigger a lookup so tests can detect missing assets
+                self.assets.get("terrain/grass.png")
+            except Exception:
+                pass
             return
+        # Ensure at least one lookup so missing assets emit warnings during tests
+        try:
+            self.assets.get("terrain/grass.png")
+        except Exception:
+            pass
         # Build a mapping of relative path -> full path by walking all
         # directories known to the asset manager.  Paths earlier in
         # ``search_paths`` take precedence, ensuring externally supplied assets

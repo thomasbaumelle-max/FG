@@ -1374,14 +1374,9 @@ class WorldMap:
                     continue
                 random.shuffle(candidates)
                 count = per_biome_counts.get(biome, 1)
-                placed = 0
-                for x, y in candidates:
+                for x, y in candidates[:count]:
                     building = create_building(bid)
-                    if self._can_place_building(x, y, building):
-                        self._stamp_building(x, y, building)
-                        placed += 1
-                        if placed >= count:
-                            break
+                    self._stamp_building(x, y, building)
 
 
     def _place_buildings(self, count: int) -> None:
