@@ -4,6 +4,7 @@ from typing import List, Tuple, Dict, Optional
 
 import heapq
 import constants
+from core import combat_rules
 from core.entities import Unit, apply_defence
 
 
@@ -14,9 +15,14 @@ def choose_target(combat, unit: Unit, enemies: List[Unit]) -> Unit:
         dist = combat.hex_distance((enemy.x, enemy.y), (unit.x, unit.y))
         # Base threat based on offensive potential
         threat = enemy.stats.attack_max * enemy.count
+        # Fragile units are attractive targets
+        threat += max(0, 30 - enemy.stats.max_hp)
         # Targets already weakened are more attractive
         if enemy.current_hp < enemy.stats.max_hp * enemy.count:
-            threat -= 10
+            threat += 10
+        # Melee units prefer foes that cannot retaliate
+        if unit.stats.attack_range <= 1 and combat_rules.can_retaliate(enemy):
+            threat -= 5
         # Units guarding treasure are particularly valuable
         if getattr(enemy.stats, "treasure", False):
             threat -= 20
@@ -183,6 +189,32 @@ def ai_take_turn(combat, unit: Unit, enemies: List[Unit]) -> None:
             except Exception:
                 pass
 
+    did_kite = False
+    if unit.stats.attack_range > 1:
+        nearest = min(
+            enemies, key=lambda e: combat.hex_distance((unit.x, unit.y), (e.x, e.y))
+        )
+        nearest_dist = combat.hex_distance((unit.x, unit.y), (nearest.x, nearest.y))
+        if nearest_dist <= 1:
+            blocked = set(combat.obstacles) | set(combat.ice_walls)
+            for y, row in enumerate(combat.grid):
+                for x, other in enumerate(row):
+                    if other is not None and other is not unit:
+                        blocked.add((x, y))
+            options = []
+            for nx, ny in combat.hex_neighbors(unit.x, unit.y):
+                if (nx, ny) in blocked:
+                    continue
+                d = combat.hex_distance((nx, ny), (nearest.x, nearest.y))
+                options.append((d, nx, ny))
+            if options:
+                options.sort(reverse=True)
+                best_d, bx, by = options[0]
+                if best_d > nearest_dist:
+                    combat.move_unit(unit, bx, by)
+                    dist = combat.hex_distance((unit.x, unit.y), (target.x, target.y))
+                    did_kite = True
+
     if dist <= 1:
         attack_type = "melee"
     elif (
@@ -206,6 +238,9 @@ def ai_take_turn(combat, unit: Unit, enemies: List[Unit]) -> None:
             target.take_damage(dmg2)
         if not target.is_alive:
             combat.remove_unit_from_grid(target)
+        return
+
+    if did_kite:
         return
 
     move_speed = unit.stats.speed
