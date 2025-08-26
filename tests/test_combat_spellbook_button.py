@@ -1,4 +1,8 @@
 from core.combat_render import handle_button_click
+import pytest
+
+
+pytestmark = pytest.mark.combat
 
 
 class DummyCombat:

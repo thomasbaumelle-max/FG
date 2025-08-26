@@ -1,8 +1,10 @@
 import pygame
+import pytest
 
 from core.entities import Unit, SWORDSMAN_STATS
 import audio
 import core.combat_render as combat_render
+pytestmark = pytest.mark.combat
 
 
 def test_combat_clears_dead_stacks(monkeypatch, simple_combat):

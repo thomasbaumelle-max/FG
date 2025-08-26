@@ -1,5 +1,6 @@
 import os
 from dataclasses import replace
+import pytest
 
 os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
 
@@ -13,6 +14,8 @@ from core.entities import (
 from core.combat_ai import ai_take_turn, allied_ai_turn, select_spell, _a_star
 import constants
 
+
+pytestmark = pytest.mark.combat
 
 def test_ai_attacks_nearest_enemy(simple_combat):
     hero = Unit(SWORDSMAN_STATS, 1, 'hero')

@@ -2,9 +2,13 @@ from types import SimpleNamespace
 
 import pygame
 import theme
+import pytest
 
 from core.entities import Unit, SWORDSMAN_STATS
 from ui import combat_summary
+
+
+pytestmark = pytest.mark.combat
 
 
 class DummyScreen:

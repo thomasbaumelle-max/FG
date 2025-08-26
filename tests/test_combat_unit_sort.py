@@ -1,8 +1,11 @@
 import pygame
-import pygame
+import pytest
 from core.entities import UnitStats, Unit
 from core import combat_render
 from tests.test_overlay_rendering import _ensure_stub_functions
+
+
+pytestmark = pytest.mark.combat
 
 
 def _make_unit(name: str, side: str = "hero") -> Unit:
