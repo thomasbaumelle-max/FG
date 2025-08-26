@@ -188,6 +188,11 @@ class InventoryScreen:
         # Tab buttons
         self.tab_buttons: Dict[str, IconButton] = {}
         th = self.tabs_rect.height // len(self.TAB_NAMES)
+        icon_map = {
+            "stats": "nav_hero_screen",
+            "inventory": "nav_inventory",
+            "skills": "nav_skill_tree",
+        }
         for i, name in enumerate(self.TAB_NAMES):
             rect = pygame.Rect(
                 self.tabs_rect.x + 6,
@@ -195,9 +200,10 @@ class InventoryScreen:
                 self.tabs_rect.width - 12,
                 th - 12,
             )
+            icon_id = icon_map.get(name, f"{name}_tab")
             btn = IconButton(
                 rect,
-                f"{name}_tab",
+                icon_id,
                 lambda n=name: setattr(self, "active_tab", n),
                 tooltip=name.title(),
             )
