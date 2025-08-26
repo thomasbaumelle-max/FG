@@ -21,6 +21,7 @@ SLOT_COUNT = 7
 SLOT_PAD = 6
 ROW_H = 96
 RESBAR_H = 36
+TOPBAR_H = 40
 GAP = 10
 
 CARD_W = 220
@@ -111,6 +112,7 @@ class TownScreen:
         self.drag_unit = None
         self.drag_offset = (0, 0)
         self.mouse_pos = (0, 0)
+        self.tooltip: Optional[str] = None
 
         # Overlays
         self.recruit_open = False
@@ -180,10 +182,11 @@ class TownScreen:
     def _compute_layout(self) -> Dict[str, pygame.Rect]:
         W, H = self.screen.get_size()
         rects: Dict[str, pygame.Rect] = {}
+        rects["top_bar"] = pygame.Rect(0, 0, W, TOPBAR_H)
         rects["resbar"] = pygame.Rect(0, H - RESBAR_H, W, RESBAR_H)
         rects["hero_row"] = pygame.Rect(20, H - RESBAR_H - GAP - ROW_H, W - 40, ROW_H)
         rects["garrison_row"] = pygame.Rect(20, rects["hero_row"].y - GAP - ROW_H, W - 40, ROW_H)
-        rects["center"] = pygame.Rect(20, 20, W - 40, rects["garrison_row"].y - 30)
+        rects["center"] = pygame.Rect(20, TOPBAR_H + 20, W - 40, rects["garrison_row"].y - (TOPBAR_H + 30))
         return rects
 
     def _resources_dict(self) -> Dict[str, int]:
@@ -198,9 +201,11 @@ class TownScreen:
     def draw(self) -> None:
         self.screen.fill(COLOR_BG)
         R = self._compute_layout()
+        self.tooltip = None
+        pygame.draw.rect(self.screen, COLOR_PANEL, R["top_bar"])
         pygame.draw.rect(self.screen, COLOR_PANEL, R["garrison_row"])
         pygame.draw.rect(self.screen, COLOR_PANEL, R["hero_row"])
-        self._draw_label(self.town.name, pygame.Rect(20, 4, 0, 0))
+        self._draw_label(self.town.name, pygame.Rect(R["top_bar"].x + 20, R["top_bar"].y + 8, 0, 0))
         self._draw_label("Garrison", R["garrison_row"].inflate(-8, -ROW_H + 24).move(8, 4))
         self._draw_label("Visiting Hero", R["hero_row"].inflate(-8, -ROW_H + 24).move(8, 4))
 
@@ -222,6 +227,22 @@ class TownScreen:
             self._draw_tavern_overlay()
         if self.bounty_open:
             self._draw_bounty_overlay()
+
+        # tooltip detection for buildings when no overlay open
+        if not self._overlay_active():
+            for sid, rc in self.building_cards:
+                if rc.collidepoint(self.mouse_pos) and not self.town.is_structure_built(sid):
+                    cost = self.town.structure_cost(sid)
+                    if cost and not self._can_afford(self.hero, cost):
+                        self.tooltip = self._format_cost_tooltip(cost)
+                    break
+        else:
+            if self.recruit_open and self.btn_buy.collidepoint(self.mouse_pos):
+                cost = self._unit_cost(self.recruit_unit, self.recruit_count)
+                if cost and not self._can_afford(self.hero, cost):
+                    self.tooltip = self._format_cost_tooltip(cost)
+
+        self._draw_tooltip()
 
         # drag ghost
         if self.drag_active and self.drag_unit:
@@ -713,6 +734,25 @@ class TownScreen:
             if k == "gold": continue
             if hero.resources.get(k, 0) < v: return False
         return True
+
+    def _format_cost_tooltip(self, cost: Dict[str, int]) -> str:
+        parts = []
+        for res in ["gold", "wood", "stone", "crystal"]:
+            if res in cost:
+                parts.append(f"{res}:{cost[res]}")
+        return "Requires " + ", ".join(parts)
+
+    def _draw_tooltip(self) -> None:
+        if not self.tooltip:
+            return
+        tip = self.tooltip
+        surf = self.font_small.render(tip, True, COLOR_TEXT)
+        rect = surf.get_rect()
+        rect.topleft = (self.mouse_pos[0] + 12, self.mouse_pos[1] + 12)
+        bg = rect.inflate(8, 8)
+        pygame.draw.rect(self.screen, (0, 0, 0, 180), bg)
+        pygame.draw.rect(self.screen, (110, 110, 120), bg, 1)
+        self.screen.blit(surf, rect)
 
     def _publish_resources(self) -> None:
         if hasattr(self.game, "_publish_resources"):
