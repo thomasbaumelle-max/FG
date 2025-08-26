@@ -59,10 +59,7 @@ class HeroArmyPanel:
         self.portrait = self._make_portrait()
         if hero is not None:
             self.set_hero(hero)
-        try:  # pragma: no cover - font module may be missing
-            self.font = pygame.font.SysFont(None, 16)
-        except Exception:  # pragma: no cover - font module missing
-            self.font = None
+        self.font = theme.get_font(16)
         self.drag: Optional[_DragState] = None
         # Update displayed hero when selection changes
         EVENT_BUS.subscribe(ON_SELECT_HERO, self.set_hero)
@@ -225,7 +222,7 @@ class HeroArmyPanel:
         surface.blit(self.portrait, p_rect)
         if self.font and self.hero:
             name = getattr(self.hero, "name", "Hero")
-            name_s = self.font.render(name, True, (230,230,235))
+            name_s = self.font.render(name, True, theme.PALETTE["text"])
             name_pos = (
                 p_rect.x + (p_rect.width - name_s.get_width()) // 2,
                 p_rect.y + p_rect.height + 4,
@@ -254,8 +251,12 @@ class HeroArmyPanel:
             if icon: surface.blit(icon, cell.topleft)
             # count + barre HP
             if self.font:
-                count = self.font.render(str(getattr(unit, "count", 0)), True, (230,230,235))
-                surface.blit(count, (cell.x+2, cell.y+2))
+                count = self.font.render(
+                    theme.format_number(getattr(unit, "count", 0)),
+                    True,
+                    theme.PALETTE["text"],
+                )
+                surface.blit(count, (cell.x + 2, cell.y + 2))
             max_hp = getattr(getattr(unit, "stats", None), "max_hp", 0)
             cur_hp = getattr(unit, "current_hp", 0)
             if max_hp > 0:
@@ -276,7 +277,7 @@ class HeroArmyPanel:
                 pygame.draw.rect(surface, (74, 76, 86), brect, 1)
                 if self.selected_formation == key:
                     pygame.draw.rect(surface, (200, 200, 80), brect, 2)
-                text = self.font.render(label, True, (230, 230, 235))
+                text = self.font.render(label, True, theme.PALETTE["text"])
                 surface.blit(
                     text,
                     (

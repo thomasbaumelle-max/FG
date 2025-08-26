@@ -169,7 +169,10 @@ class HeroList:
             return None
         hero = self._heroes[idx].actor
         name = getattr(hero, "name", "Hero")
-        return f"{name} – ({hero.x}, {hero.y})\nGo to"
+        return (
+            f"{name} – (" 
+            f"{theme.format_number(hero.x)}, {theme.format_number(hero.y)})\nGo to"
+        )
 
     def draw(self, surface: pygame.Surface, rect: pygame.Rect) -> None:
         """Draw the hero list to ``surface`` within ``rect``."""
@@ -187,5 +190,7 @@ class HeroList:
                 name_surf = self.font.render(name, True, theme.PALETTE["text"])
                 surface.blit(name_surf, (card.x + self.CARD_SIZE + 4, card.y + 4))
                 ap = getattr(info.actor, "ap", 0)
-                ap_surf = self.font.render(str(ap), True, theme.PALETTE["text"])
+                ap_surf = self.font.render(
+                    theme.format_number(ap), True, theme.PALETTE["text"]
+                )
                 surface.blit(ap_surf, (card.x + self.CARD_SIZE + 4, card.bottom - ap_surf.get_height() - 4))
