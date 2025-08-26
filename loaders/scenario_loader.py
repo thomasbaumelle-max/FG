@@ -13,6 +13,12 @@ weight and uses JSON for ease of authoring::
 
 Only the fields that are understood by the engine are processed; unknown keys
 are ignored to allow forward compatible extensions.
+
+For tests and demonstrations a small scenario is bundled with the project at
+``assets/scenarios/demo.json``.  It can be loaded directly::
+
+    from loaders.scenario_loader import load_scenario
+    data = load_scenario("assets/scenarios/demo.json")
 """
 
 from __future__ import annotations
