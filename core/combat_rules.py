@@ -39,6 +39,65 @@ def roll_luck(luck: int) -> float:
         return 0.5
     return 1.0
 
+# ---- Géométrie hexagonale ----
+def _offset_to_axial(x: int, y: int) -> Tuple[int, int]:
+    q = x
+    r = y - (x - (x & 1)) // 2
+    return q, r
+
+
+def _axial_to_offset(q: int, r: int) -> Tuple[int, int]:
+    x = q
+    y = r + (q - (q & 1)) // 2
+    return x, y
+
+
+def _hex_distance(a: Tuple[int, int], b: Tuple[int, int]) -> int:
+    aq, ar = _offset_to_axial(*a)
+    bq, br = _offset_to_axial(*b)
+    return int((abs(aq - bq) + abs(ar - br) + abs(aq + ar - bq - br)) / 2)
+
+
+def blocking_squares(a: Tuple[int, int], b: Tuple[int, int]) -> list[Tuple[int, int]]:
+    """Retourne les cases strictement entre ``a`` et ``b`` sur la grille hex."""
+
+    start = _offset_to_axial(*a)
+    end = _offset_to_axial(*b)
+    steps = _hex_distance(a, b)
+    if steps <= 1:
+        return []
+
+    def axial_to_cube(q: int, r: int) -> Tuple[int, int, int]:
+        return q, r, -q - r
+
+    def cube_lerp(a: Tuple[float, float, float], b: Tuple[float, float, float], t: float) -> Tuple[float, float, float]:
+        return (
+            a[0] + (b[0] - a[0]) * t,
+            a[1] + (b[1] - a[1]) * t,
+            a[2] + (b[2] - a[2]) * t,
+        )
+
+    def cube_round(c: Tuple[float, float, float]) -> Tuple[int, int, int]:
+        rx, ry, rz = round(c[0]), round(c[1]), round(c[2])
+        x_diff, y_diff, z_diff = abs(rx - c[0]), abs(ry - c[1]), abs(rz - c[2])
+        if x_diff > y_diff and x_diff > z_diff:
+            rx = -ry - rz
+        elif y_diff > z_diff:
+            ry = -rx - rz
+        else:
+            rz = -rx - ry
+        return rx, ry, rz
+
+    a_cube = axial_to_cube(*start)
+    b_cube = axial_to_cube(*end)
+    cells: list[Tuple[int, int]] = []
+    for i in range(1, steps):
+        t = i / steps
+        cube = cube_round(cube_lerp(a_cube, b_cube, t))
+        q, r, _ = cube
+        cells.append(_axial_to_offset(q, r))
+    return cells
+
 # ---- Mitigation & bonus ----
 def mitigate(attack: int, defence: int) -> float:
     """Calcule un multiplicateur basé sur l'écart Att/Def.
@@ -79,7 +138,8 @@ def roll_base_damage(attacker_stats) -> int:
     return random.randint(attacker_stats.attack_min, attacker_stats.attack_max)
 
 def compute_damage(attacker: UnitView, defender: UnitView, *,
-                   attack_type: str = "melee", distance: int = 1) -> Dict[str, Any]:
+                   attack_type: str = "melee", distance: int = 1,
+                   obstacles: set[Tuple[int, int]] | None = None) -> Dict[str, Any]:
     """Calcule un coup standard. attack_type: 'melee'/'ranged'/'magic'."""
     # Base roll + bonus from hero skills
     base = roll_base_damage(attacker.stats) + getattr(attacker, "attack_bonus", 0)
@@ -94,6 +154,10 @@ def compute_damage(attacker: UnitView, defender: UnitView, *,
         defence = defender.stats.defence_ranged
         if distance < max(2, min_range):
             dmg = int(round(dmg * 0.75))  # pénalité tir trop proche
+        if obstacles:
+            path = blocking_squares((attacker.x, attacker.y), (defender.x, defender.y))
+            if any(p in obstacles for p in path):
+                dmg = int(round(dmg * 0.5))  # obstacle sur la trajectoire
     elif attack_type == "magic":
         defence = defender.stats.defence_magic
     else:
