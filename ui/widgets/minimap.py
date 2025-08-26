@@ -47,6 +47,7 @@ class Minimap:
             self.surface = base
         self.city_points: List[Tuple[int, int]] = []
         self.fog_rects: List[pygame.Rect] = []
+        self.fog: Optional[List[List[bool]]] = None
         self._dragging = False
 
         # Divide the minimap into cacheable blocks
@@ -58,6 +59,27 @@ class Minimap:
             (bx, by) for bx in range(self._cols) for by in range(self._rows)
         }
         self.generate()
+
+    # ------------------------------------------------------------------
+    def resize(self, size: int) -> None:
+        """Resize the minimap and regenerate its view."""
+        if size == self.size:
+            return
+        self.size = size
+        base = pygame.Surface((size, size), pygame.SRCALPHA)
+        try:
+            self.surface = base.convert_alpha()
+        except Exception:  # pragma: no cover - pygame stub without convert_alpha
+            self.surface = base
+        self._cols = (self.size + self.block_size - 1) // self.block_size
+        self._rows = (self.size + self.block_size - 1) // self.block_size
+        self._block_cache = {}
+        self._dirty_blocks = {
+            (bx, by) for bx in range(self._cols) for by in range(self._rows)
+        }
+        self.generate()
+        if self.fog is not None:
+            self.set_fog(self.fog)
 
     # ------------------------------------------------------------------
     def generate(self) -> None:
@@ -161,6 +183,7 @@ class Minimap:
         ``True`` indicates the tile is hidden.  Passing ``None`` clears any
         overlay.
         """
+        self.fog = fog
         self.fog_rects.clear()
         if not fog:
             return

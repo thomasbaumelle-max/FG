@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Set, Tuple
+from typing import Iterable, List, Optional, Set, Tuple
 import heapq
 
 from loaders.biomes import BiomeCatalog
@@ -67,4 +67,51 @@ def compute_vision(
     return visible
 
 
-__all__ = ["compute_vision", "BASE_VISION"]
+def update_player_visibility(
+    world: "WorldMap",
+    actors: Iterable[UnitCarrier],
+    minimap: Optional[object] = None,
+) -> None:
+    """Recalculate fog of war for ``actors`` on ``world``.
+
+    When a ``minimap`` implementing ``set_fog`` and ``invalidate`` is provided
+    the overlay is refreshed to reflect the new visibility state.
+    """
+
+    seen: Set[int] = set()
+    first = True
+    for actor in actors:
+        ident = id(actor)
+        if ident in seen:
+            continue
+        if not world.in_bounds(actor.x, actor.y):
+            continue
+        world.update_visibility(0, actor, reset=first)
+        seen.add(ident)
+        first = False
+
+    for town in getattr(world, "towns", []):
+        if getattr(town, "owner", None) != 0:
+            continue
+        ox, oy = getattr(town, "origin", (0, 0))
+        for dx, dy in getattr(town, "footprint", [(0, 0)]):
+            tx, ty = ox + dx, oy + dy
+            world.reveal(0, tx, ty, radius=2)
+
+    if minimap:
+        vis = world.visible.get(0)
+        exp = world.explored.get(0)
+        if vis:
+            fog: List[List[bool]] = [
+                [
+                    not vis[y][x]
+                    and not (exp[y][x] if exp else False)
+                    for x in range(len(vis[0]))
+                ]
+                for y in range(len(vis))
+            ]
+            minimap.set_fog(fog)
+        minimap.invalidate()
+
+
+__all__ = ["compute_vision", "BASE_VISION", "update_player_visibility"]

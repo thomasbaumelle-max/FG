@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import pygame
 import pytest
 
-from ui.widgets.minimap import Minimap, MOUSEBUTTONDOWN
+from ui.minimap import Minimap, MOUSEBUTTONDOWN
 from core.world import WorldMap
 from core.buildings import Town
 from tests.test_army_actions import setup_game
@@ -205,3 +205,56 @@ def test_minimap_fog_initialized_on_game_start(monkeypatch, tmp_path, pygame_stu
     monkeypatch.setenv("FG_FAST_TESTS", "1")
     game = Game(screen, map_file=str(map_path))
     assert isinstance(game.main_screen.minimap.fog_rects, list)
+
+
+def test_minimap_resize_recalculates_view():
+    world = WorldMap(width=4, height=4)
+    renderer = DummyRenderer(world)
+    minimap = Minimap(world, renderer)
+    fog = [[True] * 4 for _ in range(4)]
+    minimap.set_fog(fog)
+    minimap.resize(128)
+    assert minimap.surface.get_width() == 128
+    assert all(rect.width == 33 for rect in minimap.fog_rects)
+
+
+def test_minimap_updates_on_move(monkeypatch, pygame_stub):
+    game, constants, Army, Unit, S_STATS = setup_game(monkeypatch, pygame_stub)
+    world = WorldMap(
+        width=9,
+        height=1,
+        biome_weights={"scarletia_echo_plain": 1.0},
+        num_obstacles=0,
+        num_treasures=0,
+        num_enemies=0,
+    )
+    for x in range(9):
+        world.grid[0][x].obstacle = False
+    game.world = world
+    game.hero.x = 0
+    game.hero.y = 0
+    game.state.heroes = [game.hero]
+
+    class DummyMinimap:
+        def __init__(self):
+            self.fog = None
+            self.invalidated = False
+
+        def set_fog(self, fog):
+            self.fog = fog
+
+        def invalidate(self):
+            self.invalidated = True
+
+    game.main_screen.minimap = DummyMinimap()
+
+    game._update_player_visibility(game.hero)
+    assert game.main_screen.minimap.fog[0][8] is True
+
+    for _ in range(8):
+        game.main_screen.minimap.invalidated = False
+        game.try_move_hero(1, 0)
+        assert game.main_screen.minimap.invalidated is True
+
+    assert game.hero.x == 8
+    assert game.main_screen.minimap.fog[0][8] is False
