@@ -56,13 +56,13 @@ class CombatHUD:
         }
         self.stat_icon_keys = {
             "hp": "stat_hp",
-            "mana": "round_mana",
-            "attack": "round_attack_range",
-            "defence": "round_defence_magic",
-            "speed": "resource_speed",
-            "initiative": "resource_speed",
-            "morale": "round_morale",
-            "luck": "round_luck",
+            "mana": "stat_mana",
+            "attack": "stat_attack_range",
+            "defence": "stat_defence_magic",
+            "speed": "stat_speed",
+            "initiative": "stat_initiative",
+            "morale": "stat_morale",
+            "luck": "stat_luck",
             # Elemental resistances
             "fire": "status_burn",
             "ice": "status_freeze",
