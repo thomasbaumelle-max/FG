@@ -309,6 +309,7 @@ class Combat:
         # Automatic control flag and button
         self.auto_mode: bool = False
         self.auto_button: Optional[IconButton] = None
+        self._auto_resolve_done: bool = False
         # Damage statistics for post battle summary
         self.damage_stats: Dict[Unit, Dict[str, int]] = {
             u: {"dealt": 0, "taken": 0} for u in self.units
@@ -1135,8 +1136,10 @@ class Combat:
 
     def surrender(self) -> None:
         """Surrender the battle, counting as a defeat."""
-        for u in self.hero_units:
-            u.count = 0
+        if self.hero:
+            self.hero.gold = self.hero.gold // 2
+            for res in self.hero.resources:
+                self.hero.resources[res] = self.hero.resources[res] // 2
         self.add_log("The hero surrenders!")
         self.exit_to_menu = True
 
@@ -1145,8 +1148,21 @@ class Combat:
         from . import auto_resolve as ar
 
         hero_wins, exp, heroes, enemies = ar.resolve(self.hero_units, self.enemy_units)
+        for src, res in zip(self.hero_units, heroes):
+            src.count = res.count
+            src.current_hp = res.current_hp
+        for src, res in zip(self.enemy_units, enemies):
+            src.count = res.count
+            src.current_hp = res.current_hp
         ar.show_summary(self.screen, heroes, enemies, hero_wins, exp, self.hero)
-        self.exit_to_menu = True
+        if hero_wins:
+            audio.play_sound('victory')
+        self._auto_resolve_done = True
+
+    def auto_combat(self) -> None:
+        """Enable automatic combat where AI controls the hero army."""
+        self.auto_mode = True
+        self.add_log("Auto-combat engaged")
 
     def select_next_unit(self) -> None:
         """Select the next friendly unit that has not acted yet."""
@@ -1179,11 +1195,13 @@ class Combat:
             hero_alive = any(u.is_alive for u in self.hero_units)
             enemy_alive = any(u.is_alive for u in self.enemy_units)
             if not hero_alive:
-                self.show_stats()
+                if not self._auto_resolve_done:
+                    self.show_stats()
                 return False, self.experience_gained()
             if not enemy_alive:
-                audio.play_sound('victory')
-                self.show_stats()
+                if not self._auto_resolve_done:
+                    audio.play_sound('victory')
+                    self.show_stats()
                 return True, self.experience_gained()
             # Get current unit
             if self.current_index >= len(self.turn_order):
