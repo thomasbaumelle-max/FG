@@ -77,6 +77,7 @@ class MainScreen:
 
         self.menu_buttons: List[IconButton] = []
         self.hovered_button: Optional[IconButton] = None
+        self.end_message: Optional[str] = None
 
         def add_btn(icon_id: str, callback) -> None:
             rect = pygame.Rect(0, 0, *MENU_BUTTON_SIZE)
@@ -104,6 +105,13 @@ class MainScreen:
         )
         self.compute_layout(game.screen.get_width(), game.screen.get_height())
         EVENT_BUS.subscribe(ON_SEA_CHAIN_PROGRESS, self._on_sea_chain_progress)
+
+    # ------------------------------------------------------------------
+    # End overlay
+    # ------------------------------------------------------------------
+    def show_end_overlay(self, victory: bool) -> None:
+        """Display a victory or defeat message on top of the screen."""
+        self.end_message = "Victory!" if victory else "Defeat!"
 
     # ------------------------------------------------------------------
     # Button callbacks
@@ -433,11 +441,19 @@ class MainScreen:
         # Armée du héros
         panel(self.widgets["7"], hover=(self.hovered == "7"))
         self.army_panel.draw(screen, self.widgets["7"]); dirty.append(self.widgets["7"])
-    
+
         # Bandeau description (tout en bas)
         panel(self.widgets["2"], hover=(self.hovered == "2"))
         self.desc_bar.draw(screen, self.widgets["2"]); dirty.append(self.widgets["2"])
-    
+        if self.end_message:
+            overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+            overlay.fill((*theme.PALETTE["background"], 200))
+            font = theme.get_font(48) or pygame.font.SysFont(None, 48)
+            text = font.render(self.end_message, True, theme.PALETTE["text"])
+            overlay.blit(text, text.get_rect(center=screen.get_rect().center))
+            screen.blit(overlay, (0, 0))
+            dirty.append(screen.get_rect())
+
         return dirty
 
 
