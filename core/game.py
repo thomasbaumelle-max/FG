@@ -15,6 +15,7 @@ import json
 import heapq
 import logging
 from functools import lru_cache
+from dataclasses import asdict
 from typing import Dict, Optional, Tuple, List, Any, Type, Union, Set
 
 import pygame
@@ -43,6 +44,7 @@ from core.entities import (
     UnitCarrier,
     Boat,
     Item,
+    EquipmentSlot,
     HeroStats,
     SWORDSMAN_STATS,
     ARCHER_STATS,
@@ -497,7 +499,7 @@ class Game:
         if self.scenario:
             scen_name = os.path.splitext(os.path.basename(self.scenario))[0]
             base_dir = os.path.join(base_dir, scen_name)
-            os.makedirs(base_dir, exist_ok=True)
+        os.makedirs(base_dir, exist_ok=True)
         self.save_slots = [os.path.join(base_dir, name) for name in SAVE_SLOT_FILES]
         self.profile_slots = [
             os.path.join(base_dir, name) for name in PROFILE_SLOT_FILES
@@ -3108,6 +3110,39 @@ class Game:
         unit.initiative_bonus = data.get("initiative_bonus", 0)
         return unit
 
+    def _item_to_dict(self, item: Item) -> Dict[str, Any]:
+        return {
+            "id": item.id,
+            "name": item.name,
+            "slot": item.slot.name if isinstance(item.slot, EquipmentSlot) else item.slot,
+            "rarity": item.rarity,
+            "icon": item.icon,
+            "stackable": item.stackable,
+            "qty": item.qty,
+            "modifiers": asdict(item.modifiers),
+            "locked": getattr(item, "locked", False),
+        }
+
+    def _item_from_dict(self, data: Dict[str, Any]) -> Item:
+        slot_val = data.get("slot")
+        if isinstance(slot_val, str):
+            slot = EquipmentSlot[slot_val]
+        else:
+            slot = slot_val
+        mods = data.get("modifiers", {})
+        modifiers = HeroStats(**mods)
+        return Item(
+            data.get("id"),
+            data.get("name", ""),
+            slot,
+            data.get("rarity", ""),
+            data.get("icon", ""),
+            data.get("stackable", False),
+            data.get("qty", 1),
+            modifiers,
+            data.get("locked", False),
+        )
+
     def _serialize_state(self) -> Dict[str, Any]:
         hero_data = {
             "x": self.hero.x,
@@ -3121,10 +3156,11 @@ class Game:
             "faction": getattr(self.hero.faction, "id", ""),
             "resources": self.hero.resources,
             "army": [self._unit_to_dict(u) for u in self.hero.army],
-            "inventory": [self._unit_to_dict(u) for u in self.hero.inventory],
+            "inventory": [self._item_to_dict(u) for u in self.hero.inventory],
             "equipment": {
-                slot: self._unit_to_dict(u)
+                (slot.name if isinstance(slot, EquipmentSlot) else slot): self._item_to_dict(u)
                 for slot, u in self.hero.equipment.items()
+                if u is not None
             },
             "skill_tree": self.hero.skill_tree,
         }
@@ -3232,10 +3268,10 @@ class Game:
         hero.max_ap = hero_info.get("max_ap", hero.max_ap)
         hero.army = [self._unit_from_dict(u) for u in hero_info.get("army", [])]
         hero.inventory = [
-            self._unit_from_dict(u) for u in hero_info.get("inventory", [])
+            self._item_from_dict(u) for u in hero_info.get("inventory", [])
         ]
         hero.equipment = {
-            slot: self._unit_from_dict(u)
+            EquipmentSlot[slot] if isinstance(slot, str) else slot: self._item_from_dict(u)
             for slot, u in hero_info.get("equipment", {}).items()
         }
         hero.resources = hero_info.get("resources", hero.resources)
@@ -3389,6 +3425,8 @@ class Game:
             digits = ''.join(filter(str.isdigit, prefix))
             name = f"save_profile{digits}.json" if digits else "save_profile.json"
             profile_path = os.path.join(base, name)
+        os.makedirs(os.path.dirname(profile_path), exist_ok=True)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(profile_path, "w", encoding="utf-8") as f:
             json.dump(profile, f)
         with open(path, "w", encoding="utf-8") as f:
@@ -3418,6 +3456,10 @@ class Game:
 
     def load_game(self, path: str, profile_path: str | None = None) -> None:
         """Load game state from JSON files."""
+        if not os.path.exists(path):
+            logger.warning("Save file %s not found", path)
+            EVENT_BUS.publish(ON_INFO_MESSAGE, f"Save file not found: {path}")
+            return
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
         if profile_path is None:

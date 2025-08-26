@@ -6,7 +6,14 @@ pygame_stub = types.SimpleNamespace()
 sys.modules.setdefault("pygame", pygame_stub)
 
 from core.game import Game
-from core.entities import Unit, SWORDSMAN_STATS, Hero
+from core.entities import (
+    Unit,
+    SWORDSMAN_STATS,
+    Hero,
+    Item,
+    EquipmentSlot,
+    HeroStats,
+)
 from core.world import WorldMap
 from core.buildings import create_building
 
@@ -31,8 +38,21 @@ def test_save_load_roundtrip(tmp_path):
     game.hero.mana = 2
     game.hero.ap = 1
     game.hero.resources["wood"] = 4
-    game.hero.inventory = [Unit(SWORDSMAN_STATS, 3, "hero")]
-    game.hero.equipment = {"Head": Unit(SWORDSMAN_STATS, 1, "hero")}
+    game.hero.inventory = [
+        Item("potion", "Potion", None, "common", "", False, 1, HeroStats(0, 0, 0, 0, 0, 0, 0, 0, 0))
+    ]
+    game.hero.equipment = {
+        EquipmentSlot.HEAD: Item(
+            "helm",
+            "Helm",
+            EquipmentSlot.HEAD,
+            "common",
+            "",
+            False,
+            1,
+            HeroStats(0, 0, 0, 0, 0, 0, 0, 0, 0),
+        )
+    }
     game.hero.skill_tree["strength"] = 1
     game.hero.apply_bonuses_to_army()
 

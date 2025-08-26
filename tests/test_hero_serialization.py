@@ -5,7 +5,14 @@ pygame_stub = types.SimpleNamespace()
 sys.modules.setdefault("pygame", pygame_stub)
 
 from core.game import Game
-from core.entities import Hero, Unit, SWORDSMAN_STATS
+from core.entities import (
+    Hero,
+    Unit,
+    SWORDSMAN_STATS,
+    Item,
+    EquipmentSlot,
+    HeroStats,
+)
 from core.world import WorldMap
 
 
@@ -17,8 +24,21 @@ def test_serialization_roundtrip():
     hero.mana = 2
     hero.ap = 3
     hero.resources["wood"] = 5
-    hero.inventory = [Unit(SWORDSMAN_STATS, 5, "hero")]
-    hero.equipment = {"Head": Unit(SWORDSMAN_STATS, 1, "hero")}
+    hero.inventory = [
+        Item("potion", "Potion", None, "common", "", False, 1, HeroStats(0, 0, 0, 0, 0, 0, 0, 0, 0))
+    ]
+    hero.equipment = {
+        EquipmentSlot.HEAD: Item(
+            "helm",
+            "Helm",
+            EquipmentSlot.HEAD,
+            "common",
+            "",
+            False,
+            1,
+            HeroStats(0, 0, 0, 0, 0, 0, 0, 0, 0),
+        )
+    }
     hero.skill_tree["strength"] = 1
     hero.apply_bonuses_to_army()
     game.hero = hero
