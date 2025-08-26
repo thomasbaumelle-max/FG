@@ -80,17 +80,22 @@ class MainScreen:
         def add_btn(icon_id: str, callback) -> None:
             rect = pygame.Rect(0, 0, *MENU_BUTTON_SIZE)
             cb = callback if callable(callback) else (lambda: None)
-            tooltip = icon_id.replace("poi_", "").replace("_", " ").title()
+            tooltip = icon_id.replace("nav_", "").replace("_", " ").title()
             self.menu_buttons.append(
                 IconButton(rect, icon_id, cb, tooltip=tooltip, size=MENU_BUTTON_SIZE)
             )
 
-        add_btn("poi_menu", getattr(game, "open_pause_menu", None))
-        add_btn("poi_settings", getattr(game, "open_options", None))
-        add_btn("poi_save", None)
-        add_btn("poi_load", None)
-        add_btn("poi_journal", getattr(game, "open_journal", None))
-        add_btn("poi_town", getattr(game, "open_town", None))
+        # Navigation / menu buttons
+        add_btn("nav_menu", self.open_menu)
+        add_btn("nav_settings", getattr(game, "open_options", None))
+        add_btn("nav_save", self.save_game)
+        add_btn("nav_load", self.load_game)
+        add_btn("nav_skill_tree", self.open_skill_tree)
+        add_btn("nav_journal", self.open_journal)
+        add_btn("nav_hero_screen", self.prev_hero)
+        add_btn("nav_town", self.next_town)
+        add_btn("nav_end_day", self.end_day)
+        add_btn("nav_pause", self.toggle_pause)
 
         self.army_panel = HeroArmyPanel(hero=getattr(game, "hero", None))
         self.turn_bar = TurnBar(
@@ -98,6 +103,60 @@ class MainScreen:
         )
         self.compute_layout(game.screen.get_width(), game.screen.get_height())
         EVENT_BUS.subscribe(ON_SEA_CHAIN_PROGRESS, self._on_sea_chain_progress)
+
+    # ------------------------------------------------------------------
+    # Button callbacks
+    # ------------------------------------------------------------------
+    def open_menu(self) -> None:
+        cb = getattr(self.game, "open_pause_menu", None) or getattr(
+            self.game, "open_menu", None
+        )
+        if cb:
+            cb()
+
+    def save_game(self) -> None:
+        cb = getattr(self.game, "save_game", None)
+        path = getattr(self.game, "default_save_path", None)
+        profile = getattr(self.game, "default_profile_path", None)
+        if cb and path:
+            cb(path, profile)
+
+    def load_game(self) -> None:
+        cb = getattr(self.game, "load_game", None)
+        path = getattr(self.game, "default_save_path", None)
+        profile = getattr(self.game, "default_profile_path", None)
+        if cb and path:
+            cb(path, profile)
+
+    def open_skill_tree(self) -> None:
+        cb = getattr(self.game, "open_skill_tree", None)
+        if cb:
+            cb()
+
+    def open_journal(self) -> None:
+        cb = getattr(self.game, "open_journal", None)
+        if cb:
+            cb()
+
+    def prev_hero(self) -> None:
+        cb = getattr(self.game, "prev_hero", None)
+        if cb:
+            cb()
+
+    def next_town(self) -> None:
+        cb = getattr(self.game, "next_town", None)
+        if cb:
+            cb()
+
+    def end_day(self) -> None:
+        cb = getattr(self.game, "end_day", None)
+        if cb:
+            cb()
+
+    def toggle_pause(self) -> None:
+        cb = getattr(self.game, "toggle_pause", None)
+        if cb:
+            cb()
 
     # ------------------------------------------------------------------
     # Layout
