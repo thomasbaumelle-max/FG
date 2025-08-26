@@ -16,15 +16,15 @@ from ..inventory_screen import (
 )
 
 _STAT_ICON_IDS = {
-    "HP": "status_regeneration",
-    "Dmg": "round_attack_range",
-    "Spd": "status_haste",
-    "Init": "resource_speed",
-    "Def Melee": "action_defend",
-    "Def Ranged": "action_shoot",
-    "Def Magic": "round_defence_magic",
-    "Morale": "round_morale",
-    "Luck": "round_luck",
+    "HP": "stat_hp",
+    "Dmg": "stat_attack_range",
+    "Spd": "stat_speed",
+    "Init": "stat_initiative",
+    "Def Melee": "stat_defence_melee",
+    "Def Ranged": "stat_defence_ranged",
+    "Def Magic": "stat_defence_magic",
+    "Morale": "stat_morale",
+    "Luck": "stat_luck",
     # Elemental resistances
     "fire": "status_burn",
     "ice": "status_freeze",
