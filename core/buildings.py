@@ -49,6 +49,7 @@ class Building:
         self.level = 1
         self.upgrade_cost = {}
         self.production_per_level = {}
+        self.requires: List[str] = []
 
     def interact(self, hero: "Hero") -> None:
         self.owner = 0
@@ -163,6 +164,7 @@ def create_building(bid: str, defs: Optional[Dict[str, BuildingAsset]] = None) -
     b.passable = bool(asset.passable)
     b.occludes = bool(asset.occludes)
     b.growth_per_week = dict(getattr(asset, "growth_per_week", {}))
+    b.requires = list(getattr(asset, "requires", []))
     return b
 
 
@@ -239,8 +241,21 @@ class Town(Building):
         return dict(info.get("cost", {})) if isinstance(info, dict) else {}
 
     def recruitable_units(self, name: str) -> List[str]:
-        info = self.structures.get(name, {})
-        growth = info.get("dwelling", {}) if isinstance(info, dict) else {}
+        info = self.structures.get(name)
+        growth = {}
+        reqs: List[str] = []
+        if isinstance(info, dict):
+            growth = info.get("dwelling", {})
+            r = info.get("requires", [])
+            if isinstance(r, list):
+                reqs.extend(r)
+        asset = building_loader.BUILDINGS.get(name)
+        if asset is not None:
+            if not growth:
+                growth = getattr(asset, "growth_per_week", {})
+            reqs.extend(getattr(asset, "requires", []))
+        if any(r not in self.built_structures for r in reqs):
+            return []
         if isinstance(growth, dict):
             return list(growth.keys())
         return list(growth) if isinstance(growth, list) else []
