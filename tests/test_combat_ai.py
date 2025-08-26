@@ -48,7 +48,7 @@ def test_ai_mage_casts_fireball_when_out_of_range(simple_combat):
     combat = simple_combat([hero], [mage])
     hero_unit = combat.hero_units[0]
     mage_unit = combat.enemy_units[0]
-    combat.move_unit(hero_unit, 5, 0)
+    combat.move_unit(hero_unit, 4, 4)
     combat.move_unit(mage_unit, 0, 0)
     ai_take_turn(combat, mage_unit, [hero_unit])
     assert hero_unit.current_hp < hero_unit.stats.max_hp
@@ -76,7 +76,7 @@ def test_hex_neighbors_within_bounds(simple_combat):
     hero = Unit(SWORDSMAN_STATS, 1, 'hero')
     enemy = Unit(SWORDSMAN_STATS, 1, 'enemy')
     combat = simple_combat([hero], [enemy])
-    center_neighbors = combat.hex_neighbors(5, 5)
+    center_neighbors = combat.hex_neighbors(2, 2)
     assert len(center_neighbors) == 6
     edge_neighbors = combat.hex_neighbors(0, 0)
     assert len(edge_neighbors) < 6
