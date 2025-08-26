@@ -34,6 +34,26 @@ class CombatHUD:
             "ranged": "action_shoot",
             "spell": "action_cast",
             "wait": "action_wait",
+            "ability": "action_use_ability",
+            "swap": "action_swap",
+            "flee": "action_flee",
+            "surrender": "action_surrender",
+            "auto": "action_auto_resolve",
+            "next": "action_next_unit",
+        }
+
+        self.hotkeys = {
+            "action_move": getattr(pygame, "K_m", ord("m")),
+            "action_attack": getattr(pygame, "K_a", ord("a")),
+            "action_shoot": getattr(pygame, "K_s", ord("s")),
+            "action_cast": getattr(pygame, "K_c", ord("c")),
+            "action_wait": getattr(pygame, "K_w", ord("w")),
+            "action_use_ability": getattr(pygame, "K_u", ord("u")),
+            "action_swap": getattr(pygame, "K_x", ord("x")),
+            "action_flee": getattr(pygame, "K_f", ord("f")),
+            "action_surrender": getattr(pygame, "K_r", ord("r")),
+            "action_auto_resolve": getattr(pygame, "K_z", ord("z")),
+            "action_next_unit": getattr(pygame, "K_n", ord("n")),
         }
         self.stat_icon_keys = {
             "hp": "stat_hp",
@@ -222,7 +242,8 @@ class CombatHUD:
             auto_button = IconButton(
                 auto_rect,
                 "action_auto_resolve",
-                lambda: setattr(combat, "auto_mode", not combat.auto_mode),
+                combat.auto_resolve,
+                hotkey=self.hotkeys.get("action_auto_resolve"),
                 tooltip="Auto resolve",
             )
             auto_button.draw(screen)
@@ -233,6 +254,7 @@ class CombatHUD:
                 spell_rect,
                 "action_cast",
                 lambda: combat.hero_spells and combat.show_spellbook(),
+                hotkey=getattr(pygame, "K_s", ord("s")),
                 tooltip="Spellbook",
                 enabled=bool(combat.hero_spells),
             )
@@ -241,19 +263,23 @@ class CombatHUD:
         # ---- Action bar (bottom) ----
         x = bottom.x + 8
 
-        def add_btn(key: str, callback: Callable[[], None]) -> None:
+        def add_btn(icon_id: str, callback: Callable[[], None]) -> None:
             nonlocal x
             size = bottom.height - 8
-            icon_key = self.action_icon_keys.get(key, f"action_{key}")
             rect = pygame.Rect(x, bottom.y + 4, size, size)
+            label_key = icon_id.replace("action_", "")
+            tooltip = self.action_labels.get(
+                label_key, label_key.replace("_", " ").title()
+            )
             btn = IconButton(
                 rect,
-                icon_key,
+                icon_id,
                 callback,
-                tooltip=self.action_labels.get(key, key.title()),
+                hotkey=self.hotkeys.get(icon_id),
+                tooltip=tooltip,
             )
             btn.draw(screen)
-            action_buttons[key] = btn
+            action_buttons[icon_id] = btn
             x = rect.x + rect.width + 6
 
         current = combat.turn_order[combat.current_index]
@@ -265,11 +291,17 @@ class CombatHUD:
             combat.selected_action = None
 
         callbacks = {
-            "move": lambda: setattr(combat, "selected_action", "move"),
-            "melee": lambda: setattr(combat, "selected_action", "melee"),
-            "ranged": lambda: setattr(combat, "selected_action", "ranged"),
-            "spell": lambda: setattr(combat, "selected_action", "spell"),
-            "wait": wait_action,
+            "action_move": lambda: setattr(combat, "selected_action", "move"),
+            "action_attack": lambda: setattr(combat, "selected_action", "melee"),
+            "action_shoot": lambda: setattr(combat, "selected_action", "ranged"),
+            "action_cast": lambda: setattr(combat, "selected_action", "spell"),
+            "action_wait": wait_action,
+            "action_use_ability": combat.use_ability,
+            "action_swap": combat.swap_positions,
+            "action_flee": combat.flee,
+            "action_surrender": combat.surrender,
+            "action_auto_resolve": combat.auto_resolve,
+            "action_next_unit": combat.select_next_unit,
         }
 
         actions = combat.get_available_actions(current)
@@ -277,7 +309,18 @@ class CombatHUD:
         wanted = ["move", "melee", "ranged", "spell", "wait"]
         for a in wanted:
             if a in actions:
-                add_btn(a, callbacks[a])
+                icon = self.action_icon_keys.get(a, f"action_{a}")
+                add_btn(icon, callbacks[icon])
+
+        extras = [
+            "action_use_ability",
+            "action_swap",
+            "action_flee",
+            "action_surrender",
+            "action_next_unit",
+        ]
+        for icon in extras:
+            add_btn(icon, callbacks[icon])
 
         # Spell submenu when "spell" is selected
         if combat.selected_action == "spell":

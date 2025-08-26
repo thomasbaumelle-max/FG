@@ -1033,6 +1033,83 @@ class Combat:
         actions.append("wait")
         return actions
 
+    # ------------------------------------------------------------------
+    def use_ability(self) -> None:
+        """Attempt to use the current unit's special ability or spell."""
+        if not self.turn_order:
+            return
+        unit = self.turn_order[self.current_index]
+        spells = self.UNIT_SPELLS.get(unit.stats.name, {})
+        if not spells:
+            return
+        if len(spells) == 1:
+            name, cost = next(iter(spells.items()))
+            if unit.mana >= cost:
+                self.start_spell(unit, name)
+                unit.acted = True
+                self.advance_turn()
+                self.selected_action = None
+                self.selected_unit = None
+        else:
+            self.selected_unit = unit
+            self.selected_action = "spell"
+
+    def swap_positions(self) -> None:
+        """Swap the selected unit with another friendly unit if possible."""
+        src = self.selected_unit
+        if src is None:
+            self.selected_unit = self.turn_order[self.current_index]
+            return
+        target: Optional[Unit] = None
+        for u in self.hero_units:
+            if u is not src and u.is_alive:
+                target = u
+                break
+        if not target:
+            return
+        sx, sy = src.x, src.y
+        tx, ty = target.x, target.y
+        self.grid[sy][sx], self.grid[ty][tx] = self.grid[ty][tx], self.grid[sy][sx]
+        src.x, src.y, target.x, target.y = tx, ty, sx, sy
+        self.selected_unit = None
+        self.selected_action = None
+
+    def flee(self) -> None:
+        """End the combat as a loss for the hero side."""
+        for u in self.hero_units:
+            u.count = 0
+        self.add_log("The hero flees!")
+        self.exit_to_menu = True
+
+    def surrender(self) -> None:
+        """Surrender the battle, counting as a defeat."""
+        for u in self.hero_units:
+            u.count = 0
+        self.add_log("The hero surrenders!")
+        self.exit_to_menu = True
+
+    def auto_resolve(self) -> None:
+        """Resolve the battle automatically using the auto-resolve module."""
+        from . import auto_resolve as ar
+
+        hero_wins, exp, heroes, enemies = ar.resolve(self.hero_units, self.enemy_units)
+        ar.show_summary(self.screen, heroes, enemies, hero_wins, exp, self.hero)
+        self.exit_to_menu = True
+
+    def select_next_unit(self) -> None:
+        """Select the next friendly unit that has not acted yet."""
+        if not self.hero_units:
+            return
+        start = 0
+        if self.selected_unit and self.selected_unit in self.hero_units:
+            start = (self.hero_units.index(self.selected_unit) + 1) % len(self.hero_units)
+        for i in range(len(self.hero_units)):
+            u = self.hero_units[(start + i) % len(self.hero_units)]
+            if u.is_alive and not u.acted:
+                self.selected_unit = u
+                self.selected_action = None
+                break
+
 
     def run(self) -> Tuple[bool, int]:
         """
