@@ -1396,6 +1396,24 @@ class Game:
         self.offset_x = max(min(self.offset_x, 0), min_x)
         self.offset_y = max(min(self.offset_y, 0), min_y)
 
+    def _check_end_conditions(self) -> None:
+        """Trigger victory or defeat when all towns of a side are lost."""
+        ms = getattr(self, "main_screen", None)
+        if not ms or getattr(self, "_victory_shown", False) or getattr(
+            self, "_game_over_shown", False
+        ):
+            return
+        hero_town = getattr(self.world, "hero_town", None)
+        enemy_town = getattr(self.world, "enemy_town", None)
+        if enemy_town is None:
+            if hasattr(ms, "show_end_overlay"):
+                ms.show_end_overlay(True)
+            self._victory_shown = True
+        elif hero_town is None:
+            if hasattr(ms, "show_end_overlay"):
+                ms.show_end_overlay(False)
+            self._game_over_shown = True
+
     def _check_starting_town_owner(self) -> None:
         """Show game over screen if the starting town changes owner."""
         if getattr(self, "_game_over_shown", False):
@@ -2641,6 +2659,7 @@ class Game:
             except Exception:  # pragma: no cover
                 pass
             self._run_ai_turn()
+            self._check_end_conditions()
             return
 
         idx = getattr(self, "hero_idx", 0)
@@ -2686,6 +2705,7 @@ class Game:
             self.hero = state.heroes[0]
             self.active_actor = self.hero
             EVENT_BUS.publish(ON_SELECT_HERO, self.hero)
+        self._check_end_conditions()
 
     def move_enemies_randomly(self) -> None:
         """Update neutral creature groups using their AI behaviour."""
@@ -2729,6 +2749,8 @@ class Game:
                 self.world.enemy_town = None
                 if getattr(self, "ai_player", None) and self.ai_player.town is tile.building:
                     self.ai_player.town = None
+            if isinstance(tile.building, Town):
+                self._check_end_conditions()
         return captured
 
     def _spawn_enemy_heroes(self, count: int = 1) -> None:
