@@ -18,7 +18,7 @@ def test_vision_bonus_extends_visibility(monkeypatch):
         variants=1,
         colour=(0, 0, 0),
         flora=[],
-        terrain_cost=1,
+        terrain_cost=1.0,
         passable=True,
         overlays=[],
         vision_bonus=2,

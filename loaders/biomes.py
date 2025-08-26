@@ -20,7 +20,7 @@ class Biome:
     variants: int
     colour: Tuple[int, int, int]
     flora: List[str]
-    terrain_cost: int = 1
+    terrain_cost: float = 1.0
     passable: bool = True
     overlays: List[str] = field(default_factory=list)
     vision_bonus: int = 0
@@ -63,7 +63,9 @@ class BiomeCatalog:
                 variants=int(entry.get("variants", 1)),
                 colour=tuple(colour),
                 flora=list(entry.get("flora", [])),
-                terrain_cost=int(entry.get("terrain_cost", entry.get("movement_cost", 1))),
+                terrain_cost=float(
+                    constants.TERRAIN_COSTS.get(entry.get("type", ""), 1.0)
+                ),
                 passable=bool(entry.get("passable", True)),
                 overlays=list(entry.get("overlays", [])),
                 vision_bonus=int(entry.get("vision_bonus", 0)),

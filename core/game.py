@@ -486,7 +486,7 @@ class Game:
         # Cached path for rendering movement arrows
         self.path: List[Tuple[int, int]] = []
         # Cumulative AP cost for each step in ``self.path``
-        self.path_costs: List[int] = []
+        self.path_costs: List[float] = []
         self.path_target: Optional[Tuple[int, int]] = None
         # Pre-tinted arrow images used for path visualisation
         self.arrow_green: Optional[pygame.Surface] = None
@@ -1041,9 +1041,9 @@ class Game:
         if start == goal:
             return ()
 
-        frontier: List[Tuple[int, Tuple[int, int]]] = [(0, start)]
+        frontier: List[Tuple[float, Tuple[int, int]]] = [(0.0, start)]
         came_from: Dict[Tuple[int, int], Optional[Tuple[int, int]]] = {start: None}
-        cost_so_far: Dict[Tuple[int, int], int] = {start: 0}
+        cost_so_far: Dict[Tuple[int, int], float] = {start: 0.0}
         actor = getattr(self, "active_actor", getattr(self, "hero", None))
         has_boat = isinstance(actor, Hero) and getattr(actor, "naval_unit", None) is not None
 
@@ -1095,10 +1095,10 @@ class Game:
                         continue
                 biome = BiomeCatalog.get(tile.biome)
                 if getattr(tile, "road", False):
-                    step_cost = constants.ROAD_COST
+                    step_cost = float(constants.ROAD_COST)
                 else:
-                    step_cost = biome.terrain_cost if biome else 1
-                extra = 0
+                    step_cost = float(biome.terrain_cost if biome else 1)
+                extra = 0.0
                 if has_boat:
                     cur_tile = self.world.grid[y][x]
                     cur_water = cur_tile.biome in constants.WATER_BIOMES
@@ -1167,16 +1167,16 @@ class Game:
         )
         if not self.world.in_bounds(mx, my):
             return
-        def calc_costs(p: List[Tuple[int, int]]) -> List[int]:
-            costs: List[int] = []
-            total = 0
+        def calc_costs(p: List[Tuple[int, int]]) -> List[float]:
+            costs: List[float] = []
+            total = 0.0
             for x, y in p:
                 tile = self.world.grid[y][x]
                 biome = BiomeCatalog.get(tile.biome)
                 if getattr(tile, "road", False):
-                    step_cost = constants.ROAD_COST
+                    step_cost = float(constants.ROAD_COST)
                 else:
-                    step_cost = biome.terrain_cost if biome else 1
+                    step_cost = float(biome.terrain_cost if biome else 1)
                 total += step_cost
                 costs.append(total)
             return costs
@@ -1722,8 +1722,10 @@ class Game:
                 return
         tile = self.world.grid[ny][nx]
         biome = BiomeCatalog.get(tile.biome)
-        step_cost = constants.ROAD_COST if getattr(tile, "road", False) else (
-            biome.terrain_cost if biome else 1
+        step_cost = float(
+            constants.ROAD_COST if getattr(tile, "road", False) else (
+                biome.terrain_cost if biome else 1
+            )
         )
         if actor.ap < step_cost:
             return
@@ -1954,18 +1956,18 @@ class Game:
         tile = self.world.grid[ny][nx]
         biome = BiomeCatalog.get(tile.biome)
         if getattr(tile, "road", False):
-            step_cost = constants.ROAD_COST
+            step_cost = float(constants.ROAD_COST)
         else:
-            step_cost = biome.terrain_cost if biome else 1
+            step_cost = float(biome.terrain_cost if biome else 1)
         has_boat = getattr(self.hero, "naval_unit", None) is not None
         prev_tile = self.world.grid[prev_y][prev_x]
-        extra = 0
+        extra = 0.0
         landed = False
         if has_boat:
             cur_water = prev_tile.biome in constants.WATER_BIOMES
             next_water = tile.biome in constants.WATER_BIOMES
             if cur_water != next_water:
-                extra = 1
+                extra = 1.0
                 if cur_water and not next_water:
                     landed = True
         if self.hero.ap < step_cost + extra:
@@ -2821,7 +2823,7 @@ class Game:
             tile = self.world.grid[sy][sx]
             if tile.building and isinstance(tile.building, Town) and not tile.building.passable:
                 biome = BiomeCatalog.get(tile.biome)
-                step_cost = (
+                step_cost = float(
                     constants.ROAD_COST
                     if getattr(tile, "road", False)
                     else (biome.terrain_cost if biome else 1)

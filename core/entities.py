@@ -269,7 +269,7 @@ class UnitCarrier(Protocol):
 
     x: int
     y: int
-    ap: int
+    ap: float
     units: List[Unit]
     name: str
     portrait: Any | None
@@ -286,8 +286,8 @@ class Army(UnitCarrier):
     x: int
     y: int
     units: List[Unit] = field(default_factory=list)
-    ap: int = 0
-    max_ap: int = 0
+    ap: float = 0.0
+    max_ap: float = 0.0
     name: str = "Army"
     portrait: Any | None = None
 
@@ -350,12 +350,12 @@ class Boat(UnitCarrier):
     capacity: int
     owner: int | None
     garrison: List[Unit] = field(default_factory=list)
-    ap: int = 0
+    ap: float = 0.0
     name: str = "Boat"
     portrait: Any | None = None
 
     def __post_init__(self) -> None:
-        self.ap = self.movement
+        self.ap = float(self.movement)
 
     @property
     def units(self) -> List[Unit]:  # Alias required by UnitCarrier

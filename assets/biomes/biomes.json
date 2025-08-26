@@ -16,7 +16,6 @@
       "garnet_shard",
       "torn_battle_banner"
     ],
-    "terrain_cost": 1,
     "vision_bonus": 0,
     "passable": true,
     "overlays": []
@@ -38,7 +37,6 @@
       "scarlet_herb_a"
 
     ],
-    "terrain_cost": 1,
     "vision_bonus": 0,
     "passable": true,
     "overlays": []
@@ -61,7 +59,6 @@
       "garnet_shard",
       "basalt_spire"
     ],
-    "terrain_cost": 2,
     "vision_bonus": 0,
     "passable": true,
     "overlays": [
