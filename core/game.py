@@ -1816,10 +1816,13 @@ class Game:
                     )
                     audio.play_sound('attack')
                     hero_wins, _ = combat.run()
-                    for unit, result in zip(actor.units, combat.hero_units):
-                        unit.count = result.count
-                        unit.current_hp = result.current_hp
-                    actor.units[:] = [u for u in actor.units if u.count > 0]
+                    for i in range(len(actor.units) - 1, -1, -1):
+                        if i < len(combat.hero_units):
+                            res = combat.hero_units[i]
+                            actor.units[i].count = res.count
+                            actor.units[i].current_hp = res.current_hp
+                        else:
+                            del actor.units[i]
                     if hasattr(actor, "update_portrait"):
                         actor.update_portrait()
                     if hero_wins:
@@ -2094,6 +2097,7 @@ class Game:
                     self.hero.x = prev_x
                     self.hero.y = prev_y
                     self.hero.ap += step_cost
+                    self.refresh_army_list()
                     return
             else:
                 # Begin combat; pass hero's mana and reset afterwards
@@ -2134,11 +2138,13 @@ class Game:
                     self.quit_to_menu = True
                     return
                 # Sync surviving hero units with combat results
-                for unit, result in zip(self.hero.army, combat.hero_units):
-                    unit.count = result.count
-                    unit.current_hp = result.current_hp
-                # Remove stacks that were wiped out
-                self.hero.army = [u for u in self.hero.army if u.count > 0]
+                for i in range(len(self.hero.army) - 1, -1, -1):
+                    if i < len(combat.hero_units):
+                        res = combat.hero_units[i]
+                        self.hero.army[i].count = res.count
+                        self.hero.army[i].current_hp = res.current_hp
+                    else:
+                        del self.hero.army[i]
                 # After battle, reset hero mana and award experience
                 self.hero.mana = self.hero.max_mana
                 self.hero.gain_exp(exp_gained)
@@ -2157,7 +2163,9 @@ class Game:
                     self.hero.x = prev_x
                     self.hero.y = prev_y
                     self.hero.ap += step_cost
+                    self.refresh_army_list()
                     return
+                self.refresh_army_list()
         if tile.building and tile.building.garrison:
             enemy = EnemyHero(nx, ny, tile.building.garrison)
             engaged = self.combat_with_enemy_hero(enemy, initiated_by="hero")
@@ -2952,11 +2960,14 @@ class Game:
         if combat.exit_to_menu:
             self.quit_to_menu = True
             return False
-        for unit, result in zip(self.hero.army, combat.hero_units):
-            unit.count = result.count
-            unit.current_hp = result.current_hp
-        self.hero.army = [u for u in self.hero.army if u.count > 0]
-        enemy.army = [u for u in combat.enemy_units if u.count > 0]
+        for i in range(len(self.hero.army) - 1, -1, -1):
+            if i < len(combat.hero_units):
+                res = combat.hero_units[i]
+                self.hero.army[i].count = res.count
+                self.hero.army[i].current_hp = res.current_hp
+            else:
+                del self.hero.army[i]
+        enemy.army = [u for u in combat.enemy_units]
         self.hero.mana = self.hero.max_mana
         self.hero.gain_exp(exp_gained)
         if hero_wins:
@@ -2968,6 +2979,7 @@ class Game:
         else:
             self._notify("You have been defeated!")
             self.hero.army = []
+        self.refresh_army_list()
         return True
 
     def open_pause_menu(self) -> Tuple[bool, pygame.Surface]:
