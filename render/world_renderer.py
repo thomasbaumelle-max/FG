@@ -430,13 +430,13 @@ class WorldRenderer:
                     img = self.assets.get(constants.IMG_OBSTACLE)
                     if img:
                         if img.get_size() != (tile_size, tile_size):
-                            img = scale_surface(img, tile_size)
+                            img = scale_surface(img, (tile_size, tile_size))
                         layers[constants.LAYER_OBJECTS].blit(img, (px, py))
                 elif tile.treasure is not None:
                     img = self.assets.get(constants.IMG_TREASURE)
                     if img:
                         if img.get_size() != (tile_size, tile_size):
-                            img = scale_surface(img, tile_size)
+                            img = scale_surface(img, (tile_size, tile_size))
                         layers[constants.LAYER_OBJECTS].blit(img, (px, py))
                 elif tile.building and tile.building not in drawn_buildings:
                     b = tile.building
@@ -543,7 +543,7 @@ class WorldRenderer:
                             img = self.assets.get(bdef.path)
                     if img:
                         if img.get_size() != (tile_size, tile_size):
-                            img = scale_surface(img, tile_size)
+                            img = scale_surface(img, (tile_size, tile_size))
                         layers[constants.LAYER_UNITS].blit(
                             img,
                             (
