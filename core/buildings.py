@@ -228,6 +228,7 @@ class Town(Building):
             ("crystal", "gold"): 25,
         }
         self.market_rates = getattr(constants, "MARKET_RATES", DEFAULT_MARKET_RATES)
+        self.built_today = False
 
     # ------------------------------ Helpers UI ------------------------------
     def is_structure_built(self, name: str) -> bool:
@@ -311,11 +312,22 @@ class Town(Building):
                 arrived.append(order)
         for order in arrived:
             self.caravan_orders.remove(order)
+        self.built_today = False
 
     # --------------------------- Town management ----------------------------
-    def build_structure(self, structure: str, hero: "Hero") -> bool:
+    def build_structure(
+        self,
+        structure: str,
+        hero: "Hero",
+        econ_building: Optional["economy.Building"] = None,
+    ) -> bool:
         info = self.structures.get(structure)
-        if info is None or structure in self.built_structures:
+        if (
+            info is None
+            or structure in self.built_structures
+            or self.built_today
+            or (econ_building is not None and econ_building.construction_done)
+        ):
             return False
         prereq = info.get("prereq", []) if isinstance(info, dict) else []
         if any(p not in self.built_structures for p in prereq):
@@ -334,6 +346,10 @@ class Town(Building):
                 continue
             hero.resources[res] = hero.resources.get(res, 0) - amount
         self.built_structures.add(structure)
+        self.built_today = True
+        if econ_building is not None:
+            from core import economy as econ
+            econ.build_structure(econ_building, structure)
         growth = info.get("dwelling", {}) if isinstance(info, dict) else {}
         if isinstance(growth, dict):
             for uid, amount in growth.items():
