@@ -1448,6 +1448,18 @@ class WorldMap:
         return towns
 
 
+    def advance_day(self) -> None:
+        """Advance daily progression for all towns on the map.
+
+        This currently forwards to each town's ``advance_day`` method so that
+        caravan orders continue their journey across the world.
+        """
+
+        for town in self.towns:
+            if hasattr(town, "advance_day"):
+                town.advance_day()
+
+
     def find_building_pos(self, building: Building) -> Optional[Tuple[int, int]]:
         """Search ``self.grid`` for ``building`` and return its coordinates.
 
