@@ -92,7 +92,6 @@ class ButtonsColumn:
             "shoot": getattr(pygame, "K_s", ord("s")),
             "cast": getattr(pygame, "K_c", ord("c")),
             "use_ability": getattr(pygame, "K_u", ord("u")),
-            "swap": getattr(pygame, "K_x", ord("x")),
             "flee": getattr(pygame, "K_f", ord("f")),
             "surrender": getattr(pygame, "K_r", ord("r")),
             "auto_resolve": getattr(pygame, "K_a", ord("a")),

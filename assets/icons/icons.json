@@ -2,6 +2,7 @@
   "action_attack": "assets/icons/action_attack.png",
   "action_attack_alt": "assets/icons/action_attack_alt.png",
   "action_auto_resolve": "assets/icons/action_auto_resolve.png",
+  "action_auto_combat": "assets/icons/action_auto_resolve.png",
   "action_cast": "assets/icons/action_cast.png",
   "action_defend": "assets/icons/action_defend.png",
   "action_end_turn": "assets/icons/action_end_turn.png",
@@ -14,7 +15,8 @@
   "action_swap": "assets/icons/action_swap.png",
   "action_use_ability": "assets/icons/action_use_ability.png",
   "action_wait": "assets/icons/action_wait.png",
-  
+  "end_turn": "assets/icons/end_turn.png",
+
   "poi_artifact": "assets/icons/artifact.png",
   "poi_boat": "assets/icons/boat.png",
   "poi_bridge": "assets/icons/bridge.png",
@@ -26,7 +28,7 @@
   "poi_ruins": "assets/icons/ruins.png",
   "poi_shrine": "assets/icons/shrine.png",
   "poi_treasure_chest": "assets/icons/treasure.png",
-  "poi_watchtower": "assets/icons/watchtower.png"
+  "poi_watchtower": "assets/icons/watchtower.png",
   
   "nav_end_day": "assets/icons/nav_end_day.png",
   "nav_hero_screen": "assets/icons/nav_hero_screen.png",
@@ -75,5 +77,5 @@
   "status_silence": "assets/icons/status_silence.png",
   "status_sleep": "assets/icons/status_sleep.png",
   "status_slow": "assets/icons/status_slow.png",
-  "status_stun": "assets/icons/status_stun.png",
+  "status_stun": "assets/icons/status_stun.png"
 }

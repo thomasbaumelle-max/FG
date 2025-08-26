@@ -35,7 +35,6 @@ class CombatHUD:
             "spell": "action_cast",
             "wait": "action_wait",
             "ability": "action_use_ability",
-            "swap": "action_swap",
             "flee": "action_flee",
             "surrender": "action_surrender",
             "auto": "action_auto_resolve",
@@ -49,10 +48,10 @@ class CombatHUD:
             "action_cast": getattr(pygame, "K_c", ord("c")),
             "action_wait": getattr(pygame, "K_w", ord("w")),
             "action_use_ability": getattr(pygame, "K_u", ord("u")),
-            "action_swap": getattr(pygame, "K_x", ord("x")),
             "action_flee": getattr(pygame, "K_f", ord("f")),
             "action_surrender": getattr(pygame, "K_r", ord("r")),
             "action_auto_resolve": getattr(pygame, "K_z", ord("z")),
+            "action_auto_combat": getattr(pygame, "K_h", ord("h")),
             "action_next_unit": getattr(pygame, "K_n", ord("n")),
         }
         self.stat_icon_keys = {
@@ -241,15 +240,27 @@ class CombatHUD:
             # Buttons below the turn order
             y += 10
             auto_rect = pygame.Rect(right.x + 10, y, right.width - 20, BUTTON_H)
-            auto_button = IconButton(
+            auto_resolve_btn = IconButton(
                 auto_rect,
                 "action_auto_resolve",
                 combat.auto_resolve,
                 hotkey=self.hotkeys.get("action_auto_resolve"),
                 tooltip="Auto resolve",
             )
-            auto_button.draw(screen)
+            auto_resolve_btn.draw(screen)
+            action_buttons["auto_resolve"] = auto_resolve_btn
             y = auto_rect.bottom + 6
+
+            auto_combat_rect = pygame.Rect(right.x + 10, y, right.width - 20, BUTTON_H)
+            auto_button = IconButton(
+                auto_combat_rect,
+                "action_auto_combat",
+                combat.auto_combat,
+                hotkey=self.hotkeys.get("action_auto_combat"),
+                tooltip="Auto combat",
+            )
+            auto_button.draw(screen)
+            y = auto_combat_rect.bottom + 6
 
             spell_rect = pygame.Rect(right.x + 10, y, right.width - 20, BUTTON_H)
             spell_btn = IconButton(
@@ -299,7 +310,6 @@ class CombatHUD:
             "action_cast": lambda: setattr(combat, "selected_action", "spell"),
             "action_wait": wait_action,
             "action_use_ability": combat.use_ability,
-            "action_swap": combat.swap_positions,
             "action_flee": combat.flee,
             "action_surrender": combat.surrender,
             "action_auto_resolve": combat.auto_resolve,
@@ -316,7 +326,6 @@ class CombatHUD:
 
         extras = [
             "action_use_ability",
-            "action_swap",
             "action_flee",
             "action_surrender",
             "action_next_unit",
