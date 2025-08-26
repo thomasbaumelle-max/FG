@@ -3466,12 +3466,33 @@ class Game:
             EVENT_BUS.subscribe(ON_TURN_END, self._update_town_control)
             self._town_control_subscribed = True
 
-    def save_game(self, path: str, profile_path: str | None = None) -> None:
+    def save_game(
+        self,
+        path: str | None = None,
+        profile_path: str | None = None,
+        slot: int | None = None,
+    ) -> None:
         """Serialise the current game state to JSON files.
 
-        The main game state is written to ``path`` while the hero's inventory,
-        equipment and skill tree are stored separately in ``profile_path``.
+        ``path`` and ``profile_path`` may be omitted to use the currently
+        selected save slot.  Supplying ``slot`` overrides both paths and writes
+        to ``self.save_slots[slot]`` and ``self.profile_slots[slot]``.
         """
+
+        if slot is not None:
+            slots = getattr(self, "save_slots", [])
+            profiles = getattr(self, "profile_slots", [])
+            if slots:
+                path = slots[slot]
+            if profiles:
+                profile_path = profiles[slot]
+            self.current_slot = slot
+
+        if path is None:
+            path = getattr(self, "default_save_path", None)
+        if path is None:
+            raise ValueError("No save path specified")
+
         data = self._serialize_state()
         hero = data["hero"]
         profile = {
@@ -3487,12 +3508,20 @@ class Game:
             digits = ''.join(filter(str.isdigit, prefix))
             name = f"save_profile{digits}.json" if digits else "save_profile.json"
             profile_path = os.path.join(base, name)
+
         os.makedirs(os.path.dirname(profile_path), exist_ok=True)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(profile_path, "w", encoding="utf-8") as f:
             json.dump(profile, f)
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f)
+
+        # Update defaults for future calls
+        self.default_save_path = path
+        self.default_profile_path = profile_path
+        slots = getattr(self, "save_slots", [])
+        if path in slots:
+            self.current_slot = slots.index(path)
 
     def quick_save(self) -> None:
         """Convenience wrapper saving to the predefined quick-save slot."""
@@ -3516,25 +3545,52 @@ class Game:
         if os.path.exists(path):
             self.load_game(path, profile)
 
-    def load_game(self, path: str, profile_path: str | None = None) -> None:
+    def load_game(
+        self,
+        path: str | None = None,
+        profile_path: str | None = None,
+        slot: int | None = None,
+    ) -> None:
         """Load game state from JSON files."""
-        if not os.path.exists(path):
+
+        if slot is not None:
+            slots = getattr(self, "save_slots", [])
+            profiles = getattr(self, "profile_slots", [])
+            if slots:
+                path = slots[slot]
+            if profiles:
+                profile_path = profiles[slot]
+            self.current_slot = slot
+
+        if path is None:
+            path = getattr(self, "default_save_path", None)
+        if path is None or not os.path.exists(path):
             logger.warning("Save file %s not found", path)
             EVENT_BUS.publish(ON_INFO_MESSAGE, f"Save file not found: {path}")
             return
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
+
         if profile_path is None:
             base = os.path.dirname(path)
             prefix = os.path.splitext(os.path.basename(path))[0]
             digits = ''.join(filter(str.isdigit, prefix))
             name = f"save_profile{digits}.json" if digits else "save_profile.json"
             profile_path = os.path.join(base, name)
+
         if os.path.exists(profile_path):
             with open(profile_path, "r", encoding="utf-8") as f:
                 profile = json.load(f)
             data.setdefault("hero", {}).update(profile)
+
         version = data.get("version", 0)
         if version < SAVE_FORMAT_VERSION:
             data = self._upgrade_save(data, version)
         self._load_state(data)
+
+        # Update defaults after loading
+        self.default_save_path = path
+        self.default_profile_path = profile_path
+        slots = getattr(self, "save_slots", [])
+        if path in slots:
+            self.current_slot = slots.index(path)
