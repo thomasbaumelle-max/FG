@@ -3,6 +3,7 @@ from typing import Optional, List, Dict, Tuple
 import os
 import logging
 import pygame
+from core import economy
 from loaders import icon_loader as IconLoader
 from core.entities import (
     Hero,
@@ -196,6 +197,17 @@ class TownScreen:
             "stone": self.hero.resources.get("stone", 0),
             "crystal": self.hero.resources.get("crystal", 0),
         }
+
+    def _advance_week(self) -> None:
+        state = getattr(self.game, "state", None)
+        econ_state = getattr(state, "economy", None) if state else None
+        if econ_state is not None:
+            economy.advance_week(econ_state)
+        if hasattr(self.town, "next_week"):
+            self.town.next_week()
+        notify = getattr(self.game, "_notify", None)
+        if notify:
+            notify("A new week begins.")
 
     # ----------------------------------------------------------------- drawing
     def draw(self) -> None:
@@ -423,6 +435,8 @@ class TownScreen:
                     if evt.key in (pygame.K_ESCAPE, pygame.K_b):
                         self._close_all_overlays()
                         self.running = False
+                    elif evt.key == pygame.K_w and not self._overlay_active():
+                        self._advance_week()
                 elif t == pygame.MOUSEMOTION:
                     self.mouse_pos = evt.pos
                 elif t == pygame.MOUSEWHEEL:
