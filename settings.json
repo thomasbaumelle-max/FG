@@ -5,6 +5,8 @@
   "debug_buildings": false,
   "ai_difficulty": "Intermédiaire",
   "language": "en",
+  "volume": 1.0,
+  "scroll_speed": 20,
   "keymap": {
     "pan_left": ["K_LEFT", "K_a"],
     "pan_right": ["K_RIGHT", "K_d"],
