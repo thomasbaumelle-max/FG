@@ -28,6 +28,7 @@ import theme
 from ui import combat_summary
 from core import combat_ai, combat_render
 from core.entities import Unit, UnitStats, apply_defence, ARTIFACT_CATALOG, Item, Hero
+from core.status_effects import StatusEffect
 from core import combat_rules
 from core.fx import FXEvent, FXQueue
 from siege import Fortification, SiegeAction
@@ -112,6 +113,40 @@ class CombatSpell:
     effect: Callable[["Combat", Unit, Union[Unit, Tuple[int, int], Tuple[Unit, Tuple[int, int]]], int], None]
 
 
+class CombatUnit(Unit):
+    """Unit used during combat with support for temporary status effects."""
+
+    def __init__(self, stats: UnitStats, count: int, side: str) -> None:  # noqa: D401
+        super().__init__(stats, count, side)
+        # ``base_stats`` keeps an unmodified copy so that temporary modifiers
+        # can be reapplied cleanly each turn.
+        self.base_stats: UnitStats = copy.deepcopy(stats)
+        self.effects: List[StatusEffect] = []
+
+    # ------------------------------------------------------------------
+    def refresh_base_stats(self) -> None:
+        """Refresh ``base_stats`` to match current ``stats``."""
+
+        self.base_stats = copy.deepcopy(self.stats)
+
+    # ------------------------------------------------------------------
+    def add_effect(self, effect: StatusEffect) -> None:
+        """Attach ``effect`` to this unit."""
+
+        self.effects.append(effect)
+
+    # ------------------------------------------------------------------
+    def get_effect(self, name: str) -> StatusEffect | None:
+        for eff in self.effects:
+            if eff.name == name:
+                return eff
+        return None
+
+    # ------------------------------------------------------------------
+    def remove_effect(self, name: str) -> None:
+        self.effects = [e for e in self.effects if e.name != name]
+
+
 class Combat:
     """Represents a single combat encounter."""
     # --- Exposer les constantes attendues par le HUD comme attributs de classe
@@ -141,11 +176,11 @@ class Combat:
         self.screen = screen
         self.assets = assets
         # Create deep copies of units for combat so exploration state is preserved
-        self.hero_units: List[Unit] = [self.copy_unit(u) for u in hero_units]
-        self.enemy_units: List[Unit] = [self.copy_unit(u) for u in enemy_units]
+        self.hero_units: List[CombatUnit] = [self.copy_unit(u) for u in hero_units]
+        self.enemy_units: List[CombatUnit] = [self.copy_unit(u) for u in enemy_units]
         # Track initial enemy count to award experience
         self._initial_enemy_count = sum(u.count for u in self.enemy_units)
-        self.units: List[Unit] = self.hero_units + self.enemy_units
+        self.units: List[CombatUnit] = self.hero_units + self.enemy_units
         self.hero_faction = hero_faction
         if hero_faction:
             for u in self.hero_units:
@@ -182,6 +217,11 @@ class Combat:
             uid += 1
         for rt in self._rt_by_unit.values():
             self.ability_engine.on_battle_start(rt)
+
+        # Finalise base stats after all modifiers have been applied
+        for u in self.units:
+            if isinstance(u, CombatUnit):
+                u.refresh_base_stats()
 
         # --- HUD ---
         self.hud = CombatHUD()
@@ -275,8 +315,6 @@ class Combat:
         }
         # Combat log messages
         self.log: List[str] = []
-        # Status effects per unit
-        self.statuses: Dict[Unit, Dict[str, int]] = {}
         # Active ice walls on the grid with remaining duration
         self.ice_walls: Dict[Tuple[int, int], int] = {}
         if num_obstacles:
@@ -338,12 +376,14 @@ class Combat:
         return [copy.deepcopy(chosen)]
 
     @staticmethod
-    def copy_unit(unit: Unit) -> Unit:
+    def copy_unit(unit: Unit) -> CombatUnit:
         """Return a copy of a unit with identical stats and state."""
-        new_unit = Unit(copy.deepcopy(unit.stats), unit.count, unit.side)
+
+        new_unit = CombatUnit(copy.deepcopy(unit.stats), unit.count, unit.side)
         new_unit.current_hp = unit.current_hp
         new_unit.attack_bonus = unit.attack_bonus
         new_unit.tags = list(unit.tags)
+        new_unit.refresh_base_stats()
         return new_unit
 
     def get_unit_image(self, unit: Unit, size: Tuple[int, int]) -> Optional[pygame.Surface]:
@@ -757,32 +797,44 @@ class Combat:
                     if unit and unit.side != caster.side:
                         self.resolve_damage(caster, unit, dmg, element)
 
-    def add_status(self, unit: Unit, status: str, turns: int) -> None:
-        self.statuses.setdefault(unit, {})[status] = turns
+    def add_status(
+        self,
+        unit: CombatUnit,
+        status: str,
+        turns: int,
+        modifiers: Optional[Dict[str, int]] | None = None,
+        icon: Optional[str] | None = None,
+    ) -> None:
+        """Attach a :class:`StatusEffect` to ``unit``."""
 
-    def get_status(self, unit: Unit, status: str) -> int:
-        return self.statuses.get(unit, {}).get(status, 0)
+        effect = StatusEffect(status, turns, modifiers or {}, icon or f"status_{status}")
+        unit.add_effect(effect)
 
-    def consume_status(self, unit: Unit, status: str) -> None:
-        if unit in self.statuses and status in self.statuses[unit]:
-            del self.statuses[unit][status]
-            if not self.statuses[unit]:
-                del self.statuses[unit]
+    def get_status(self, unit: CombatUnit, status: str) -> int:
+        eff = unit.get_effect(status)
+        return eff.duration if eff else 0
 
-    def apply_status_effects(self, unit: Unit) -> None:
-        status = self.statuses.get(unit)
-        if not status:
+    def consume_status(self, unit: CombatUnit, status: str) -> None:
+        unit.remove_effect(status)
+
+    def apply_status_effects(self, unit: CombatUnit) -> None:
+        if not unit.effects:
             return
-        if status.get("burn"):
-            self.log_damage(unit, unit, 5)
-            unit.take_damage(5)
-            if not unit.is_alive:
-                self.remove_unit_from_grid(unit)
-            status["burn"] -= 1
-            if status["burn"] <= 0:
-                del status["burn"]
-        if not status:
-            del self.statuses[unit]
+
+        # Reset stats to baseline before applying modifiers
+        unit.stats = copy.deepcopy(unit.base_stats)
+        for effect in list(unit.effects):
+            for attr, mod in effect.modifiers.items():
+                if hasattr(unit.stats, attr):
+                    setattr(unit.stats, attr, getattr(unit.stats, attr) + mod)
+            if effect.name == "burn":
+                self.log_damage(unit, unit, 5)
+                unit.take_damage(5)
+                if not unit.is_alive:
+                    self.remove_unit_from_grid(unit)
+            effect.duration -= 1
+            if effect.duration <= 0:
+                unit.effects.remove(effect)
 
     def resolve_attack(self, attacker: Unit, defender: Unit, attack_type: str) -> int:
         # Orientation and distance for flanking
@@ -1581,12 +1633,16 @@ class Combat:
         if not frames:
             return
         rect = self.cell_rect(*pos)
-        img = random.choice(frames)
+        # Use the first frame to avoid perturbing global RNG state during tests
+        img = frames[0]
         w, h = img.get_size()
         scale = min(rect.width / w, rect.height / h, 1.0)
         if scale != 1.0 and hasattr(pygame, "transform"):
             img = pygame.transform.scale(img, (int(w * scale), int(h * scale)))
-        center = rect.center
+        center = (
+            rect.x + rect.width // 2,
+            rect.y + rect.height // 2,
+        )
         if hasattr(pygame, "math"):
             img_pos = pygame.math.Vector2(center)
         else:

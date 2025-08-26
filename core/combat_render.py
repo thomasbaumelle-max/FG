@@ -329,9 +329,9 @@ def draw(combat, frame: int = 0) -> None:
         text = font.render(str(unit.count), True, theme.PALETTE["text"])
         text_rect = text.get_rect(center=stack_rect.center)
         combat.screen.blit(text, text_rect)
-        statuses = combat.statuses.get(unit, {})
-        has_buff = any(categorize_status(s) == "buff" for s in statuses)
-        has_debuff = any(categorize_status(s) == "debuff" for s in statuses)
+        effects = getattr(unit, "effects", [])
+        has_buff = any(categorize_status(e.name) == "buff" for e in effects)
+        has_debuff = any(categorize_status(e.name) == "debuff" for e in effects)
         ind = int(6 * combat.zoom)
         if has_buff:
             buff = pygame.Rect(0, 0, ind, ind)
