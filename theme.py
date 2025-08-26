@@ -46,6 +46,28 @@ def get_font(size: int = 16):
 
 
 # ---------------------------------------------------------------------------
+# Formatting helpers
+# ---------------------------------------------------------------------------
+
+
+def format_number(value: int | float) -> str:
+    """Return a string representation for ``value``.
+
+    Centralising this logic in the theme allows widgets to stay consistent and
+    enables future customisation (e.g. thousands separators) without touching
+    individual widgets.
+    """
+
+    return f"{value}"
+
+
+def format_delta(value: int) -> str:
+    """Return a signed numeric string for deltas such as ``+5`` or ``-2``."""
+
+    return f"{value:+d}"
+
+
+# ---------------------------------------------------------------------------
 # Frame rendering
 # ---------------------------------------------------------------------------
 _FRAME_CACHE: dict[tuple[int, int, int], tuple["pygame.Surface", "pygame.Surface", "pygame.Surface"]] = {}

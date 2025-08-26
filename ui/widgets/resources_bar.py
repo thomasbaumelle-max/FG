@@ -81,13 +81,17 @@ class ResourcesBar:
             pos = (x, y_center - icon.get_height() // 2)
             surface.blit(icon, pos)
             x += icon.get_width() + 4
-            txt_surface = self.font.render(str(value), True, theme.PALETTE["text"])
+            txt_surface = self.font.render(
+                theme.format_number(value), True, theme.PALETTE["text"]
+            )
             surface.blit(txt_surface, (x, y_center - txt_surface.get_height() // 2))
             # Draw delta animations above the value
             if self.show_delta:
                 for anim in self._deltas.get(name, []):
                     colour = constants.GREEN if anim.amount > 0 else constants.RED
-                    delta_surf = self.font.render(f"{anim.amount:+d}", True, colour)
+                    delta_surf = self.font.render(
+                        theme.format_delta(anim.amount), True, colour
+                    )
                     dy = y_center - txt_surface.get_height() // 2 + anim.offset
                     surface.blit(delta_surf, (x, dy))
             x += txt_surface.get_width() + 20

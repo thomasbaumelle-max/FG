@@ -13,7 +13,7 @@ from typing import Optional, Tuple
 
 import pygame
 
-from .. import constants
+from .. import constants, theme
 from ..state.event_bus import EVENT_BUS, ON_INFO_MESSAGE
 
 # Colours used for different probe types
@@ -30,13 +30,10 @@ class DescBar:
     """Display a one-line description with colour coding."""
 
     def __init__(self) -> None:
-        # Default font; size chosen to comfortably fit inside UI panels.  Some
-        # test environments provide a very small pygame stub without the font
-        # module; handle this gracefully by falling back to ``None``.
-        try:
-            self.font = pygame.font.Font(None, 24)
-        except Exception:  # pragma: no cover - missing font module
-            self.font = None
+        # Default font; size chosen to comfortably fit inside UI panels.
+        # ``theme.get_font`` gracefully handles environments where the font
+        # module is unavailable.
+        self.font = theme.get_font(24)
         self.text: str = ""
         self.colour: Tuple[int, int, int] = constants.WHITE
         self._message_timer = 0
