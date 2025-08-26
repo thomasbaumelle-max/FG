@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Set
 
 # Ressources par défaut (tu peux en ajouter)
 DEFAULT_RESOURCES = ("gold", "wood", "stone", "crystal")
@@ -20,6 +20,8 @@ class Building:
     level: int = 1
     upgrade_cost: Dict[str, int] = field(default_factory=dict)
     production_per_level: Dict[str, int] = field(default_factory=dict)
+    built_structures: Set[str] = field(default_factory=set)
+    construction_done: bool = False
 
 @dataclass
 class GameCalendar:
@@ -37,13 +39,12 @@ def advance_day(state: GameEconomyState) -> None:
     """Tick quotidien: revenus passifs, régénérations légères, etc."""
     # Revenus de bâtiments
     for b in state.buildings:
-        if b.owner is None: 
-            continue
-        if not b.provides:
-            continue
-        pe = state.players[b.owner]
-        for res, amt in b.provides.items():
-            pe.resources[res] = pe.resources.get(res, 0) + int(amt)
+        if b.owner is not None and b.provides:
+            pe = state.players[b.owner]
+            for res, amt in b.provides.items():
+                pe.resources[res] = pe.resources.get(res, 0) + int(amt)
+        # réinitialise le verrou de construction pour la nouvelle journée
+        b.construction_done = False
 
     # Avance calendrier
     state.calendar.day += 1
@@ -86,3 +87,12 @@ def can_afford(player: PlayerEconomy, cost: Dict[str, int]) -> bool:
 def pay(player: PlayerEconomy, cost: Dict[str, int]) -> None:
     for k, v in cost.items():
         player.resources[k] = player.resources.get(k, 0) - int(v)
+
+
+def build_structure(b: Building, sid: str) -> bool:
+    """Marque ``sid`` comme construit pour ``b`` si possible."""
+    if b.construction_done or sid in b.built_structures:
+        return False
+    b.built_structures.add(sid)
+    b.construction_done = True
+    return True

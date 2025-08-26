@@ -231,7 +231,11 @@ class TownScreen:
         # tooltip detection for buildings when no overlay open
         if not self._overlay_active():
             for sid, rc in self.building_cards:
-                if rc.collidepoint(self.mouse_pos) and not self.town.is_structure_built(sid):
+                if (
+                    rc.collidepoint(self.mouse_pos)
+                    and not self.town.is_structure_built(sid)
+                    and not self.town.built_today
+                ):
                     cost = self.town.structure_cost(sid)
                     if cost and not self._can_afford(self.hero, cost):
                         self.tooltip = self._format_cost_tooltip(cost)
@@ -345,6 +349,7 @@ class TownScreen:
 
     def _draw_building_card(self, sid: str, card: pygame.Rect) -> None:
         built = self.town.is_structure_built(sid)
+        locked = not built and self.town.built_today
         pygame.draw.rect(self.screen, (44, 46, 54), card, border_radius=8)
         pygame.draw.rect(self.screen, (100, 100, 110), card, 2, border_radius=8)
         title = sid.replace("_", " ").title()
@@ -382,6 +387,9 @@ class TownScreen:
             if hint_text:
                 hint = self.font_small.render(hint_text, True, COLOR_ACCENT)
                 self.screen.blit(hint, (card.right - hint.get_width() - 8, card.bottom - 24))
+        elif locked:
+            lab = self.font.render("Locked", True, COLOR_DISABLED)
+            self.screen.blit(lab, (card.x + 10, card.bottom - 24))
         else:
             cost = self.town.structure_cost(sid)
             cost_txt = " / ".join(f"{k}:{v}" for k, v in cost.items()) if cost else "Free"
@@ -454,6 +462,8 @@ class TownScreen:
         for sid, rc in self.building_cards:
             if rc.collidepoint(pos):
                 if not self.town.is_structure_built(sid):
+                    if self.town.built_today:
+                        return
                     cost = self.town.structure_cost(sid)
                     if self._can_afford(self.hero, cost):
                         self.town.build_structure(sid, self.hero)
