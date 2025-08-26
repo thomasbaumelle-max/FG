@@ -16,6 +16,8 @@ except Exception:  # pragma: no cover - when pygame is unavailable
     find_file = None  # type: ignore
     read_json = None  # type: ignore
 
+import settings
+
 _sounds: Dict[str, 'pygame.mixer.Sound'] = {}
 _music_enabled: bool = True
 _current_music: Optional[str] = None
@@ -23,7 +25,8 @@ _music_tracks: Dict[str, str] = {}
 _default_music: Optional[str] = None
 _music_volume: float = 1.0
 _sfx_volume: float = 1.0
-_SETTINGS_FILE = os.path.join(os.path.dirname(__file__), "settings.json")
+# Settings are persisted via :mod:`settings`
+_SETTINGS_FILE = str(settings.SETTINGS_FILE)
 
 # Optional ``AssetManager`` used to locate audio assets.  When ``None`` the
 # module falls back to searching the built-in ``assets`` directory only.
@@ -144,19 +147,10 @@ def load_sound(key: str, filename: str) -> None:
 
 
 def _save_settings(extra: Optional[dict] | None = None) -> None:
-    data = {}
-    if os.path.isfile(_SETTINGS_FILE):
-        try:
-            with open(_SETTINGS_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-        except Exception:
-            data = {}
-    data["music_volume"] = _music_volume
-    data["sfx_volume"] = _sfx_volume
+    data = {"music_volume": _music_volume, "sfx_volume": _sfx_volume}
     if extra:
         data.update(extra)
-    with open(_SETTINGS_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f)
+    settings.save_settings(**data)
 
 
 def load_settings() -> dict:
@@ -168,8 +162,21 @@ def load_settings() -> dict:
                 data = json.load(f)
         except Exception:
             data = {}
-    set_music_volume(float(data.get("music_volume", _music_volume)), save=False)
-    set_sfx_volume(float(data.get("sfx_volume", _sfx_volume)), save=False)
+    vol = data.get("volume")
+    if vol is not None:
+        try:
+            volume_val = float(vol)
+            set_music_volume(volume_val, save=False)
+            set_sfx_volume(volume_val, save=False)
+            settings.VOLUME = volume_val
+        except Exception:
+            set_music_volume(float(data.get("music_volume", _music_volume)), save=False)
+            set_sfx_volume(float(data.get("sfx_volume", _sfx_volume)), save=False)
+            settings.VOLUME = _music_volume
+    else:
+        set_music_volume(float(data.get("music_volume", _music_volume)), save=False)
+        set_sfx_volume(float(data.get("sfx_volume", _sfx_volume)), save=False)
+        settings.VOLUME = _music_volume
     track = data.get("music_track")
     if isinstance(track, str) and track:
         global _current_music

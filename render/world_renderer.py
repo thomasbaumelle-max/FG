@@ -42,7 +42,7 @@ class WorldRenderer:
     def __init__(
         self,
         assets: object,
-        pan_speed: int = 20,
+        pan_speed: int = settings.SCROLL_SPEED,
         player_colour: Tuple[int, int, int] = constants.BLUE,
         game: Optional[object] = None,
     ) -> None:
