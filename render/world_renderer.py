@@ -531,24 +531,11 @@ class WorldRenderer:
             for x in range(start_x, end_x):
                 tile = world.grid[y][x]
                 if getattr(tile, "boat", None):
-                    boat_obj = tile.boat
-                    boat_id = boat_obj.id
-                    path = boat_id
-                    if getattr(self.game, "boat_defs", None):
-                        boat_def = self.game.boat_defs.get(boat_id)
-                        if boat_def:
-                            path = boat_def.path
-                    img = self.assets.get(path)
-                    if img:
-                        if img.get_size() != (tile_size, tile_size):
-                            try:
-                                img = pygame.transform.smoothscale(img, (tile_size, tile_size))
-                            except Exception:
-                                pass
-                        layers[constants.LAYER_UNITS].blit(
-                            img,
-                            ((x - start_x) * tile_size + offset_x, (y - start_y) * tile_size + offset_y),
-                        )
+                    img = IconLoader.get("boat", tile_size)
+                    layers[constants.LAYER_UNITS].blit(
+                        img,
+                        ((x - start_x) * tile_size + offset_x, (y - start_y) * tile_size + offset_y),
+                    )
                 if tile.enemy_units:
                     strongest = max(tile.enemy_units, key=lambda u: u.stats.max_hp)
                     img_name = ENEMY_UNIT_IMAGES.get(strongest.stats.name)
@@ -575,20 +562,8 @@ class WorldRenderer:
 
             # Draw boat beneath heroes that possess one
             if is_hero and getattr(actor, "naval_unit", None):
-                boat_id = getattr(actor, "naval_unit")
-                path = boat_id
-                if getattr(self.game, "boat_defs", None):
-                    boat_def = self.game.boat_defs.get(boat_id)
-                    if boat_def:
-                        path = boat_def.path
-                boat = self.assets.get(path)
-                if isinstance(boat, pygame.Surface):
-                    try:
-                        if boat.get_size() != (tile_size, tile_size):
-                            boat = pygame.transform.smoothscale(boat, (tile_size, tile_size))
-                    except AttributeError:
-                        pass
-                    layers[constants.LAYER_UNITS].blit(boat, (px, py))
+                boat = IconLoader.get("boat", tile_size)
+                layers[constants.LAYER_UNITS].blit(boat, (px, py))
 
             if hidden:
                 player_hero = getattr(self.game, "hero", None)

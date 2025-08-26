@@ -1998,7 +1998,7 @@ class Game:
             and getattr(tile, "boat", None)
             and not has_boat
         ):
-            if self.embark(self.hero, tile.boat):
+            if self.board_boat(tile.boat):
                 return
         if not tile.is_passable(has_boat=has_boat):
             if tile.biome in constants.WATER_BIOMES and not has_boat:
@@ -2196,22 +2196,7 @@ class Game:
                 self.world.invalidate_prop_chunk(prop)
         # Check treasure
         if tile.treasure is not None:
-            treasure = tile.treasure
-            choice = self.prompt_treasure_choice(treasure)
-            if choice == "gold":
-                amount = random.randint(*treasure["gold"])
-                self.hero.gold += amount
-                tile.treasure = None
-                self._notify(f"You found a treasure chest with {amount} gold!")
-            elif choice == "exp":
-                amount = random.randint(*treasure["exp"])
-                self.hero.gain_exp(amount)
-                tile.treasure = None
-                self._notify(f"You gained {amount} experience from the treasure!")
-            else:
-                self._notify("You leave the treasure untouched.")
-            self._update_caches_for_tile(self.hero.x, self.hero.y)
-            self._publish_resources()
+            self.open_treasure(tile)
         # Check loose resource deposit
         if tile.resource:
             res = tile.resource
@@ -2225,6 +2210,35 @@ class Game:
         # Update fog of war after movement
         self._update_player_visibility(self.hero)
         # otherwise just move
+
+    def open_treasure(self, tile: Tile) -> None:
+        """Handle treasure collection for the hero on ``tile``."""
+        treasure = tile.treasure
+        if treasure is None:
+            return
+        choice = self.prompt_treasure_choice(treasure)
+        if choice == "gold":
+            amount = random.randint(*treasure["gold"])
+            self.hero.gold += amount
+            tile.treasure = None
+            self._notify(f"You found a treasure chest with {amount} gold!")
+        elif choice == "exp":
+            amount = random.randint(*treasure["exp"])
+            self.hero.gain_exp(amount)
+            tile.treasure = None
+            self._notify(f"You gained {amount} experience from the treasure!")
+        else:
+            self._notify("You leave the treasure untouched.")
+        self._update_caches_for_tile(self.hero.x, self.hero.y)
+        self._publish_resources()
+
+    def board_boat(self, boat: Boat) -> bool:
+        """Wrapper around :meth:`embark` for POI interaction."""
+        return self.embark(self.hero, boat)
+
+    def enter_shrine(self, tile: Tile) -> None:  # pragma: no cover - placeholder
+        """Placeholder interaction for shrine points of interest."""
+        self._notify("You enter the shrine and feel renewed.")
 
     def embark(self, hero: Hero, boat: Boat) -> bool:
         """Embark ``hero`` onto ``boat`` if adjacent and at shore."""
