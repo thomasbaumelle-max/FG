@@ -846,7 +846,7 @@ class Combat:
             0 if dy == 0 else (1 if dy > 0 else -1),
         )
         attacker.facing = direction
-        dist = abs(dx) + abs(dy)
+        dist = self.hex_distance((attacker.x, attacker.y), (defender.x, defender.y))
         flank = combat_rules.flanking_bonus(attacker, defender)
 
         result = combat_rules.compute_damage(

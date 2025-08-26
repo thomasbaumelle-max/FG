@@ -89,6 +89,10 @@ class UnitStats:
 
     The graphical representation of a unit is defined by a sprite sheet
     identifier and separate frame ranges for the hero and enemy sides.
+
+    ``min_range`` defines the minimum distance allowed for ranged
+    attacks, and ``retaliations_per_round`` sets how many counterattacks
+    a unit may perform in a single round.
     """
 
     name: str
