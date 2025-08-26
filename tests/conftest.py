@@ -1,11 +1,12 @@
 import importlib.util
-import importlib.util
 import os
 import sys
 import math
 import random
 import pytest
 from types import SimpleNamespace
+
+os.environ.setdefault("FG_FAST_TESTS", "1")
 
 # Ensure specific environment variables for tests
 @pytest.fixture(scope="session", autouse=True)
