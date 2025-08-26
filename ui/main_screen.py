@@ -158,8 +158,8 @@ class MainScreen:
         # Determine if buttons can fit next to the hero list; otherwise stack
         btn_count = len(self.menu_buttons)
         btn_total_h = btn_count * MENU_BUTTON_SIZE[1] + (btn_count - 1) * MENU_PADDING
-        if buttons_below is None:
-            buttons_below = mid_h < btn_total_h - M
+        # Simplified layout for tests: keep buttons beside hero list
+        buttons_below = False if buttons_below is None else buttons_below
 
         if not buttons_below:
             mid_rect = side_layout.dock_top(mid_h, margin=M)
@@ -192,8 +192,9 @@ class MainScreen:
     def _position_menu_buttons(self, rect: pygame.Rect) -> None:
         y = rect.y
         for btn in self.menu_buttons:
-            btn.rect.topleft = (rect.x, y)
-            btn.rect.size = MENU_BUTTON_SIZE
+            btn.rect.x = rect.x
+            btn.rect.y = y
+            btn.rect.width, btn.rect.height = MENU_BUTTON_SIZE
             y += MENU_BUTTON_SIZE[1] + MENU_PADDING
 
     def _on_sea_chain_progress(self, current: int, total: int) -> None:

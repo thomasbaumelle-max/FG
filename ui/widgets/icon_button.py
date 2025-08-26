@@ -34,7 +34,10 @@ class IconButton:
         self.callback = callback
         self.hotkey = hotkey
         self.tooltip = tooltip
-        self.size = rect.size if size is None else size
+        if size is None:
+            self.size = (getattr(rect, "width", 0), getattr(rect, "height", 0))
+        else:
+            self.size = size
         self.hovered = False
         self.pressed = False
         self.enabled = enabled
@@ -42,7 +45,11 @@ class IconButton:
 
     # ------------------------------------------------------------------
     def collidepoint(self, pos: tuple[int, int]) -> bool:
-        return self.rect.collidepoint(pos)
+        x, y = pos
+        return (
+            self.rect.x <= x < self.rect.x + self.rect.width
+            and self.rect.y <= y < self.rect.y + self.rect.height
+        )
 
     # ------------------------------------------------------------------
     def draw(self, surface: pygame.Surface) -> None:
@@ -63,13 +70,15 @@ class IconButton:
         icon = IconLoader.get(self.icon_id, size_min)
         if icon is not None:
             icon_rect = icon.get_rect()
-            icon_rect.center = self.rect.center
+            icon_rect.x = self.rect.x + (self.rect.width - icon_rect.width) // 2
+            icon_rect.y = self.rect.y + (self.rect.height - icon_rect.height) // 2
             surface.blit(icon, icon_rect)
         elif self.font:
             letter = self.icon_id[:1].upper()
             text = self.font.render(letter, True, theme.PALETTE["text"])
             text_rect = text.get_rect()
-            text_rect.center = self.rect.center
+            text_rect.x = self.rect.x + (self.rect.width - text_rect.width) // 2
+            text_rect.y = self.rect.y + (self.rect.height - text_rect.height) // 2
             surface.blit(text, text_rect)
 
     # ------------------------------------------------------------------

@@ -44,6 +44,12 @@ class CombatHUD:
             "initiative": "resource_speed",
             "morale": "round_morale",
             "luck": "round_luck",
+            # Elemental resistances
+            "fire": "status_burn",
+            "ice": "status_freeze",
+            "shock": "status_stun",
+            "earth": "status_petrify",
+            "water": "status_slow",
         }
 
     def _load_action_labels(self, language: str) -> Dict[str, str]:
@@ -135,6 +141,9 @@ class CombatHUD:
                 ("morale", str(unit.stats.morale)),
                 ("luck", str(unit.stats.luck)),
             ]
+            # Elemental resistances
+            for school, value in unit.resistances.as_dict().items():
+                stats.append((school, f"{value}%"))
             y_stats = right.y + 42
             for name, value in stats:
                 icon_key = self.stat_icon_keys.get(name, name)

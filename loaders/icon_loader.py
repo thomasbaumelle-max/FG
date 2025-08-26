@@ -50,6 +50,9 @@ def _load_icon_map() -> dict[str, str]:
     return {}
 
 _ICON_MAP = _load_icon_map()
+_RAW_CACHE: dict[str, pygame.Surface] = {}
+_CACHE: dict[tuple[str, int], pygame.Surface] = {}
+_CONVERTED: set[str] = set()
 
 def _placeholder_surface(sz: int = 32) -> pygame.Surface:
     s = pygame.Surface((sz, sz), pygame.SRCALPHA); s.fill((128,128,128,255)); return s
@@ -70,18 +73,59 @@ def _resolve_icon_path(filename: str | None) -> Path | None:
     return None
 
 def get(icon_id: str, size: int = 32) -> pygame.Surface:
+    key = (icon_id, size)
+    if key in _CACHE:
+        return _CACHE[key]
     filename = _ICON_MAP.get(icon_id)
     path = _resolve_icon_path(filename)
-    try:
-        if path:
-            surf = pygame.image.load(path)
-        else:
-            print(f"[icon_loader] Missing file for '{icon_id}': {filename!r} | search={_ASSET_DIRS}")
+    surf = _RAW_CACHE.get(icon_id)
+    converted = icon_id in _CONVERTED
+    if surf is None:
+        try:
+            if path:
+                surf = pygame.image.load(path)
+                if (
+                    hasattr(pygame, "display")
+                    and hasattr(pygame.display, "get_init")
+                    and pygame.display.get_init()
+                ):
+                    try:
+                        surf = surf.convert_alpha()
+                        converted = True
+                    except Exception:
+                        pass
+            else:
+                print(f"[icon_loader] Missing file for '{icon_id}': {filename!r} | search={_ASSET_DIRS}")
+                surf = _placeholder_surface(size)
+        except Exception as e:
+            print(f"[icon_loader] Error loading '{icon_id}' from {path}: {e}")
             surf = _placeholder_surface(size)
-    except Exception as e:
-        print(f"[icon_loader] Error loading '{icon_id}' from {path}: {e}")
-        surf = _placeholder_surface(size)
-    return pygame.transform.smoothscale(surf, (size, size))
+        _RAW_CACHE[icon_id] = surf
+        if converted:
+            _CONVERTED.add(icon_id)
+    elif not converted and hasattr(pygame, "display") and hasattr(pygame.display, "get_init") and pygame.display.get_init():
+        try:
+            surf = surf.convert_alpha()
+            _RAW_CACHE[icon_id] = surf
+            _CONVERTED.add(icon_id)
+        except Exception:
+            pass
+    if hasattr(pygame, "transform") and hasattr(pygame.transform, "smoothscale"):
+        surf2 = pygame.transform.smoothscale(surf, (size, size))
+    else:
+        surf2 = surf
+    _CACHE[key] = surf2
+    return surf2
+
+
+def reload() -> None:
+    """Reload icon manifests and search paths."""
+    global _ICON_MAP, _ASSET_DIRS, _RAW_CACHE, _CACHE, _CONVERTED
+    _ASSET_DIRS = _candidate_asset_dirs()
+    _ICON_MAP = _load_icon_map()
+    _RAW_CACHE.clear()
+    _CACHE.clear()
+    _CONVERTED.clear()
 
 def verify_all(verbose: bool = True) -> list[str]:
     missing = []
