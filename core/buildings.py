@@ -478,6 +478,49 @@ class Town(Building):
                 for uid, amount in growth.items():
                     self.stock[uid] = self.stock.get(uid, 0) + int(amount)
 
+    def recruit(self, player: "economy.PlayerEconomy") -> None:
+        """Recruit available units into the garrison using player resources.
+
+        This helper is primarily used by the AI which relies on
+        :class:`economy.PlayerEconomy` to track its resource pool.  It will
+        purchase as many units as possible from the town's ``stock`` and add
+        them to the local ``garrison``.
+        """
+
+        from core.entities import Unit, RECRUITABLE_UNITS  # late import
+        from core import economy
+
+        cost_all = getattr(constants, "UNIT_RECRUIT_COSTS", {})
+        for unit_id in self.list_all_recruitables():
+            available = int(self.stock.get(unit_id, 0))
+            if available <= 0:
+                continue
+
+            base_cost = cost_all.get(unit_id, {})
+            max_count = available
+            for res, amount in base_cost.items():
+                if amount <= 0:
+                    continue
+                res_amt = player.resources.get(res, 0)
+                max_count = min(max_count, res_amt // int(amount))
+            if max_count <= 0:
+                continue
+
+            total_cost = {k: int(v) * max_count for k, v in base_cost.items()}
+            economy.pay(player, total_cost)
+
+            stats = RECRUITABLE_UNITS.get(unit_id)
+            if stats is None:
+                continue
+            for g in self.garrison:
+                if g.stats is stats:
+                    g.count += max_count
+                    break
+            else:
+                self.garrison.append(Unit(stats, max_count, "enemy"))
+
+            self.stock[unit_id] = available - max_count
+
     # ------------------------------- Market ---------------------------------
     def can_trade(self, give_res: str, take_res: str, amount_take: int, hero: "Hero") -> bool:
         rate = self.market_rates.get((give_res, take_res))

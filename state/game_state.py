@@ -112,6 +112,11 @@ class GameState:
             return
         for town in getattr(self.world, "towns", []):
             town.next_week()
+            owner = getattr(town, "owner", None)
+            if owner and owner in self.economy.players and owner != 0:
+                econ_player = self.economy.players[owner]
+                if hasattr(town, "recruit"):
+                    town.recruit(econ_player)
 
     def next_day(self) -> None:
         """Advance the game by one day applying economic effects."""
