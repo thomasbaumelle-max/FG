@@ -71,14 +71,14 @@ def test_click_opens_town_screen(monkeypatch, pygame_stub):
     t.owner = 0
     game = Game.__new__(Game)
     game.screen = pygame_stub.Surface((200, 200))
-    game.clock = pygame_stub.time.Clock()
+    game.clock = pg.time.Clock()
     game.world = types.SimpleNamespace(towns=lambda: [t])
     game.assets = {"town": pygame_stub.Surface((10, 10))}
 
     opened = {}
 
     class DummyTownScreen:
-        def __init__(self, screen, game_obj, town):
+        def __init__(self, screen, game_obj, town, army=None, clock=None, town_pos=None):
             opened["town"] = town
         def run(self):
             pass

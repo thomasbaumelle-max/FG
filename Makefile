@@ -1,7 +1,7 @@
 .PHONY: fast all-fast serial long fast-test precommit-test
 
 fast:
-	pytest -q
+pytest -q -n auto
 
 fast-test: fast
 

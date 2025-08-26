@@ -178,16 +178,16 @@ generation, combat rules and save/load behaviour. Most tests can be run in
 parallel; a few that rely on global state are marked with ``serial`` and must
 run one at a time.
 
-Run the main test suite (excluding slow, worldgen, combat and serial cases) with:
+Run the main test suite (excluding slow, worldgen, combat and serial cases) with parallel workers:
 
 ```bash
-pytest
+pytest -n auto
 ```
 
-Tests marked ``serial`` must be executed separately:
+Tests marked ``serial`` must be executed separately on a single worker:
 
 ```bash
-pytest -m serial
+pytest -n 1 -m serial
 ```
 
 Slow and specialised tests covering world generation and extended combat are
