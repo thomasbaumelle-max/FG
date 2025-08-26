@@ -192,27 +192,29 @@ class CombatHUD:
                     screen.blit(txt, (right.x + 20, y))
                     y += 18
 
-            # Active statuses on the unit
-            statuses = combat.statuses.get(unit, {})
-            if statuses:
+            # Active status effects on the unit (displayed as icons with tooltips)
+            effects = getattr(unit, "effects", [])
+            if effects:
                 y += 6
                 screen.blit(
                     self.small.render("Status:", True, theme.PALETTE["text"]),
                     (right.x + 10, y),
                 )
                 y += 18
-                for name, turns in statuses.items():
-                    icon = IconLoader.get(f"status_{name}", 18)
-                    screen.blit(icon, (right.x + 20, y))
-                    txt = self.small.render(str(turns), True, theme.PALETTE["text"])
-                    screen.blit(
-                        txt,
-                        (
-                            right.x + 20 + icon.get_width() + 4,
-                            y + (icon.get_height() - txt.get_height()) // 2,
-                        ),
+                x_stat = right.x + 20
+                for idx, eff in enumerate(effects):
+                    icon_id = eff.icon or f"status_{eff.name}"
+                    rect = pygame.Rect(x_stat + idx * 22, y, 18, 18)
+                    btn = IconButton(
+                        rect,
+                        icon_id,
+                        lambda: None,
+                        tooltip=f"{eff.name} ({eff.duration})",
+                        enabled=False,
                     )
-                    y += icon.get_height() + 4
+                    btn.draw(screen)
+                    action_buttons[f"status_{idx}"] = btn
+                y += 22
 
             # Turn order thumbnails
             y0 = y + 10
