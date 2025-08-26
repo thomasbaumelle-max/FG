@@ -327,10 +327,19 @@ class Minimap:
 
         scale_x = rect.width / self.size
         scale_y = rect.height / self.size
+        # Scale POI icons so they remain proportional to the minimap
+        icon_size = max(4, rect.width // 16)
         for icon, cx, cy in self.poi_icons:
-            sx = rect.x + int(cx * scale_x - icon.get_width() / 2)
-            sy = rect.y + int(cy * scale_y - icon.get_height() / 2)
-            dest.blit(icon, (sx, sy))
+            try:
+                scaled_icon = pygame.transform.smoothscale(icon, (icon_size, icon_size))
+            except Exception:  # pragma: no cover - pygame stub without transform
+                try:
+                    scaled_icon = pygame.transform.scale(icon, (icon_size, icon_size))
+                except Exception:  # pragma: no cover
+                    scaled_icon = icon
+            sx = rect.x + int(cx * scale_x) - icon_size // 2
+            sy = rect.y + int(cy * scale_y) - icon_size // 2
+            dest.blit(scaled_icon, (sx, sy))
 
         for (cx, cy), colour in zip(self.city_points, self.city_colours):
             sx = rect.x + int(cx * scale_x)
