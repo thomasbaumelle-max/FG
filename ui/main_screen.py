@@ -76,6 +76,7 @@ class MainScreen:
         self.hero_list.set_heroes(heroes + armies)
 
         self.menu_buttons: List[IconButton] = []
+        self.hovered_button: Optional[IconButton] = None
 
         def add_btn(icon_id: str, callback) -> None:
             rect = pygame.Rect(0, 0, *MENU_BUTTON_SIZE)
@@ -291,8 +292,12 @@ class MainScreen:
         buttons_rect = self.widgets.get("6")
         if buttons_rect:
             self._position_menu_buttons(buttons_rect)
+            self.hovered_button = None
             for btn in self.menu_buttons:
-                if btn.handle(event):
+                handled = btn.handle(event)
+                if btn.hovered:
+                    self.hovered_button = btn
+                if handled:
                     return True
 
         if event.type == MOUSEBUTTONDOWN:
@@ -323,8 +328,11 @@ class MainScreen:
                 if rect.collidepoint(event.pos):
                     self.hovered = wid
                     break
-            # Update description bar based on hovered world tile
-            self.desc_bar.update(self.game.hover_probe(*event.pos))
+            # Tooltip priority: buttons first, then world
+            if self.hovered_button:
+                self.desc_bar.update((self.hovered_button.get_tooltip(), "tile"))
+            else:
+                self.desc_bar.update(self.game.hover_probe(*event.pos))
             # Dragging for panning
             if self._dragging and self._last_mouse is not None:
                 dx = event.pos[0] - self._last_mouse[0]
@@ -375,7 +383,10 @@ class MainScreen:
         dirty: List[pygame.Rect] = []
 
         mouse_get_pos = getattr(getattr(pygame, "mouse", None), "get_pos", lambda: (0, 0))
-        self.desc_bar.update(self.game.hover_probe(*mouse_get_pos()))
+        if self.hovered_button:
+            self.desc_bar.update((self.hovered_button.get_tooltip(), "tile"))
+        else:
+            self.desc_bar.update(self.game.hover_probe(*mouse_get_pos()))
 
         # Couleur unifiée des panneaux + cadre 9-slice
         def panel(rect: pygame.Rect, hover=False):
