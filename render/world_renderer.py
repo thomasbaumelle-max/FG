@@ -9,7 +9,6 @@ from collections import OrderedDict
 import pygame
 from typing import Optional, Tuple, Set, List, Sequence
 
-from loaders import icon_loader as IconLoader
 
 import constants
 import settings
@@ -428,11 +427,17 @@ class WorldRenderer:
                 px = (x - start_x) * tile_size + offset_x
                 py = (y - start_y) * tile_size + offset_y
                 if tile.obstacle and tile.building is None:
-                    img = IconLoader.get("obstacle", tile_size)
-                    layers[constants.LAYER_OBJECTS].blit(img, (px, py))
+                    img = self.assets.get(constants.IMG_OBSTACLE)
+                    if img:
+                        if img.get_size() != (tile_size, tile_size):
+                            img = scale_surface(img, tile_size)
+                        layers[constants.LAYER_OBJECTS].blit(img, (px, py))
                 elif tile.treasure is not None:
-                    img = IconLoader.get("treasure_chest", tile_size)
-                    layers[constants.LAYER_OBJECTS].blit(img, (px, py))
+                    img = self.assets.get(constants.IMG_TREASURE)
+                    if img:
+                        if img.get_size() != (tile_size, tile_size):
+                            img = scale_surface(img, tile_size)
+                        layers[constants.LAYER_OBJECTS].blit(img, (px, py))
                 elif tile.building and tile.building not in drawn_buildings:
                     b = tile.building
                     drawn_buildings.add(b)
@@ -531,11 +536,21 @@ class WorldRenderer:
             for x in range(start_x, end_x):
                 tile = world.grid[y][x]
                 if getattr(tile, "boat", None):
-                    img = IconLoader.get("boat", tile_size)
-                    layers[constants.LAYER_UNITS].blit(
-                        img,
-                        ((x - start_x) * tile_size + offset_x, (y - start_y) * tile_size + offset_y),
-                    )
+                    img = self.assets.get(tile.boat.id)
+                    if not img and getattr(self.game, "boat_defs", None):
+                        bdef = self.game.boat_defs.get(tile.boat.id)
+                        if bdef:
+                            img = self.assets.get(bdef.path)
+                    if img:
+                        if img.get_size() != (tile_size, tile_size):
+                            img = scale_surface(img, tile_size)
+                        layers[constants.LAYER_UNITS].blit(
+                            img,
+                            (
+                                (x - start_x) * tile_size + offset_x,
+                                (y - start_y) * tile_size + offset_y,
+                            ),
+                        )
                 if tile.enemy_units:
                     strongest = max(tile.enemy_units, key=lambda u: u.stats.max_hp)
                     img_name = ENEMY_UNIT_IMAGES.get(strongest.stats.name)
@@ -562,8 +577,15 @@ class WorldRenderer:
 
             # Draw boat beneath heroes that possess one
             if is_hero and getattr(actor, "naval_unit", None):
-                boat = IconLoader.get("boat", tile_size)
-                layers[constants.LAYER_UNITS].blit(boat, (px, py))
+                boat = self.assets.get(actor.naval_unit)
+                if not boat and getattr(self.game, "boat_defs", None):
+                    bdef = self.game.boat_defs.get(actor.naval_unit)
+                    if bdef:
+                        boat = self.assets.get(bdef.path)
+                if boat:
+                    if boat.get_size() != (tile_size, tile_size):
+                        boat = scale_surface(boat, tile_size)
+                    layers[constants.LAYER_UNITS].blit(boat, (px, py))
 
             if hidden:
                 player_hero = getattr(self.game, "hero", None)
