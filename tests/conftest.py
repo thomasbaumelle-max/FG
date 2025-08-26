@@ -118,18 +118,22 @@ def rng():
 
 
 @pytest.fixture
-def simple_combat():
+def simple_combat(monkeypatch):
     """Return a factory that builds a minimal :class:`Combat` instance.
 
-    The factory accepts optional ``hero_units`` and ``enemy_units`` lists and
-    any additional keyword arguments forwarded to :class:`Combat`.  A dummy
-    ``pygame.Surface`` and empty assets are used by default and a basic water
-    battlefield grid is supplied so no ``WorldMap`` interaction is required.
+    The created combat uses a reduced 5×5 battlefield so tests can run quickly
+    without needing any :class:`WorldMap` generation.  The factory accepts
+    optional ``hero_units`` and ``enemy_units`` lists and forwards any extra
+    keyword arguments to :class:`Combat`.
     """
 
     def _factory(hero_units=None, enemy_units=None, *, screen=None, assets=None,
                  combat_map=None, **kwargs):
         import pygame
+
+        # Shrink the combat grid for the duration of the test
+        monkeypatch.setattr(constants, "COMBAT_GRID_WIDTH", 5)
+        monkeypatch.setattr(constants, "COMBAT_GRID_HEIGHT", 5)
 
         pygame.init()
         if screen is None:
@@ -144,7 +148,7 @@ def simple_combat():
         if assets is None:
             assets = {}
         if combat_map is None:
-            combat_map = water_battlefield_template()
+            combat_map = [["ocean"] * constants.COMBAT_GRID_WIDTH for _ in range(constants.COMBAT_GRID_HEIGHT)]
         return Combat(
             screen,
             assets,

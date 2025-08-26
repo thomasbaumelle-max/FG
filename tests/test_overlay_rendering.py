@@ -2,7 +2,6 @@ import pygame
 from types import SimpleNamespace
 import constants
 from core.world import WorldMap, BIOME_IMAGES
-from core.combat import Combat
 from core import combat_render
 from core.entities import UnitStats, Unit
 from core.game import Game
@@ -105,7 +104,7 @@ def test_world_overlay_uses_additive_blending(monkeypatch):
     assert pygame.BLEND_RGBA_ADD in calls
 
 
-def test_combat_overlay_uses_additive_blending(monkeypatch):
+def test_combat_overlay_uses_additive_blending(monkeypatch, simple_combat):
     _ensure_stub_functions(monkeypatch)
     highlight = pygame.Surface((constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE), pygame.SRCALPHA)
     highlight.fill((255, 0, 0, 255))
@@ -128,7 +127,7 @@ def test_combat_overlay_uses_additive_blending(monkeypatch):
     )
     hero = Unit(stats, 1, "hero")
     enemy = Unit(stats, 1, "enemy")
-    combat = Combat(screen, assets, [hero], [enemy])
+    combat = simple_combat([hero], [enemy], screen=screen, assets=assets)
     combat.selected_unit = combat.hero_units[0]
     combat.selected_action = "move"
 
@@ -146,7 +145,7 @@ def test_combat_overlay_uses_additive_blending(monkeypatch):
     assert pygame.BLEND_RGBA_ADD in calls
 
 
-def test_combat_active_unit_overlay_uses_additive_blending(monkeypatch):
+def test_combat_active_unit_overlay_uses_additive_blending(monkeypatch, simple_combat):
     _ensure_stub_functions(monkeypatch)
     active = pygame.Surface(
         (constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE), pygame.SRCALPHA
@@ -171,7 +170,7 @@ def test_combat_active_unit_overlay_uses_additive_blending(monkeypatch):
     )
     hero = Unit(stats, 1, "hero")
     enemy = Unit(stats, 1, "enemy")
-    combat = Combat(screen, assets, [hero], [enemy])
+    combat = simple_combat([hero], [enemy], screen=screen, assets=assets)
     combat.turn_order = [combat.hero_units[0]]
     combat.current_index = 0
 

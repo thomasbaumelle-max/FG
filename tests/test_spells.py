@@ -78,8 +78,8 @@ def test_teleport_spell_moves_unit(simple_combat):
     combat = simple_combat([hero], [enemy], hero_mana=10)
     caster = combat.hero_units[0]
     spell = combat.get_spell('Teleport')
-    combat.cast_spell(spell, caster, (caster, (5, 5)))
-    assert caster.x == 5 and caster.y == 5
+    combat.cast_spell(spell, caster, (caster, (4, 4)))
+    assert caster.x == 4 and caster.y == 4
     assert combat.hero_mana == 9
 
 
@@ -103,11 +103,11 @@ def test_chain_lightning_hits_multiple_targets(simple_combat):
     hero = Unit(MAGE_STATS, 1, 'hero')
     combat = simple_combat([hero], enemies, hero_mana=10)
     caster = combat.hero_units[0]
-    positions = [(3, 3), (4, 3), (5, 3)]
+    positions = [(1, 1), (2, 1), (3, 1)]
     for unit, (x, y) in zip(combat.enemy_units, positions):
         combat.move_unit(unit, x, y)
     spell = combat.get_spell('Chain Lightning')
-    combat.cast_spell(spell, caster, (4, 3))
+    combat.cast_spell(spell, caster, (2, 1))
     assert all(u.current_hp < u.stats.max_hp for u in combat.enemy_units)
 
 
