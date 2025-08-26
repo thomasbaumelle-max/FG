@@ -458,26 +458,33 @@ class InventoryScreen:
         mouse = self._mouse_pos()
         lines: List[Tuple[str, Tuple[int, int, int]]] = []
 
-        if self.active_tab == "inventory":
-            for idx, rect in self.item_rects:
-                if idx is not None and rect.collidepoint(mouse):
-                    lines = self._item_tooltip(self.hero.inventory[idx], equip=True)
-                    break
-        elif self.active_tab == "skills":
-            for node in self.skill_trees.get(self.active_skill_tab, []):
-                r = self.skill_rects.get(node.id)
-                if r and r.collidepoint(mouse):
-                    lines = self._skill_tooltip(node)
-                    break
-        else:
-            for slot, rect in self.slot_rects.items():
-                if rect.collidepoint(mouse):
-                    item = self.hero.equipment.get(slot)
-                    if item:
-                        lines = self._item_tooltip(item, equip=False)
-                    else:
-                        lines = [(slot.name.title(), COLOR_TEXT)]
-                    break
+        # Tab button tooltips have priority
+        for btn in self.tab_buttons.values():
+            if btn.collidepoint(mouse):
+                lines = [(btn.get_tooltip(), COLOR_TEXT)]
+                break
+
+        if not lines:
+            if self.active_tab == "inventory":
+                for idx, rect in self.item_rects:
+                    if idx is not None and rect.collidepoint(mouse):
+                        lines = self._item_tooltip(self.hero.inventory[idx], equip=True)
+                        break
+            elif self.active_tab == "skills":
+                for node in self.skill_trees.get(self.active_skill_tab, []):
+                    r = self.skill_rects.get(node.id)
+                    if r and r.collidepoint(mouse):
+                        lines = self._skill_tooltip(node)
+                        break
+            else:
+                for slot, rect in self.slot_rects.items():
+                    if rect.collidepoint(mouse):
+                        item = self.hero.equipment.get(slot)
+                        if item:
+                            lines = self._item_tooltip(item, equip=False)
+                        else:
+                            lines = [(slot.name.title(), COLOR_TEXT)]
+                        break
 
         if not lines:
             return
