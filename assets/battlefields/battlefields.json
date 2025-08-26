@@ -6,12 +6,12 @@
   },
   {
     "id": "ocean",
-    "image": "assets/battlefields/ocean.png",
+    "image": "battlefields/ocean.png",
     "hero_pos": [80, 0]
   },
   {
     "id": "scarletia_echo_plain",
-    "image": "assets/battlefields/scarletia_echo_plain.png",
+    "image": "battlefields/scarletia_echo_plain.png",
     "hero_pos": [120, 0]
   }
 ]
