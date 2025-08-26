@@ -91,9 +91,9 @@ class MainScreen:
         add_btn("nav_settings", getattr(game, "open_options", None))
         add_btn("nav_save", self.save_game)
         add_btn("nav_load", self.load_game)
-        add_btn("nav_skill_tree", self.open_skill_tree)
-        add_btn("nav_journal", self.open_journal)
-        add_btn("nav_hero_screen", self.prev_hero)
+        add_btn("nav_skill_tree", getattr(game, "open_skill_tree", None))
+        add_btn("nav_journal", getattr(game, "open_journal", None))
+        add_btn("nav_hero_screen", getattr(game, "open_hero_screen", None))
         add_btn("nav_town", self.next_town)
         add_btn("nav_end_day", self.end_day)
         add_btn("nav_pause", self.toggle_pause)
@@ -128,16 +128,6 @@ class MainScreen:
         profile = getattr(self.game, "default_profile_path", None)
         if cb and path:
             cb(path, profile)
-
-    def open_skill_tree(self) -> None:
-        cb = getattr(self.game, "open_skill_tree", None)
-        if cb:
-            cb()
-
-    def open_journal(self) -> None:
-        cb = getattr(self.game, "open_journal", None)
-        if cb:
-            cb()
 
     def prev_hero(self) -> None:
         cb = getattr(self.game, "prev_hero", None)
@@ -217,9 +207,25 @@ class MainScreen:
 
         # Determine if buttons can fit next to the hero list; otherwise stack
         btn_count = len(self.menu_buttons)
-        btn_total_h = btn_count * MENU_BUTTON_SIZE[1] + (btn_count - 1) * MENU_PADDING
+        btn_single_h = btn_count * MENU_BUTTON_SIZE[1] + (
+            btn_count - 1
+        ) * MENU_PADDING
+        # Height if arranged in two columns
+        btn_rows_two = (btn_count + 1) // 2
+        btn_double_h = btn_rows_two * MENU_BUTTON_SIZE[1] + (
+            btn_rows_two - 1
+        ) * MENU_PADDING
+
         # Simplified layout for tests: keep buttons beside hero list
         buttons_below = False if buttons_below is None else buttons_below
+
+        # Ensure the mid section is tall enough for the buttons. If a single
+        # column would exceed the available height, fall back to two columns.
+        if btn_single_h > mid_h:
+            mid_h = max(mid_h, btn_double_h)
+            btn_total_h = btn_double_h
+        else:
+            btn_total_h = btn_single_h
 
         if not buttons_below:
             mid_rect = side_layout.dock_top(mid_h, margin=M)
@@ -250,12 +256,21 @@ class MainScreen:
         }
 
     def _position_menu_buttons(self, rect: pygame.Rect) -> None:
-        y = rect.y
-        for btn in self.menu_buttons:
-            btn.rect.x = rect.x
-            btn.rect.y = y
+        btn_w, btn_h = MENU_BUTTON_SIZE
+        single_h = len(self.menu_buttons) * btn_h + (
+            len(self.menu_buttons) - 1
+        ) * MENU_PADDING
+        cols = 1
+        if single_h > rect.height and rect.width >= btn_w * 2 + MENU_PADDING:
+            cols = 2
+
+        rows = (len(self.menu_buttons) + cols - 1) // cols
+        for i, btn in enumerate(self.menu_buttons):
+            col = i // rows
+            row = i % rows
+            btn.rect.x = rect.x + col * (btn_w + MENU_PADDING)
+            btn.rect.y = rect.y + row * (btn_h + MENU_PADDING)
             btn.rect.width, btn.rect.height = MENU_BUTTON_SIZE
-            y += MENU_BUTTON_SIZE[1] + MENU_PADDING
 
     def _on_sea_chain_progress(self, current: int, total: int) -> None:
         """Display progress for sea quest chain in the description bar."""

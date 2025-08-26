@@ -2962,6 +2962,46 @@ class Game:
         quit_to_menu, self.screen = screen.run()
         return quit_to_menu
 
+    # ------------------------------------------------------------------
+    # Journal & Hero screens
+    # ------------------------------------------------------------------
+
+    def open_journal(self) -> None:
+        """Open the quest journal.
+
+        The project does not yet provide a dedicated journal interface, so
+        the method simply notifies the user.  A full implementation can hook
+        into :class:`state.quests.QuestManager` to display active quests.
+        """
+
+        self._notify("Journal not implemented")
+
+    def open_skill_tree(self, tab: str = "skills") -> bool:
+        """Convenience wrapper opening the hero screen on the skills tab."""
+
+        return self.open_hero_screen(tab)
+
+    def open_hero_screen(self, tab: str = "stats") -> bool:
+        """Open the hero screen with ``tab`` active.
+
+        Parameters
+        ----------
+        tab:
+            Name of the tab to activate (``"stats"`` or ``"skills"``).
+
+        Returns
+        -------
+        bool
+            ``True`` if the player exited to the main menu.
+        """
+
+        screen = InventoryScreen(
+            self.screen, self.assets, self.hero, self.clock, self.open_pause_menu
+        )
+        screen.active_tab = tab
+        quit_to_menu, self.screen = screen.run()
+        return quit_to_menu
+
     def open_town(
         self,
         town: Optional[Town] = None,
