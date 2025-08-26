@@ -1199,6 +1199,12 @@ class Combat:
                     self.show_stats()
                 return False, self.experience_gained()
             if not enemy_alive:
+                # Award loot even when the post-battle stats screen is skipped
+                if self.hero is not None:
+                    if not self.loot:
+                        self.loot = self.generate_loot()
+                    for item in self.loot:
+                        self.hero.inventory.append(item)
                 if not self._auto_resolve_done:
                     audio.play_sound('victory')
                     self.show_stats()
@@ -1601,14 +1607,31 @@ class Combat:
 
 
     def remove_unit_from_grid(self, unit: Unit) -> None:
-        """Remove a unit from the grid.
+        """Remove ``unit`` from all combat structures.
 
-        The unit list is not modified here; dead units are filtered
-        out when the turn order is recalculated.
+        Prior to this change dead stacks were merely cleared from the grid and
+        left inside the various unit lists.  This could lead to "ghost" piles
+        lingering in ``self.units``/``turn_order`` after they had been defeated.
+        The helper now removes the unit from the grid, the global unit
+        collection, the side specific lists and the current turn order.
         """
         if unit.x is not None and unit.y is not None:
             self.grid[unit.y][unit.x] = None
-        # Dead units remain in self.units until reset_turn_order filters them out
+
+        # Prune from master list and side lists
+        if unit in self.units:
+            self.units.remove(unit)
+        if unit in self.hero_units:
+            self.hero_units.remove(unit)
+        if unit in self.enemy_units:
+            self.enemy_units.remove(unit)
+
+        # Ensure the unit cannot act again this round
+        if unit in self.turn_order:
+            idx = self.turn_order.index(unit)
+            self.turn_order.remove(unit)
+            if idx <= self.current_index and self.current_index > 0:
+                self.current_index -= 1
 
     def animate_projectile(
         self, image_key: str, start: Tuple[int, int], end: Tuple[int, int]
