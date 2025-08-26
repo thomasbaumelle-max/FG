@@ -1,6 +1,8 @@
 from types import SimpleNamespace
 
 from core.game import Game
+import pytest
+pytestmark = pytest.mark.combat
 
 
 def test_naval_combat_map_is_all_water(monkeypatch):

@@ -4,6 +4,9 @@ import pytest
 from core.entities import UnitStats, Unit, apply_defence
 
 
+pytestmark = pytest.mark.combat
+
+
 def _create_unit(**kwargs) -> Unit:
     data = dict(
         name="Test",

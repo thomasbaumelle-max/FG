@@ -1,10 +1,13 @@
 import types
 import sys
 import pygame
+import pytest
 
 from tests.test_army_actions import setup_game
 from ui.widgets.hero_list import HeroList
 
+
+pytestmark = pytest.mark.combat
 
 def test_army_without_hero_treasure_and_combat(monkeypatch, pygame_stub):
     game, constants, Army, Unit, S_STATS = setup_game(monkeypatch, pygame_stub)

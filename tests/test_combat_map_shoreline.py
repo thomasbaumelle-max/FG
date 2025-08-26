@@ -1,4 +1,6 @@
 from core.world import WorldMap, generate_combat_map
+import pytest
+pytestmark = pytest.mark.combat
 
 
 def test_shoreline_combat_map_has_no_ocean():
