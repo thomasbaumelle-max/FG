@@ -120,6 +120,19 @@ def cast_ice_wall(spell: Spell, target_line: List[Tuple[int, int]]) -> List[Effe
 def cast_shield(spell: Spell, target_id: int) -> List[Effect]:
     """Apply a protective status to ``target_id``."""
     st = spell.data["status"]
-    return [{"type": "status", "target": target_id, "status": st.get("name", "shielded"),
-             "duration": int(st.get("duration", 2)), "reduction": float(st.get("reduction", 0.25))},
-            {"type": "fx", "asset": spell.data.get("fx_asset", "effects/shield_glow"), "target": target_id}]
+    icon = st.get("icon", "status_shield")
+    return [
+        {
+            "type": "status",
+            "target": target_id,
+            "status": st.get("name", "shielded"),
+            "duration": int(st.get("duration", 2)),
+            "reduction": float(st.get("reduction", 0.25)),
+            "icon": icon,
+        },
+        {
+            "type": "fx",
+            "asset": spell.data.get("fx_asset", "effects/shield_glow"),
+            "target": target_id,
+        },
+    ]

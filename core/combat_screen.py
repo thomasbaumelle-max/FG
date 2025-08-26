@@ -201,7 +201,10 @@ class CombatHUD:
                 )
                 y += 18
                 x_stat = right.x + 20
-                for idx, eff in enumerate(effects):
+                idx = 0
+                for eff in effects:
+                    if eff.duration <= 0:
+                        continue
                     icon_id = eff.icon or f"status_{eff.name}"
                     rect = pygame.Rect(x_stat + idx * 22, y, 18, 18)
                     btn = IconButton(
@@ -212,7 +215,11 @@ class CombatHUD:
                         enabled=False,
                     )
                     btn.draw(screen)
+                    if eff.duration:
+                        txt = self.small.render(str(eff.duration), True, theme.PALETTE["text"])
+                        screen.blit(txt, (rect.x + rect.width - txt.get_width(), rect.y))
                     action_buttons[f"status_{idx}"] = btn
+                    idx += 1
                 y += 22
 
             # Turn order thumbnails
