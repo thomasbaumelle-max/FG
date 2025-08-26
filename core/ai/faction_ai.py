@@ -10,9 +10,9 @@ management, unit recruitment and strategic movement across the world map.
 """
 
 from dataclasses import dataclass, field
-from typing import List
+from typing import Iterable, List, Optional, Tuple
 
-from core.buildings import Town
+from core.buildings import Building, Town
 from core.entities import EnemyHero
 from core import economy
 
@@ -28,6 +28,106 @@ class FactionAI:
     * déplacements stratégiques des armées contrôlées par l'ordinateur.
     """
 
-    town: Town
+    town: Optional[Town]
     heroes: List[EnemyHero] = field(default_factory=list)
     economy: economy.PlayerEconomy = field(default_factory=economy.PlayerEconomy)
+
+    # ------------------------------------------------------------------
+    # High level decision helpers
+    # ------------------------------------------------------------------
+    def _find_nearest_mine(
+        self, world, hero: EnemyHero, radius: int = 5
+    ) -> Optional[Tuple[int, int]]:
+        """Return coordinates of the closest capturable mine.
+
+        The search is limited to a ``radius`` around ``hero`` to keep the
+        operation inexpensive.  Mines are identified as any building providing
+        income (``building.income``) that is not already owned by the enemy
+        faction (owner ``1``).
+        """
+
+        best: Optional[Tuple[int, int]] = None
+        best_dist = radius + 1
+        for y in range(max(0, hero.y - radius), min(world.height, hero.y + radius + 1)):
+            for x in range(max(0, hero.x - radius), min(world.width, hero.x + radius + 1)):
+                tile = world.grid[y][x]
+                b = getattr(tile, "building", None)
+                if not isinstance(b, Building):
+                    continue
+                if not getattr(b, "income", None) or getattr(b, "owner", None) == 1:
+                    continue
+                dist = abs(x - hero.x) + abs(y - hero.y)
+                if dist < best_dist:
+                    best_dist = dist
+                    best = (x, y)
+        return best
+
+    def _can_recruit(self) -> bool:
+        """Return ``True`` if any owned building has units to recruit."""
+
+        for b in getattr(self.economy, "buildings", []):
+            if b.owner == 1 and getattr(b, "garrison", None):
+                return True
+        return False
+
+    def _town_threatened(
+        self, world, player_heroes: Optional[Iterable[object]] = None, radius: int = 5
+    ) -> bool:
+        """Return ``True`` if the faction town is threatened by player units."""
+
+        if not self.town:
+            return False
+        # Locate town coordinates on the world grid
+        town_pos: Optional[Tuple[int, int]] = None
+        for y, row in enumerate(world.grid):
+            for x, tile in enumerate(row):
+                if tile.building is self.town:
+                    town_pos = (x, y)
+                    break
+            if town_pos:
+                break
+        if town_pos is None:
+            return False
+
+        tx, ty = town_pos
+        heroes = list(player_heroes or [])
+        default_hero = getattr(world, "hero", None)
+        if default_hero is not None and default_hero not in heroes:
+            heroes.append(default_hero)
+
+        for hero in heroes:
+            hx, hy = getattr(hero, "x", 0), getattr(hero, "y", 0)
+            if abs(hx - tx) + abs(hy - ty) <= radius:
+                return True
+        return False
+
+    # ------------------------------------------------------------------
+    # Public API
+    # ------------------------------------------------------------------
+    def choose_strategy(self, game_or_world) -> str:
+        """Return the current high level strategy for the faction.
+
+        The decision hierarchy is as follows:
+
+        1. Capture nearby mines not owned by the faction.
+        2. Recruit units from owned buildings.
+        3. Defend the faction town if the enemy is close to it.
+        4. Harass the player (default fallback).
+
+        ``game_or_world`` may either be the :class:`~core.game.Game` instance
+        or the underlying :class:`~core.world.WorldMap`.
+        """
+
+        world = getattr(game_or_world, "world", game_or_world)
+        hero = self.heroes[0] if self.heroes else None
+        if hero and self._find_nearest_mine(world, hero) is not None:
+            return "capture_mine"
+        if self._can_recruit():
+            return "recruit"
+        player_hero = getattr(game_or_world, "hero", None)
+        if self._town_threatened(world, [player_hero] if player_hero else None):
+            return "defend"
+        return "harass"
+
+
+__all__ = ["FactionAI"]
