@@ -165,6 +165,9 @@ class TownScreen:
         self.bounty_rect = pygame.Rect(0, 0, 420, 260)
         self.bounty_cards: List[Tuple[str, pygame.Rect]] = []
 
+        # Sélection des unités à envoyer en caravane
+        self.send_queue: List[Unit] = []
+
     def launch_caravan(self, dest: "Town", units: Optional[List["Unit"]] = None) -> bool:
         """Envoyer une caravane depuis cette ville vers ``dest``.
 
@@ -178,6 +181,34 @@ class TownScreen:
             return False
         world = getattr(self.game, "world", None)
         return self.town.send_caravan(dest, units, world)
+
+    def select_unit(self, index: int) -> None:
+        """(Dé)sélectionner une unité de la garnison pour une future caravane.
+
+        Les sélections sont accumulées dans :attr:`send_queue` afin de pouvoir
+        lancer l'envoi plus tard via :meth:`send_queued_caravan`.
+        """
+
+        if 0 <= index < len(self.town.garrison):
+            unit = self.town.garrison[index]
+            if unit in self.send_queue:
+                self.send_queue.remove(unit)
+            else:
+                self.send_queue.append(unit)
+
+    def send_queued_caravan(self, dest: "Town") -> bool:
+        """Envoyer les unités actuellement sélectionnées vers ``dest``.
+
+        La file est vidée uniquement si la caravane est créée avec succès.
+        """
+
+        if not self.send_queue:
+            return False
+        units = list(self.send_queue)
+        if self.launch_caravan(dest, units):
+            self.send_queue.clear()
+            return True
+        return False
 
     # ------------------------------------------------------------------ utils
     def _compute_layout(self) -> Dict[str, pygame.Rect]:
