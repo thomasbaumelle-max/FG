@@ -8,6 +8,7 @@
     "occludes": true,
     "path": "buildings/mine/mine_0.png",
     "variants": 1,
+    "requires": [],
     "provides": {"resource": "stone", "per_day": 2}
   },
   {
@@ -18,6 +19,7 @@
     "occludes": true,
     "path": "buildings/sawmill/sawmill_0.png",
     "variants": 1,
+    "requires": [],
     "provides": {"resource": "wood", "per_day": 2}
   },
   {
@@ -28,6 +30,7 @@
     "occludes": true,
     "path": "buildings/crystal_mine/crystal_mine_0.png",
     "variants": 1,
+    "requires": [],
     "provides": {"resource": "crystal", "per_day": 1}
   },
   {
@@ -38,6 +41,7 @@
     "occludes": true,
     "path": "buildings/swordsman_camp/swordsman_camp_0.png",
     "variants": 1,
+    "requires": ["barracks"],
     "growth_per_week": {"Swordsman": 5}
   },
   {
@@ -48,6 +52,7 @@
     "occludes": true,
     "path": "buildings/archer_camp/archer_camp_0.png",
     "variants": 1,
+    "requires": ["archery_range"],
     "growth_per_week": {"Archer": 5}
   },
   {
@@ -58,6 +63,7 @@
     "occludes": true,
     "path": "buildings/shipyard.png",
     "variants": 1,
+    "requires": [],
     "upgrade_cost": {"wood": 5}
   },
   {
@@ -68,6 +74,7 @@
     "occludes": true,
     "path": "buildings/town/town_0.png",
     "variants": 1,
+    "requires": [],
     "provides": {"resource": "gold", "per_day": 0}
   },
   {
@@ -77,7 +84,8 @@
     "passable": true,
     "occludes": true,
     "path": "buildings/sea_sanctuary/sea_sanctuary_0.png",
-    "variants": 1
+    "variants": 1,
+    "requires": []
   },
   {
     "id": "lighthouse",
@@ -86,7 +94,8 @@
     "passable": true,
     "occludes": true,
     "path": "buildings/lighthouse/lighthouse_0.png",
-    "variants": 1
+    "variants": 1,
+    "requires": []
   }
 ]
 

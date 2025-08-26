@@ -36,6 +36,7 @@ class BuildingAsset:
     scale: float = 1.0
     upgrade_cost: Dict[str, int] = field(default_factory=dict)
     production_per_level: Dict[str, int] = field(default_factory=dict)
+    requires: List[str] = field(default_factory=list)
 
     def __post_init__(self) -> None:  # pragma: no cover - trivial
         if self.footprint is None:
@@ -121,6 +122,7 @@ def load_buildings(
             files=files,
             upgrade_cost=dict(entry.get("upgrade_cost", {})),
             production_per_level=dict(entry.get("production_per_level", {})),
+            requires=list(entry.get("requires", [])),
         )
         defs[a.id] = a
     return defs
