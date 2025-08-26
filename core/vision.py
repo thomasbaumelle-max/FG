@@ -34,7 +34,7 @@ def compute_vision(
 
     visible: Set[Tuple[int, int]] = set()
     start = (actor.x, actor.y)
-    queue: list[Tuple[int, Tuple[int, int]]] = [(0, start)]
+    queue: list[Tuple[float, Tuple[int, int]]] = [(0.0, start)]
     visited: Set[Tuple[int, int]] = set()
     while queue:
         cost, (x, y) = heapq.heappop(queue)
@@ -51,11 +51,11 @@ def compute_vision(
             tile = world.grid[ny][nx]
             biome = BiomeCatalog.get(tile.biome)
             if getattr(tile, "road", False):
-                move_cost = constants.ROAD_COST
+                move_cost = float(constants.ROAD_COST)
             elif biome is not None:
-                move_cost = getattr(biome, "terrain_cost", 1)
+                move_cost = float(getattr(biome, "terrain_cost", 1))
             else:
-                move_cost = 1
+                move_cost = 1.0
             new_cost = cost + move_cost
             if new_cost > radius:
                 continue

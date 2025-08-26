@@ -106,6 +106,17 @@ IMPASSABLE_BIOMES = {"mountain", "river"}
 # passable but movement is restricted to units currently embarked on a naval
 # vessel.
 WATER_BIOMES = {"ocean"}
+TERRAIN_COSTS = {
+    "terre": 1.0,
+    "plain": 1.0,
+    "forest": 1.0,
+    "volcanic": 1.25,
+    "underground": 1.0,
+    "road": 1.0,
+    "desert": 1.25,
+    "snow": 1.5,
+    "swamp": 1.75,
+}
 ROAD_COST = 1  # AP cost when moving along a road
 TILE_SIZE = 64  # pixel size of each square on the exploration map
 # Rendering layers – lower indices are drawn first
