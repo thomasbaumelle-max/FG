@@ -13,6 +13,8 @@ overlay can be applied.
 from typing import Dict, List, Optional, Tuple
 
 import math
+import os
+import json
 import pygame
 
 import constants
@@ -24,6 +26,8 @@ from core.buildings import Town
 MOUSEBUTTONDOWN = getattr(pygame, "MOUSEBUTTONDOWN", 1)
 MOUSEBUTTONUP = getattr(pygame, "MOUSEBUTTONUP", 2)
 MOUSEMOTION = getattr(pygame, "MOUSEMOTION", 3)
+
+PARCHMENT = (245, 222, 179)
 
 
 class Minimap:
@@ -45,10 +49,31 @@ class Minimap:
             self.surface = base.convert_alpha()
         except Exception:  # pragma: no cover - pygame stub without convert_alpha
             self.surface = base
+        # Coordinates of towns for faction colouring
         self.city_points: List[Tuple[int, int]] = []
+        self.city_colours: List[Tuple[int, int, int]] = []
+        # Icons for points of interest: (surface, x, y)
+        self.poi_icons: List[Tuple[pygame.Surface, int, int]] = []
         self.fog_rects: List[pygame.Rect] = []
         self.fog: Optional[List[List[bool]]] = None
         self._dragging = False
+
+        # icon manifest and cache
+        self._icon_manifest: Dict[str, str] = {}
+        self._icon_cache: Dict[str, pygame.Surface] = {}
+        self._load_icon_manifest()
+
+        try:
+            font = pygame.font.Font(None, 14)
+            colour = constants.DARK_GREY
+            self._compass = {
+                "N": font.render("N", True, colour),
+                "E": font.render("E", True, colour),
+                "S": font.render("S", True, colour),
+                "O": font.render("O", True, colour),
+            }
+        except Exception:  # pragma: no cover - pygame stub without font
+            self._compass = {}
 
         # Divide the minimap into cacheable blocks
         self.block_size = 64
@@ -59,6 +84,33 @@ class Minimap:
             (bx, by) for bx in range(self._cols) for by in range(self._rows)
         }
         self.generate()
+
+    # ------------------------------------------------------------------
+    def _load_icon_manifest(self) -> None:
+        """Load the mapping of icon identifiers to file paths."""
+        path = os.path.join(
+            os.path.dirname(__file__), "..", "..", "assets", "icons", "icons.json"
+        )
+        try:
+            with open(path, "r", encoding="utf-8") as fh:
+                data = json.load(fh)
+            if isinstance(data, dict):
+                self._icon_manifest = {str(k): str(v) for k, v in data.items()}
+        except Exception:  # pragma: no cover - missing asset file
+            self._icon_manifest = {}
+
+    def _get_icon(self, name: str) -> Optional[pygame.Surface]:
+        """Return a cached icon surface for ``name`` if available."""
+        if name not in self._icon_cache:
+            path = self._icon_manifest.get(name)
+            if not path:
+                return None
+            try:
+                surf = pygame.image.load(path).convert_alpha()
+            except Exception:  # pragma: no cover - stub or missing file
+                surf = pygame.Surface((8, 8), pygame.SRCALPHA)
+            self._icon_cache[name] = surf
+        return self._icon_cache.get(name)
 
     # ------------------------------------------------------------------
     def resize(self, size: int) -> None:
@@ -90,15 +142,46 @@ class Minimap:
         tile_w = self.size / self.world.width
         tile_h = self.size / self.world.height
 
-        # Recompute city locations every time as they are few in number
+        # Recompute city and POI locations each time as they are few in number
         self.city_points.clear()
+        self.city_colours.clear()
+        self.poi_icons.clear()
         for y in range(self.world.height):
             for x in range(self.world.width):
                 tile = self.world.grid[y][x]
-                if isinstance(tile.building, Town) and tile.building.owner == 0:
-                    cx = int((x + 0.5) * tile_w)
-                    cy = int((y + 0.5) * tile_h)
+                cx = int((x + 0.5) * tile_w)
+                cy = int((y + 0.5) * tile_h)
+                if isinstance(tile.building, Town):
+                    owner = getattr(tile.building, "owner", None)
+                    if owner == 0:
+                        colour = self.player_colour
+                    elif owner == 1:
+                        colour = constants.RED
+                    else:
+                        colour = constants.GREY
                     self.city_points.append((cx, cy))
+                    self.city_colours.append(colour)
+                    icon = self._get_icon("poi_dwelling")
+                    if icon:
+                        self.poi_icons.append((icon, cx, cy))
+                else:
+                    if tile.building:
+                        key = f"poi_{tile.building.id}"
+                        icon = self._get_icon(key)
+                        if icon:
+                            self.poi_icons.append((icon, cx, cy))
+                    if tile.treasure:
+                        icon = self._get_icon("poi_treasure_chest")
+                        if icon:
+                            self.poi_icons.append((icon, cx, cy))
+                    if tile.resource:
+                        icon = self._get_icon(f"resource_{tile.resource}")
+                        if icon:
+                            self.poi_icons.append((icon, cx, cy))
+                    if tile.boat:
+                        icon = self._get_icon("poi_boat")
+                        if icon:
+                            self.poi_icons.append((icon, cx, cy))
 
         surf = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
         surf.fill(constants.BLACK)
@@ -232,6 +315,7 @@ class Minimap:
     # ------------------------------------------------------------------
     def draw(self, dest: pygame.Surface, rect: pygame.Rect) -> None:
         """Draw the minimap onto ``dest`` within ``rect``."""
+        dest.fill(PARCHMENT, rect)
         try:
             scaled = pygame.transform.smoothscale(self.surface, rect.size)
         except Exception:  # pragma: no cover - pygame stub without transform
@@ -243,10 +327,16 @@ class Minimap:
 
         scale_x = rect.width / self.size
         scale_y = rect.height / self.size
-        for cx, cy in self.city_points:
+        for icon, cx, cy in self.poi_icons:
+            sx = rect.x + int(cx * scale_x - icon.get_width() / 2)
+            sy = rect.y + int(cy * scale_y - icon.get_height() / 2)
+            dest.blit(icon, (sx, sy))
+
+        for (cx, cy), colour in zip(self.city_points, self.city_colours):
             sx = rect.x + int(cx * scale_x)
             sy = rect.y + int(cy * scale_y)
-            pygame.draw.circle(dest, self.player_colour, (sx, sy), 3)
+            pygame.draw.circle(dest, colour, (sx, sy), 3)
+
         for fog_rect in self.fog_rects:
             r = pygame.Rect(
                 rect.x + int(fog_rect.x * scale_x),
@@ -271,3 +361,44 @@ class Minimap:
             view.height = rect.y + rect.height - view.y
 
         pygame.draw.rect(dest, constants.WHITE, view, 1)
+
+        pygame.draw.rect(dest, constants.DARK_GREY, rect, 2)
+        if hasattr(pygame.draw, "line"):
+            for i in range(1, 4):
+                x = rect.x + i * rect.width // 4
+                pygame.draw.line(dest, constants.DARK_GREY, (x, rect.y), (x, rect.y + 4))
+                pygame.draw.line(
+                    dest,
+                    constants.DARK_GREY,
+                    (x, rect.y + rect.height - 4),
+                    (x, rect.y + rect.height),
+                )
+                y = rect.y + i * rect.height // 4
+                pygame.draw.line(dest, constants.DARK_GREY, (rect.x, y), (rect.x + 4, y))
+                pygame.draw.line(
+                    dest,
+                    constants.DARK_GREY,
+                    (rect.x + rect.width - 4, y),
+                    (rect.x + rect.width, y),
+                )
+
+        if self._compass:
+            n = self._compass.get("N")
+            e = self._compass.get("E")
+            s = self._compass.get("S")
+            o = self._compass.get("O")
+            if n:
+                dest.blit(n, (rect.centerx - n.get_width() // 2, rect.y + 2))
+            if s:
+                dest.blit(
+                    s,
+                    (rect.centerx - s.get_width() // 2, rect.bottom - s.get_height() - 2),
+                )
+            if e:
+                dest.blit(
+                    e,
+                    (rect.right - e.get_width() - 2, rect.centery - e.get_height() // 2),
+                )
+            if o:
+                dest.blit(o, (rect.x + 2, rect.centery - o.get_height() // 2))
+
