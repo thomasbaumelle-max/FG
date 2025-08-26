@@ -5,8 +5,8 @@ mechanics.
 
 >>> from diplomacy import DiplomaticRelation, register_hook, hooks
 >>> relation = DiplomaticRelation("Elves", "Orcs")
->>> relation.state
-'neutral'
+>>> relation.state is RelationState.NEUTRAL
+True
 """
 
 from __future__ import annotations

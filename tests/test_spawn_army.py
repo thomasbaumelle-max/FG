@@ -28,7 +28,7 @@ def test_drag_from_garrison_creates_army(monkeypatch, pygame_stub):
 
     game = types.SimpleNamespace()
     wm = WorldMap(
-        width=2,
+        width=3,
         height=1,
         biome_weights={"scarletia_echo_plain": 1.0},
         num_obstacles=0,
@@ -38,7 +38,7 @@ def test_drag_from_garrison_creates_army(monkeypatch, pygame_stub):
     game.world = wm
     town = Town()
     wm.grid[0][0].building = town
-    hero = Hero(1, 0, [])
+    hero = Hero(2, 0, [])
     game.hero = hero
     game.state = types.SimpleNamespace(heroes=[hero])
     class DummyHeroList:
@@ -79,7 +79,7 @@ def test_hero_army_exchange_merge_delete(monkeypatch, pygame_stub):
 
     game = Game.__new__(Game)
     wm = WorldMap(
-        width=2,
+        width=3,
         height=1,
         biome_weights={"scarletia_echo_plain": 1.0},
         num_obstacles=0,
@@ -153,7 +153,7 @@ def test_army_reintegrated_removes_ghost(monkeypatch, pygame_stub):
 
     game = types.SimpleNamespace()
     wm = WorldMap(
-        width=2,
+        width=3,
         height=1,
         biome_weights={"scarletia_echo_plain": 1.0},
         num_obstacles=0,
@@ -163,7 +163,7 @@ def test_army_reintegrated_removes_ghost(monkeypatch, pygame_stub):
     game.world = wm
     town = Town()
     wm.grid[0][0].building = town
-    hero = Hero(1, 0, [])
+    hero = Hero(2, 0, [])
     game.hero = hero
     game.state = types.SimpleNamespace(heroes=[hero])
 

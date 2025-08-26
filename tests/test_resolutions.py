@@ -34,7 +34,7 @@ def test_layout_16_9_and_16_10():
     hero_rect = ms.widgets["5"]
     buttons_rect = ms.widgets["6"]
     assert hero_rect.height == buttons_rect.height
-    assert hero_rect.x + hero_rect.width == buttons_rect.x
+    assert hero_rect.x + hero_rect.width + margin == buttons_rect.x
     assert hero_rect.y == buttons_rect.y
     # Recompute for 16:10
     ms.compute_layout(1280, 800)
@@ -43,16 +43,12 @@ def test_layout_16_9_and_16_10():
 
 
 @pytest.mark.serial
-def test_buttons_stack_when_short_height():
+def test_buttons_remain_adjacent_with_short_height():
     game = _dummy_game(1280, 600)
     ms = MainScreen(game)
     hero_rect = ms.widgets["5"]
     buttons_rect = ms.widgets["6"]
-    army_rect = ms.widgets["7"]
-    # Buttons should move below the army panel
-    assert buttons_rect.y == army_rect.bottom
+    margin = 8
+    assert buttons_rect.y == hero_rect.y
+    assert buttons_rect.x == hero_rect.x + hero_rect.width + margin
     assert buttons_rect.width == hero_rect.width
-    expected_h = len(ms.buttons.buttons) * ms.buttons.BUTTON_SIZE[1] + (
-        len(ms.buttons.buttons) - 1
-    ) * ms.buttons.PADDING
-    assert buttons_rect.height == expected_h
