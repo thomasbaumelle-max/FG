@@ -1,8 +1,15 @@
 import os
+from dataclasses import replace
 
 os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
 
-from core.entities import Unit, SWORDSMAN_STATS, DRAGON_STATS, MAGE_STATS
+from core.entities import (
+    Unit,
+    SWORDSMAN_STATS,
+    DRAGON_STATS,
+    MAGE_STATS,
+    ARCHER_STATS,
+)
 from core.combat_ai import ai_take_turn, allied_ai_turn, select_spell, _a_star
 import constants
 
@@ -101,3 +108,55 @@ def test_ai_hex_pathfinding(simple_combat):
     for step in path:
         assert combat.hex_distance(prev, step) == 1
         prev = step
+
+
+def test_prioritizes_fragile_targets(simple_combat, rng):
+    hero = Unit(SWORDSMAN_STATS, 1, 'hero')
+    fragile_stats = replace(SWORDSMAN_STATS, max_hp=10)
+    tough = Unit(SWORDSMAN_STATS, 1, 'enemy')
+    fragile = Unit(fragile_stats, 1, 'enemy')
+    combat = simple_combat([hero], [tough, fragile])
+    h = combat.hero_units[0]
+    enemies = combat.enemy_units
+    positions = [(2, 1), (2, 3)]
+    rng.shuffle(positions)
+    combat.move_unit(h, 2, 2)
+    combat.move_unit(enemies[0], *positions[0])
+    combat.move_unit(enemies[1], *positions[1])
+    allied_ai_turn(combat, h)
+    # The fragile enemy should be attacked first
+    assert enemies[1].current_hp < enemies[1].stats.max_hp
+    assert enemies[0].current_hp == enemies[0].stats.max_hp
+
+
+def test_prefers_no_retaliation_target(simple_combat, rng):
+    hero = Unit(SWORDSMAN_STATS, 1, 'hero')
+    retaliator = Unit(SWORDSMAN_STATS, 1, 'enemy')
+    passive_stats = replace(SWORDSMAN_STATS, retaliations_per_round=0)
+    passive = Unit(passive_stats, 1, 'enemy')
+    combat = simple_combat([hero], [retaliator, passive])
+    h = combat.hero_units[0]
+    enemies = combat.enemy_units
+    positions = [(2, 1), (2, 3)]
+    rng.shuffle(positions)
+    combat.move_unit(h, 2, 2)
+    combat.move_unit(enemies[0], *positions[0])
+    combat.move_unit(enemies[1], *positions[1])
+    allied_ai_turn(combat, h)
+    # The enemy without retaliation should be attacked
+    assert enemies[1].current_hp < enemies[1].stats.max_hp
+    assert enemies[1].stats.retaliations_per_round == 0
+
+
+def test_archer_kites_when_adjacent(simple_combat):
+    archer = Unit(ARCHER_STATS, 1, 'hero')
+    enemy = Unit(SWORDSMAN_STATS, 1, 'enemy')
+    combat = simple_combat([archer], [enemy])
+    a = combat.hero_units[0]
+    e = combat.enemy_units[0]
+    combat.move_unit(a, 1, 0)
+    combat.move_unit(e, 0, 0)
+    initial_dist = combat.hex_distance((a.x, a.y), (e.x, e.y))
+    allied_ai_turn(combat, a)
+    new_dist = combat.hex_distance((a.x, a.y), (e.x, e.y))
+    assert new_dist > initial_dist
