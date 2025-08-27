@@ -420,6 +420,8 @@ class TownScreen:
                 hint_text = "Hire hero"
             elif sid == "bounty_board":
                 hint_text = "View quests"
+            elif sid == "magic_school":
+                hint_text = "Study spells"
             elif units:
                 hint_text = "Click to recruit"
             if hint_text:
@@ -517,6 +519,8 @@ class TownScreen:
                         self._open_tavern_overlay()
                     elif sid == "bounty_board":
                         self._open_bounty_overlay()
+                    elif sid == "magic_school":
+                        self._open_spellbook_overlay()
                     else:
                         units = self.town.recruitable_units(sid)
                         if units:
@@ -948,6 +952,25 @@ class TownScreen:
     def _open_bounty_overlay(self) -> None:
         # Reuse the game's quest overlay
         self.game.open_journal(self.screen)
+
+    # -------------------------------------------------------- Spellbook overlay
+    def _open_spellbook_overlay(self) -> None:
+        try:  # pragma: no cover - allow running without package context
+            from ui.spellbook_overlay import SpellbookOverlay
+        except ImportError:  # pragma: no cover
+            from .spellbook_overlay import SpellbookOverlay  # type: ignore
+
+        overlay = SpellbookOverlay(self.screen, town=True)
+        clock = pygame.time.Clock()
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if overlay.handle_event(event):
+                    running = False
+                    break
+            overlay.draw()
+            pygame.display.flip()
+            clock.tick(60)
 
     # ----------------------------------------------------------- Castle overlay
     def _open_castle_overlay(self) -> None:

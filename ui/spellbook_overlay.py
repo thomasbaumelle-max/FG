@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import os
 import pygame
 import theme
 import settings
@@ -13,16 +15,22 @@ class SpellbookOverlay:
     TEXT = theme.PALETTE["text"]
     PER_PAGE = 10
 
-    def __init__(self, screen: pygame.Surface, combat) -> None:
+    def __init__(self, screen: pygame.Surface, combat=None, *, town: bool = False) -> None:
         self.screen = screen
         self.combat = combat
+        self.town = town
         self.font = theme.get_font(20) or pygame.font.SysFont(None, 20)
         self.texts = load_locale(settings.LANGUAGE)
         # Pagination state
         self.page: int = 0
-        self.spell_names = sorted(self.combat.hero_spells.keys())
         # label rects for tooltip lookup populated during draw
         self._label_rects: list[tuple[pygame.Rect, str]] = []
+        self._tab_rects: list[tuple[pygame.Rect, str]] = []
+
+        if not self.town and self.combat is not None:
+            self.spell_names = sorted(self.combat.hero_spells.keys())
+        else:
+            self._load_town_spells()
 
     # ------------------------------------------------------------------ helpers
     @property
@@ -66,6 +74,32 @@ class SpellbookOverlay:
             y -= h
         surface.blit(tip, (x, y))
 
+    def _load_town_spells(self) -> None:
+        """Load spells grouped by school for town view."""
+        path = os.path.join("assets", "spells", "spells.json")
+        try:
+            with open(path, "r", encoding="utf-8") as fh:
+                data = json.load(fh)
+        except Exception:
+            data = {}
+        schools = data.get("schools", {})
+        self.school_spells: dict[str, list[str]] = {}
+        for school, levels in schools.items():
+            names: list[str] = []
+            for lvl in levels.values():
+                for group in lvl.values():
+                    for entry in group:
+                        nm = entry.get("name") or entry.get("id")
+                        if nm:
+                            names.append(nm)
+            self.school_spells[school] = sorted(set(names))
+        self.categories = sorted(self.school_spells.keys())
+        self.current_cat = 0
+        if self.categories:
+            self.spell_names = self.school_spells[self.categories[0]]
+        else:
+            self.spell_names = []
+
     # ------------------------------------------------------------------ events
     def handle_event(self, event: pygame.event.Event) -> bool:
         """Return ``True`` to close the overlay."""
@@ -80,6 +114,13 @@ class SpellbookOverlay:
                     self.page -= 1
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
+                if self.town:
+                    for idx, (rect, cat) in enumerate(self._tab_rects):
+                        if rect.collidepoint(event.pos):
+                            self.current_cat = idx
+                            self.spell_names = self.school_spells.get(cat, [])
+                            self.page = 0
+                            return False
                 return True
             if event.button in (5,):
                 if self.page + 1 < self.num_pages:
@@ -101,14 +142,31 @@ class SpellbookOverlay:
         overlay.blit(title, ((w - title.get_width()) // 2, 10))
 
         self._label_rects.clear()
-        y = 40
         start = self.page * self.PER_PAGE
         end = start + self.PER_PAGE
+        y = 60 if self.town else 40
+
+        if self.town:
+            # Draw category tabs
+            self._tab_rects.clear()
+            x = 20
+            tab_y = 30
+            for idx, cat in enumerate(self.categories):
+                label = self.font.render(cat.title(), True, self.TEXT)
+                rect = pygame.Rect(x, tab_y, label.get_width() + 20, label.get_height() + 10)
+                pygame.draw.rect(overlay, (*self.BG, 0), rect)
+                state = "highlight" if idx == self.current_cat else "normal"
+                theme.draw_frame(overlay, rect, state)
+                overlay.blit(label, (rect.x + 10, rect.y + 5))
+                self._tab_rects.append((rect, cat))
+                x += rect.width + 5
+
         for name in self.spell_names[start:end]:
             label = self.font.render(name, True, self.TEXT)
             pos = (40, y)
             overlay.blit(label, pos)
-            rect = pygame.Rect(pos, label.get_size())
+            lw, lh = label.get_size()
+            rect = pygame.Rect(pos[0], pos[1], lw, lh)
             self._label_rects.append((rect, name))
             y += label.get_height() + 8
 
@@ -116,10 +174,11 @@ class SpellbookOverlay:
             pg = self.font.render(f"{self.page + 1}/{self.num_pages}", True, self.TEXT)
             overlay.blit(pg, (w - pg.get_width() - 10, h - pg.get_height() - 10))
 
-        mx, my = pygame.mouse.get_pos()
-        for rect, name in self._label_rects:
-            if rect.collidepoint((mx, my)):
-                self._draw_tooltip(overlay, (mx, my), self._spell_tooltip(name))
-                break
+        if not self.town and self.combat is not None:
+            mx, my = pygame.mouse.get_pos()
+            for rect, name in self._label_rects:
+                if rect.collidepoint((mx, my)):
+                    self._draw_tooltip(overlay, (mx, my), self._spell_tooltip(name))
+                    break
 
         self.screen.blit(overlay, (0, 0))
