@@ -394,8 +394,12 @@ class WorldMap:
         map_data: Optional[List[str]] = None,
         size_range: Tuple[int, int] = constants.WORLD_SIZE_RANGE,
         biome_weights: Optional[Dict[str, float]] = None,
+        player_faction: Optional[str] = None,
+        enemy_faction: Optional[str] = None,
     ) -> None:
         _reset_town_counter()
+        self.player_faction = player_faction
+        self.enemy_faction = enemy_faction
         self.hero_start: Optional[Tuple[int, int]] = None
         self.enemy_start: Optional[Tuple[int, int]] = None
         # Track town locations separately from hero spawn positions
@@ -1186,7 +1190,8 @@ class WorldMap:
             ]
             coords = area_coords.copy()
             random.shuffle(coords)
-            town = Town()
+            fid = self.player_faction if owner == 0 else self.enemy_faction
+            town = Town(faction_id=fid)
             placed = False
             while coords:
                 tx, ty = coords.pop()
@@ -1530,7 +1535,12 @@ class WorldMap:
                 # '.' or any other char leaves the tile empty
 
     @classmethod
-    def from_file(cls, path: str) -> 'WorldMap':
+    def from_file(
+        cls,
+        path: str,
+        player_faction: Optional[str] = None,
+        enemy_faction: Optional[str] = None,
+    ) -> 'WorldMap':
         """Create a world map from a text file.
 
         Each tile is represented by a biome character (``G`` grass, ``F``
@@ -1543,7 +1553,13 @@ class WorldMap:
         _reset_town_counter()
         with open(path, 'r', encoding='utf-8') as f:
             lines = [line.rstrip('\n') for line in f]
-        return cls(width=0, height=0, map_data=lines)
+        return cls(
+            width=0,
+            height=0,
+            map_data=lines,
+            player_faction=player_faction,
+            enemy_faction=enemy_faction,
+        )
 
     def draw(
         self,
