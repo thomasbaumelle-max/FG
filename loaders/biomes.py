@@ -74,6 +74,13 @@ class BiomeCatalog:
         cls._biomes = biomes
         # Refresh derived mappings in constants
         constants.BIOME_BASE_IMAGES = constants.build_biome_base_images()
+        from core import world as core_world
+        core_world.init_biome_images()
+        try:
+            from ui.widgets.minimap import Minimap
+            Minimap.invalidate_all()
+        except Exception:
+            pass
 
     @classmethod
     def get(cls, biome_id: str) -> Optional[Biome]:
