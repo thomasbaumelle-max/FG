@@ -174,12 +174,13 @@ class MainScreen:
 
         M = 8
         side_w = max(260, int(0.23 * width))
-        bar_h = 24
+        base_bar_h = 24
+        bar_h = int(base_bar_h * 1.5)
 
         root = Layout(pygame.Rect(0, 0, width, height))
         root.dock_left(M)
         root.dock_right(M)
-        root.dock_top(bar_h + M)
+        root.dock_top(M)
 
         # Colonne droite (minimap + liste héros + boutons + armée)
         sidebar_full = root.dock_right(side_w - M, margin=M)
@@ -207,9 +208,9 @@ class MainScreen:
         # puis l'armée dessous qui prend tout le reste.
         sidebar_top = pygame.Rect(
             sidebar_full.x,
-            M,
+            world_rect.y,
             sidebar_full.width,
-            world_rect.y + world_rect.height - M,
+            world_rect.height,
         )
         side_layout = Layout(sidebar_top)
 
