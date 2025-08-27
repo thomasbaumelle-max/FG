@@ -18,7 +18,7 @@ class Spell:
     school: Optional[str] = None
     cost_mana: int = 0
     cooldown: int = 0
-    range: Any = 0
+    range: int = 0
     area: Optional[str] = None
     target: Optional[str] = None
     duration: Optional[str] = None
@@ -60,6 +60,10 @@ def load_spells(path: str) -> Dict[str, Spell]:
         for lvl, kinds in levels.items():
             for group, rows in kinds.items():
                 for row in rows:
+                    try:
+                        rng = int(row.get("range", 4) or 0)
+                    except (TypeError, ValueError):
+                        rng = 999
                     s = Spell(
                         id=row.get("id", ""),
                         name=row.get("name", ""),
@@ -68,7 +72,7 @@ def load_spells(path: str) -> Dict[str, Spell]:
                         school=row.get("school", school),
                         cost_mana=int(row.get("cost", 0) or 0),
                         cooldown=int(row.get("cooldown", 0) or 0),
-                        range=row.get("range", 4),
+                        range=rng,
                         area=row.get("area"),
                         target=row.get("target"),
                         duration=row.get("duration"),
