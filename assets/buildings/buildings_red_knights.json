@@ -5,7 +5,7 @@
     "prereq": [],
     "dwelling": {"Swordsman": 5,"Spearman" : 3},
     "desc": "Train basic melee troops.",
-    "image": "buildings/barracks.png"
+    "image": "buildings/red_knights/barracks.png"
   },
   {
     "id": "archery_range",
@@ -13,7 +13,7 @@
     "prereq": ["barracks"],
     "dwelling": {"Archer": 5},
     "desc": "Recruit ranged units.",
-    "image": "buildings/archery_range.png"
+    "image": "buildings/red_knights/archery_range.png"
   },
 {
     "id": "mage_guild",
@@ -21,7 +21,7 @@
     "prereq": ["archery_range"],
     "dwelling": {"Mage": 3,"Priest" : 2},
     "desc": "Initiates of arcane and divine arts.",
-    "image": "buildings/mage_guild.png"
+    "image": "buildings/red_knights/mage_guild.png"
   },
     {
     "id": "stables",
@@ -29,7 +29,7 @@
     "prereq": ["mage_guild"],
     "dwelling": {"Cavalry": 4},
     "desc": "Horses and cavalry training.",
-    "image": "buildings/cavalry.png"
+    "image": "buildings/red_knights/cavalry.png"
   },
   {
     "id": "Hall of Grandmasters",
@@ -37,7 +37,7 @@
     "prereq": ["stables"],
     "dwelling": {"Grandmaster Warrior": 2},
     "desc": "GrandMaster Warrrior training.",
-    "image": "buildings/Hall of Grandmasters.png"
+    "image": "buildings/red_knights/Hall of Grandmasters.png"
   },
     {
     "id": "dragon_lair",
@@ -45,6 +45,6 @@
     "prereq": ["mage_guild"],
     "dwelling": {"Dragon": 1},
     "desc": "A perilous lair to tame mighty dragons.",
-    "image": "buildings/dragon_lair.png"
+    "image": "buildings/red_knights/dragon_lair.png"
   }
 ]
