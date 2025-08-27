@@ -1,26 +1,50 @@
 [
   {
-    "id": "crimson_watch",
+    "id": "barracks",
     "cost": {"wood": 5, "stone": 5},
     "prereq": [],
-    "dwelling": {"red_squire": 5},
-    "desc": "Train the order's squires.",
-    "image": "buildings/crimson_watch.png"
+    "dwelling": {"Swordsman": 5,"Spearman" : 3},
+    "desc": "Train basic melee troops.",
+    "image": "buildings/barracks.png"
   },
   {
-    "id": "scarlet_fletchery",
+    "id": "archery_range",
     "cost": {"wood": 3, "stone": 2},
-    "prereq": ["crimson_watch"],
-    "dwelling": {"scarlet_archer": 5},
-    "desc": "Recruit archers loyal to the Flame.",
-    "image": "buildings/scarlet_fletchery.png"
+    "prereq": ["barracks"],
+    "dwelling": {"Archer": 5},
+    "desc": "Recruit ranged units.",
+    "image": "buildings/archery_range.png"
+  },
+{
+    "id": "mage_guild",
+    "cost": {"wood": 15, "stone": 10,"crystal":5},
+    "prereq": ["archery_range"],
+    "dwelling": {"Mage": 3,"Priest" : 2},
+    "desc": "Initiates of arcane and divine arts.",
+    "image": "buildings/mage_guild.png"
+  },
+    {
+    "id": "stables",
+    "cost": {"wood": 15, "stone": 15},
+    "prereq": ["mage_guild"],
+    "dwelling": {"Cavalry": 4},
+    "desc": "Horses and cavalry training.",
+    "image": "buildings/cavalry.png"
   },
   {
-    "id": "sun_spire",
-    "cost": {"wood": 10, "stone": 10, "crystal": 5},
-    "prereq": ["scarlet_fletchery"],
-    "dwelling": {"sun_priest": 3},
-    "desc": "Sanctum for the Sun Priests.",
-    "image": "buildings/sun_spire.png"
+    "id": "Hall of Grandmasters",
+    "cost": {"wood": 30, "stone": 20, "crystal" : 10},
+    "prereq": ["stables"],
+    "dwelling": {"Grandmaster Warrior": 2},
+    "desc": "GrandMaster Warrrior training.",
+    "image": "buildings/Hall of Grandmasters.png"
+  },
+    {
+    "id": "dragon_lair",
+    "cost": {"wood": 20, "stone": 20,"crystal":15},
+    "prereq": ["mage_guild"],
+    "dwelling": {"Dragon": 1},
+    "desc": "A perilous lair to tame mighty dragons.",
+    "image": "buildings/dragon_lair.png"
   }
 ]
