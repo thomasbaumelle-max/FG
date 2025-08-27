@@ -59,7 +59,10 @@ def open_panel(
                 if close_rect.collidepoint(event.pos):
                     return
                 if building.upgrade_cost and upgrade_rect.collidepoint(event.pos):
-                    building.upgrade(hero, econ_building)
+                    player = economy.PlayerEconomy()
+                    player.resources.update(hero.resources)
+                    player.resources["gold"] = hero.gold
+                    building.upgrade(hero, player, econ_building)
         screen.blit(background, (0, 0))
         dim = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
         dim.fill((*theme.PALETTE["background"], 200))

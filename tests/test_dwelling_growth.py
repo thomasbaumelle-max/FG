@@ -40,6 +40,10 @@ def test_town_available_units():
     hero.resources['wood'] = 5
     hero.resources['stone'] = 5
     hero.gold = 100
-    assert town.build_structure('barracks', hero)
+    player = economy.PlayerEconomy()
+    player.resources['wood'] = 5
+    player.resources['stone'] = 5
+    player.resources['gold'] = 100
+    assert town.build_structure('barracks', hero, player)
     town.next_week()
     assert town.available_units('barracks').get('Swordsman') == 10

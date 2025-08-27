@@ -21,7 +21,11 @@ def test_ai_weekly_recruitment_consumes_resources():
     hero.resources['wood'] = 5
     hero.resources['stone'] = 5
     hero.gold = 100
-    assert town.build_structure('barracks', hero)
+    player = economy.PlayerEconomy()
+    player.resources['wood'] = 5
+    player.resources['stone'] = 5
+    player.resources['gold'] = 100
+    assert town.build_structure('barracks', hero, player)
 
     state = GameState(world=world)
     state.economy.players[1] = economy.PlayerEconomy()

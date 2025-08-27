@@ -508,8 +508,11 @@ class TownScreen:
                         return
                     cost = self.town.structure_cost(sid)
                     if self._can_afford(self.hero, cost):
-                        self.town.build_structure(sid, self.hero)
-                        self._publish_resources()
+                        player = economy.PlayerEconomy()
+                        player.resources.update(self.hero.resources)
+                        player.resources["gold"] = self.hero.gold
+                        if self.town.build_structure(sid, self.hero, player):
+                            self._publish_resources()
                 else:
                     if sid == "market":
                         market_screen.open(self.screen, self.game, self.town, self.hero, self.clock)
