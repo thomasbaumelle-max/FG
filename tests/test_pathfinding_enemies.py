@@ -32,18 +32,27 @@ def _make_game(world, hero_pos):
     return game
 
 
-def test_pathfinding_avoids_enemy_when_possible():
+def test_pathfinding_avoids_stronger_enemy():
     world = _make_world(3, 3)
-    world.grid[1][1].enemy_units = [Unit(SWORDSMAN_STATS, 1, 'enemy')]
+    world.grid[1][1].enemy_units = [Unit(SWORDSMAN_STATS, 2, 'enemy')]
     game = _make_game(world, (0, 1))
     path = game.compute_path((0, 1), (2, 1))
     assert path is not None
     assert (1, 1) not in path
 
 
+def test_pathfinding_passes_weaker_enemy():
+    world = _make_world(3, 3)
+    world.grid[1][1].enemy_units = [Unit(SWORDSMAN_STATS, 1, 'enemy')]
+    game = _make_game(world, (0, 1))
+    game.hero.army[0].count = 2
+    path = game.compute_path((0, 1), (2, 1))
+    assert (1, 1) in path
+
+
 def test_pathfinding_falls_back_through_enemy_if_blocked():
     world = _make_world(3, 1)
-    world.grid[0][1].enemy_units = [Unit(SWORDSMAN_STATS, 1, 'enemy')]
+    world.grid[0][1].enemy_units = [Unit(SWORDSMAN_STATS, 2, 'enemy')]
     game = _make_game(world, (0, 0))
     pos = (2 * constants.TILE_SIZE, 0)
     game.handle_world_click(pos)
@@ -56,7 +65,7 @@ def test_path_recomputed_after_enemy_moves():
     initial = game.compute_path((0, 1), (2, 1))
     game.path = initial
     game.path_target = (2, 1)
-    world.grid[1][1].enemy_units = [Unit(SWORDSMAN_STATS, 1, 'enemy')]
+    world.grid[1][1].enemy_units = [Unit(SWORDSMAN_STATS, 2, 'enemy')]
     pos = (2 * constants.TILE_SIZE, 1 * constants.TILE_SIZE)
     game.handle_world_click(pos)
     assert game.move_queue
