@@ -98,13 +98,14 @@ def draw(screen: "InventoryScreen") -> None:
         screen.screen.blit(t2, (rect.x + size + 4, rect.y))
 
     # Army 7x1
+    gy = screen.center_rect.y + int(screen.center_rect.height * 0.55)
     font_big = screen.font_big or screen.font
     if font_big:
         label = font_big.render("Hero Army", True, COLOR_TEXT)
-        gy = screen.center_rect.y + screen.center_rect.height - 120
-        screen.screen.blit(label, (screen.center_rect.x + 12, gy - 28))
-    else:
-        gy = screen.center_rect.y + screen.center_rect.height - 120
+        screen.screen.blit(
+            label,
+            (screen.center_rect.x + 12, gy - label.get_height() - 4),
+        )
     screen.army_rects = []
     cell = 84
     for idx in range(7):
