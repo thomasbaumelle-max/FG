@@ -7,6 +7,8 @@
   "language": "en",
   "volume": 1.0,
   "scroll_speed": 20,
+  "animation_speed": 1.0,
+  "tooltip_read_mode": false,
   "keymap": {
     "pan_left": ["K_LEFT", "K_a"],
     "pan_right": ["K_RIGHT", "K_d"],

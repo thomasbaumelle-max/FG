@@ -82,6 +82,16 @@ VOLUME: float = _get_float("FG_VOLUME", "volume", 1.0)
 # Map scroll speed in pixels per key press
 SCROLL_SPEED: int = _get_int("FG_SCROLL_SPEED", "scroll_speed", 20)
 
+# Animation speed multiplier for game visuals
+ANIMATION_SPEED: float = _get_float(
+    "FG_ANIMATION_SPEED", "animation_speed", 1.0
+)
+
+# Enable a reading-friendly mode for tooltips
+TOOLTIP_READ_MODE: bool = _get_bool(
+    "FG_TOOLTIP_READ_MODE", "tooltip_read_mode", False
+)
+
 _DEFAULT_KEYMAP: Dict[str, List[str]] = {
     "pan_left": ["K_LEFT", "K_a"],
     "pan_right": ["K_RIGHT", "K_d"],
@@ -108,11 +118,21 @@ def save_settings(**kwargs: Any) -> None:
         json.dump(data, f)
 
 
+def remap_key(action: str, keys: List[str]) -> None:
+    """Assign new ``keys`` to ``action`` and persist the mapping."""
+
+    KEYMAP[action] = keys
+    save_settings(keymap=KEYMAP)
+
+
 __all__ = [
     "DEBUG_BUILDINGS",
     "LANGUAGE",
     "VOLUME",
     "SCROLL_SPEED",
+    "ANIMATION_SPEED",
+    "TOOLTIP_READ_MODE",
     "KEYMAP",
     "save_settings",
+    "remap_key",
 ]
