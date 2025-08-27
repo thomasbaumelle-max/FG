@@ -2,85 +2,155 @@
 [
   {
     "id": "mine",
-    "footprint": [1, 1],
-    "anchor_px": [512, 1020],
+    "footprint": [
+      1,
+      1
+    ],
+    "anchor_px": [
+      512,
+      1020
+    ],
     "passable": false,
     "occludes": true,
     "path": "buildings/mine/mine_0.png",
     "variants": 1,
     "requires": [],
-    "provides": {"resource": "stone", "per_day": 2}
+    "provides": {
+      "resource": "stone",
+      "per_day": 2
+    }
   },
   {
     "id": "sawmill",
-    "footprint": [1, 1],
-    "anchor_px": [512, 1020],
+    "footprint": [
+      1,
+      1
+    ],
+    "anchor_px": [
+      512,
+      1020
+    ],
     "passable": false,
     "occludes": true,
     "path": "buildings/sawmill/sawmill_0.png",
     "variants": 1,
     "requires": [],
-    "provides": {"resource": "wood", "per_day": 2}
+    "provides": {
+      "resource": "wood",
+      "per_day": 2
+    }
   },
   {
     "id": "crystal_mine",
-    "footprint": [1, 1],
-    "anchor_px": [512, 1020],
+    "footprint": [
+      1,
+      1
+    ],
+    "anchor_px": [
+      512,
+      1020
+    ],
     "passable": false,
     "occludes": true,
     "path": "buildings/crystal_mine/crystal_mine_0.png",
     "variants": 1,
     "requires": [],
-    "provides": {"resource": "crystal", "per_day": 1}
+    "provides": {
+      "resource": "crystal",
+      "per_day": 1
+    }
   },
   {
     "id": "swordsman_camp",
-    "footprint": [1, 1],
-    "anchor_px": [512, 1020],
+    "footprint": [
+      1,
+      1
+    ],
+    "anchor_px": [
+      512,
+      1020
+    ],
     "passable": false,
     "occludes": true,
     "path": "buildings/swordsman_camp/swordsman_camp_0.png",
     "variants": 1,
-    "requires": ["barracks"],
-    "growth_per_week": {"Swordsman": 5}
+    "requires": [
+      "barracks"
+    ],
+    "growth_per_week": {
+      "Swordsman": 5
+    }
   },
   {
     "id": "archer_camp",
-    "footprint": [1, 1],
-    "anchor_px": [512, 1020],
+    "footprint": [
+      1,
+      1
+    ],
+    "anchor_px": [
+      512,
+      1020
+    ],
     "passable": false,
     "occludes": true,
     "path": "buildings/archer_camp/archer_camp_0.png",
     "variants": 1,
-    "requires": ["archery_range"],
-    "growth_per_week": {"Archer": 5}
+    "requires": [
+      "archery_range"
+    ],
+    "growth_per_week": {
+      "Archer": 5
+    }
   },
   {
     "id": "shipyard",
-    "footprint": [1, 1],
-    "anchor_px": [512, 1020],
+    "footprint": [
+      1,
+      1
+    ],
+    "anchor_px": [
+      512,
+      1020
+    ],
     "passable": false,
     "occludes": true,
     "path": "buildings/shipyard.png",
     "variants": 1,
     "requires": [],
-    "upgrade_cost": {"wood": 5}
+    "upgrade_cost": {
+      "wood": 5
+    }
   },
   {
     "id": "town",
-    "footprint": [2, 2],
-    "anchor_px": [512, 1020],
+    "footprint": [
+      2,
+      2
+    ],
+    "anchor_px": [
+      512,
+      1020
+    ],
     "passable": false,
     "occludes": true,
     "path": "buildings/town/town_0.png",
     "variants": 1,
     "requires": [],
-    "provides": {"resource": "gold", "per_day": 0}
+    "provides": {
+      "resource": "gold",
+      "per_day": 0
+    }
   },
   {
     "id": "sea_sanctuary",
-    "footprint": [1, 1],
-    "anchor_px": [512, 1020],
+    "footprint": [
+      1,
+      1
+    ],
+    "anchor_px": [
+      512,
+      1020
+    ],
     "passable": true,
     "occludes": true,
     "path": "buildings/sea_sanctuary/sea_sanctuary_0.png",
@@ -89,8 +159,14 @@
   },
   {
     "id": "lighthouse",
-    "footprint": [1, 1],
-    "anchor_px": [512, 1020],
+    "footprint": [
+      1,
+      1
+    ],
+    "anchor_px": [
+      512,
+      1020
+    ],
     "passable": true,
     "occludes": true,
     "path": "buildings/lighthouse/lighthouse_0.png",
@@ -98,4 +174,3 @@
     "requires": []
   }
 ]
-

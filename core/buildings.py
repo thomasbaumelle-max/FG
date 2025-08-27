@@ -295,6 +295,26 @@ class Town(Building):
                 seen.add(u)
         return ordered
 
+    def magic_school_spells(self) -> Dict[str, Dict[str, Dict[int, List[str]]]]:
+        """Return all spells grouped by active/passive, school and level."""
+        from core.spell import load_spells
+
+        path = os.path.join(
+            os.path.dirname(__file__), "..", "assets", "spells", "spells.json"
+        )
+        spells = load_spells(path)
+        book: Dict[str, Dict[str, Dict[int, List[str]]]] = {"active": {}, "passive": {}}
+        for sp in spells.values():
+            group = "passive" if sp.passive else "active"
+            school = sp.school or "none"
+            levels = book[group].setdefault(school, {})
+            levels.setdefault(sp.level, []).append(sp.id)
+        for kinds in book.values():
+            for levels in kinds.values():
+                for ids in levels.values():
+                    ids.sort()
+        return book
+
     # --------------------------- Caravan management ------------------------
     def send_caravan(
         self,

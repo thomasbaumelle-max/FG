@@ -16,10 +16,12 @@
       "effects": [
         "structured effect notes, e.g. dmg_fire:12, buff:init+1(1t), debuff:defence_magic-1(1t), dot_burn:6(2t), redirect:0.2"
       ],
-      "tags": ["keywords"]
+      "tags": [
+        "keywords"
+      ],
+      "fx_asset": "string or null"
     }
   },
-{
   "aliases": {
     "hymn_of_light_a": "hymn_light",
     "sutra_aegis_a": "aegis",
@@ -30,188 +32,2351 @@
     "Wind_Chorus_m": "mass_haste_once",
     "dragon_breath": "dragon_breath_cone"
   },
-
-  "entries": [
-    /* ===================== */
-    /*   SOLACEHEIM — base   */
-    /* ===================== */
-
-    {"id":"bless","name":"Bless","faction":"solaceheim","type":"spell","school":"light","cost":6,"cooldown":0,"range":6,"area":"single","target":"ally","duration":"1t","effects":["buff:attack_min+1(1t)","buff:attack_max+1(1t)"],"tags":["core"]},
-    {"id":"mass_bless_I","name":"Mass Bless I","faction":"solaceheim","type":"spell","school":"light","cost":16,"cooldown":3,"range":"global","area":"army","target":"ally","duration":"1t","effects":["buff:attack_min+1(1t)","buff:attack_max+1(1t)"],"tags":["group"]},
-    {"id":"mass_bless_II","name":"Mass Bless II","faction":"solaceheim","type":"spell","school":"light","cost":22,"cooldown":3,"range":"global","area":"army","target":"ally","duration":"1t","effects":["buff:attack_min+1(1t)","buff:attack_max+1(1t)","buff:initiative+1(1t)"],"tags":["group","improved"]},
-    {"id":"minor_heal","name":"Minor Heal","faction":"solaceheim","type":"spell","school":"light","cost":6,"cooldown":0,"range":6,"area":"single","target":"ally","duration":"instant","effects":["heal:8"],"tags":["heal"]},
-    {"id":"cleanse","name":"Cleanse","faction":"solaceheim","type":"spell","school":"light","cost":8,"cooldown":1,"range":6,"area":"single","target":"ally","duration":"instant","effects":["dispel:1"],"tags":["cleanse"]},
-    {"id":"mass_cleanse","name":"Mass Cleanse","faction":"solaceheim","type":"spell","school":"light","cost":24,"cooldown":4,"range":"global","area":"army","target":"ally","duration":"instant","effects":["dispel:1_all_allies"],"tags":["cleanse","group"]},
-
-    {"id":"sun_burst","name":"Sun Burst","faction":"solaceheim","type":"spell","school":"light","cost":10,"cooldown":1,"range":6,"area":"radius1","target":"enemy","duration":"instant","effects":["dmg_light:14"],"tags":["nuke"]},
-    {"id":"sun_burst_II","name":"Sun Burst II","faction":"solaceheim","type":"spell","school":"light","cost":14,"cooldown":1,"range":6,"area":"radius1","target":"enemy","duration":"instant","effects":["dmg_light:18","debuff:defence_magic-1(1t)"],"tags":["nuke","improved"]},
-
-    {"id":"hymn_light","name":"Hymne Lumineux","faction":"solaceheim","type":"order","school":"order","cost":8,"cooldown":3,"range":4,"area":"cone_small","target":"mixed","duration":"1t","effects":["ally:buff:attack_min+1(1t)","ally:buff:attack_max+1(1t)","enemy:debuff:defence_magic-1(1t)"],"tags":["chant"]},
-
-    {"id":"aegis","name":"Aegis des Sutras","faction":"solaceheim","type":"order","school":"order","cost":10,"cooldown":2,"range":6,"area":"single","target":"ally","duration":"1t","effects":["buff:defence_melee+2(1t)","buff:defence_magic+2(1t)","cleanse:1"],"tags":["protect"]},
-    {"id":"ward_I","name":"Ward I","faction":"solaceheim","type":"passive","school":"order","cost":null,"cooldown":null,"range":"self","area":"self","target":"self","duration":"passive","effects":["reduce_first_magic_hit:10%"],"tags":["barrier"]},
-
-    {"id":"radiant_aura","name":"Radiant Aura","faction":"solaceheim","type":"aura","school":"light","cost":null,"cooldown":null,"range":"adjacent","area":"radius1","target":"ally","duration":"passive","effects":["buff:morale+1(adjacent)"],"tags":["aura"]},
-
-    {"id":"chant_courage_I","name":"Chant de Courage I","faction":"solaceheim","type":"aura","school":"order","cost":null,"cooldown":null,"range":"adjacent","area":"radius1","target":"ally","duration":"passive","effects":["buff:morale+1"],"tags":["chant"]},
-    {"id":"chant_courage_II","name":"Chant de Courage II","faction":"solaceheim","type":"aura","school":"order","cost":null,"cooldown":null,"range":"adjacent","area":"radius1","target":"ally","duration":"passive","effects":["buff:morale+2"],"tags":["chant","improved"]},
-
-    {"id":"sonic_bell_I","name":"Cloche Sonore I","faction":"solaceheim","type":"order","school":"order","cost":8,"cooldown":2,"range":3,"area":"radius1","target":"enemy","duration":"instant","effects":["dmg_sonic:8","debuff:accuracy-5%(1t)"],"tags":["aoe"]},
-    {"id":"sonic_bell_II","name":"Cloche Sonore II","faction":"solaceheim","type":"order","school":"order","cost":10,"cooldown":2,"range":3,"area":"radius1","target":"enemy","duration":"1t","effects":["dmg_sonic:10","debuff:accuracy-10%(1t)","status:stagger(1t)"],"tags":["aoe","control"]},
-
-    {"id":"debuff_precision_I","name":"Maladresse I","faction":"solaceheim","type":"order","school":"order","cost":4,"cooldown":1,"range":6,"area":"single","target":"enemy","duration":"1t","effects":["debuff:accuracy-5%"],"tags":["control"]},
-    {"id":"debuff_precision_II","name":"Maladresse II","faction":"solaceheim","type":"order","school":"order","cost":6,"cooldown":1,"range":6,"area":"single","target":"enemy","duration":"1t","effects":["debuff:accuracy-10%"],"tags":["control","improved"]},
-
-    {"id":"inspire_initiative_I","name":"Inspiration d’Initiative I","faction":"solaceheim","type":"aura","school":"order","cost":null,"cooldown":null,"range":"adjacent","area":"radius1","target":"ally","duration":"passive","effects":["buff:initiative+1"],"tags":["aura"]},
-    {"id":"inspire_initiative_II","name":"Inspiration d’Initiative II","faction":"solaceheim","type":"aura","school":"order","cost":null,"cooldown":null,"range":"adjacent","area":"radius1","target":"ally","duration":"passive","effects":["buff:initiative+2"],"tags":["aura","improved"]},
-
-    {"id":"protect_ally_I","name":"Protection d’Allié I","faction":"solaceheim","type":"reaction","school":"order","cost":null,"cooldown":1,"range":"adjacent","area":"single","target":"ally","duration":"1t","effects":["redirect:20%"],"tags":["guard"]},
-    {"id":"protect_ally_II","name":"Protection d’Allié II","faction":"solaceheim","type":"reaction","school":"order","cost":null,"cooldown":1,"range":"adjacent","area":"single","target":"ally","duration":"1t","effects":["redirect:35%","buff:defence_magic+1(1t)"],"tags":["guard","improved"]},
-
-    {"id":"discipline_aura_I","name":"Aura de Discipline I","faction":"solaceheim","type":"aura","school":"order","cost":null,"cooldown":null,"range":"adjacent","area":"radius1","target":"ally","duration":"passive","effects":["resist:fear","resist:stun_minor"],"tags":["aura"]},
-    {"id":"discipline_aura_II","name":"Aura de Discipline II","faction":"solaceheim","type":"aura","school":"order","cost":null,"cooldown":null,"range":"adjacent","area":"radius1","target":"ally","duration":"passive","effects":["resist:fear","resist:stun","resist:charm_minor"],"tags":["aura","improved"]},
-
-    {"id":"counterstrike_I","name":"Riposte I","faction":"solaceheim","type":"passive","school":null,"cost":null,"cooldown":null,"range":"self","area":"self","target":"self","duration":"passive","effects":["counterattacks:+1"],"tags":["melee"]},
-    {"id":"counterstrike_II","name":"Riposte II","faction":"solaceheim","type":"passive","school":null,"cost":null,"cooldown":null,"range":"self","area":"self","target":"self","duration":"passive","effects":["counterattacks:+2"],"tags":["melee","improved"]},
-
-    {"id":"reflect_small_I","name":"Renvoi Mineur","faction":"solaceheim","type":"passive","school":null,"cost":null,"cooldown":null,"range":"self","area":"self","target":"enemy","duration":"passive","effects":["return_melee:15%"],"tags":["thorns"]},
-
-    {"id":"camouflage_I","name":"Camouflage I","faction":"solaceheim","type":"order","school":"shadow","cost":6,"cooldown":3,"range":"self","area":"self","target":"self","duration":"1t","effects":["invisible:true"],"tags":["stealth"]},
-    {"id":"camouflage_II","name":"Camouflage II","faction":"solaceheim","type":"order","school":"shadow","cost":8,"cooldown":4,"range":"self","area":"self","target":"self","duration":"2t","effects":["invisible:true","break_on_attack:true"],"tags":["stealth","improved"]},
-
-    {"id":"silent_guard","name":"Garde Silencieuse","faction":"solaceheim","type":"reaction","school":"order","cost":null,"cooldown":3,"range":"adjacent","area":"single","target":"ally","duration":"instant","effects":["intercept_hit:1"],"tags":["bodyguard"]},
-
-    {"id":"chant_sacre_I","name":"Chant Sacré I","faction":"solaceheim","type":"order","school":"light","cost":10,"cooldown":3,"range":3,"area":"radius1","target":"mixed","duration":"1t","effects":["ally:buff:initiative+1(1t)","enemy:debuff:defence_magic-1(1t)"],"tags":["chant"]},
-    {"id":"chant_sacre_II","name":"Chant Sacré II","faction":"solaceheim","type":"order","school":"light","cost":12,"cooldown":3,"range":3,"area":"radius1","target":"mixed","duration":"1t","effects":["ally:buff:initiative+1(1t)","ally:buff:morale+1(1t)","enemy:debuff:defence_magic-1(1t)"],"tags":["chant","improved"]},
-
-    {"id":"sweep_attack","name":"Balayage","faction":"solaceheim","type":"ability","school":null,"cost":null,"cooldown":2,"range":"melee","area":"line3","target":"enemy","duration":"instant","effects":["dmg_physical:weapon","cleave:2"],"tags":["melee","cleave"]},
-    {"id":"sand_burrow","name":"Fouissement des Sables","faction":"solaceheim","type":"ability","school":"earth","cost":0,"cooldown":3,"range":"self","area":"self","target":"self","duration":"instant","effects":["tunnel:3hex","ignore_low_obstacles:true"],"tags":["mobility"]},
-
-    {"id":"light_immunity","name":"Immunité Lumière","faction":"solaceheim","type":"passive","school":"light","cost":null,"cooldown":null,"range":"self","area":"self","target":"self","duration":"passive","effects":["immune:shadow_curses_minor"],"tags":["resist"]},
-
-    /* ===== Ideology: DARK extras ===== */
-    {"id":"fervor_I","name":"Ferveur I","faction":"solaceheim","type":"passive","school":"order","cost":null,"cooldown":null,"range":"self","area":"self","target":"self","duration":"passive","effects":["dmg_bonus:+20% if morale>=2"],"tags":["zeal"]},
-    {"id":"blood_zeal","name":"Zèle de Sang","faction":"solaceheim","type":"order","school":"fire","cost":0,"cooldown":2,"range":"self","area":"self","target":"self","duration":"1t","effects":["self_damage:3","buff:attack_min+1(1t)","buff:attack_max+1(1t)"],"tags":["risk_reward"]},
-    {"id":"penitence_bell","name":"Cloche d’Expiation","faction":"solaceheim","type":"order","school":"fire","cost":10,"cooldown":3,"range":3,"area":"radius1","target":"enemy","duration":"2t","effects":["dot_burn:6(2t)","debuff:accuracy-10%(1t)"],"tags":["aoe","burn"]},
-    {"id":"accuracy_curse_I","name":"Anathème de Précision","faction":"solaceheim","type":"order","school":"shadow","cost":6,"cooldown":2,"range":6,"area":"single","target":"enemy","duration":"1t","effects":["debuff:accuracy-10%"],"tags":["hex"]},
-    {"id":"panic_screech","name":"Hurlement de Panique","faction":"solaceheim","type":"ability","school":"shadow","cost":0,"cooldown":3,"range":2,"area":"radius1","target":"enemy","duration":"1t","effects":["status:fear(T1-T3)"],"tags":["control"]},
-    {"id":"burning_talons","name":"Serres Brûlantes","faction":"solaceheim","type":"passive","school":"fire","cost":null,"cooldown":null,"range":"self","area":"self","target":"enemy","duration":"passive","effects":["on_crit:dot_burn:4(2t)"],"tags":["burn"]},
-    {"id":"thorn_aura","name":"Aura d’Épines","faction":"solaceheim","type":"passive","school":"order","cost":null,"cooldown":null,"range":"self","area":"self","target":"enemy","duration":"passive","effects":["return_melee:25%"],"tags":["thorns"]},
-    {"id":"punish_magic","name":"Punition Magique","faction":"solaceheim","type":"passive","school":"order","cost":null,"cooldown":null,"range":"self","area":"self","target":"enemy","duration":"passive","effects":["return_magic:25%"],"tags":["reflect"]},
-    {"id":"impale","name":"Empaler","faction":"solaceheim","type":"ability","school":null,"cost":0,"cooldown":2,"range":"melee","area":"single","target":"enemy","duration":"instant","effects":["charge:2","ignore:defence_melee:2","dmg_physical:weapon+"],"tags":["charge"]},
-    {"id":"holy_burn","name":"Brûlure Sacrée","faction":"solaceheim","type":"ability","school":"fire","cost":0,"cooldown":2,"range":"melee","area":"single","target":"enemy","duration":"2t","effects":["dot_burn:6(2t)","heal_received:-25%(1t)"],"tags":["anti_heal"]},
-    {"id":"terror_aura","name":"Aura de Terreur","faction":"solaceheim","type":"aura","school":"shadow","cost":null,"cooldown":null,"range":"adjacent","area":"radius1","target":"enemy","duration":"passive","effects":["morale:-1"],"tags":["fear"]},
-    {"id":"silence_step","name":"Pas de Silence","faction":"solaceheim","type":"ability","school":"shadow","cost":0,"cooldown":2,"range":"melee","area":"single","target":"enemy","duration":"1t","effects":["next_spell_cost:+5"],"tags":["tax"]},
-    {"id":"scorching_anthem","name":"Hymne Scorchant","faction":"solaceheim","type":"order","school":"fire","cost":12,"cooldown":3,"range":3,"area":"cone_small","target":"enemy","duration":"2t","effects":["dmg_fire:10","dot_burn:6(2t)","debuff:defence_magic-1(1t)"],"tags":["aoe","burn"]},
-    {"id":"consume_corpse","name":"Consumer le Cadavre","faction":"solaceheim","type":"ability","school":"shadow","cost":0,"cooldown":3,"range":1,"area":"single","target":"ground","duration":"instant","effects":["heal:15"],"tags":["corpse"]},
-    {"id":"pillar_of_sacred_fire","name":"Pilier de Feu Sacré","faction":"solaceheim","type":"spell","school":"fire","cost":18,"cooldown":3,"range":6,"area":"radius1","target":"ground","duration":"1t","effects":["dmg_fire:18","heal_received:-50%(1t)"],"tags":["aoe","anti_heal"]},
-    {"id":"blazing_malice","name":"Malice Flamboyante","faction":"solaceheim","type":"passive","school":"fire","cost":null,"cooldown":null,"range":"self","area":"self","target":"enemy","duration":"passive","effects":["on_hit:heal_received:-30%(1t)"],"tags":["anti_heal"]},
-    {"id":"no_morale_penalty","name":"Froid Fanatisme","faction":"solaceheim","type":"passive","school":"order","cost":null,"cooldown":null,"range":"army","area":"army","target":"self","duration":"passive","effects":["ignore_morale_penalty_on_ally_death:true"],"tags":["zeal"]},
-
-    /* ===================== */
-    /*     RED KNIGHTS       */
-    /* ===================== */
-
-    {"id":"volley","name":"Volley","faction":"red_knights","type":"order","school":"warcry","cost":0,"cooldown":2,"range":6,"area":"radius1","target":"enemy","duration":"instant","effects":["ranged_attack:low_aoe"],"tags":["ranged","tactics"]},
-    {"id":"deadeye","name":"Deadeye","faction":"red_knights","type":"order","school":"warcry","cost":0,"cooldown":3,"range":"self","area":"single","target":"ally","duration":"1t","effects":["next_ranged:+50%","ignore:defence_ranged:1"],"tags":["buff","ranged"]},
-    {"id":"sharpen","name":"Sharpen","faction":"red_knights","type":"order","school":"warcry","cost":0,"cooldown":3,"range":3,"area":"radius1","target":"ally","duration":"1t","effects":["melee_dmg:+15% (up to 3 targets)"],"tags":["melee","buff"]},
-    {"id":"overrun","name":"Overrun","faction":"red_knights","type":"passive","school":"warcry","cost":null,"cooldown":null,"range":"self","area":"self","target":"self","duration":"passive","effects":["on_kill:free_move:1 (1/combat)"],"tags":["momentum"]},
-    {"id":"guard_order","name":"Garde !","faction":"red_knights","type":"order","school":"tactics","cost":0,"cooldown":1,"range":6,"area":"single","target":"ally","duration":"1t","effects":["defend:+30%","retaliations:+1"],"tags":["defend"]},
-    {"id":"deploy_stakes","name":"Piquerets","faction":"red_knights","type":"order","school":"tactics","cost":0,"cooldown":3,"range":4,"area":"line3","target":"ground","duration":"2t","effects":["hazard:stakes (cav_move_cost+2, dmg_small_on_enter)"],"tags":["zone_control"]},
-    {"id":"valiant_charge","name":"Charge Vaillante","faction":"red_knights","type":"ability","school":"tactics","cost":0,"cooldown":3,"range":"melee","area":"single","target":"enemy","duration":"instant","effects":["charge:2","dmg_physical:+25%"],"tags":["charge"]},
-    {"id":"firebolt","name":"Firebolt","faction":"red_knights","type":"spell","school":"fire","cost":8,"cooldown":1,"range":6,"area":"single","target":"enemy","duration":"instant","effects":["dmg_fire:12"],"tags":["nuke"]},
-    {"id":"fireball","name":"Fireball","faction":"red_knights","type":"spell","school":"fire","cost":14,"cooldown":2,"range":6,"area":"radius1","target":"enemy","duration":"instant","effects":["dmg_fire:18"],"tags":["aoe"]},
-
-    /* ===================== */
-    /*    SYLVAN HAVEN       */
-    /* ===================== */
-
-    {"id":"song_inspire","name":"Chant d’Inspiration","faction":"sylvan_haven","type":"order","school":"nature","cost":6,"cooldown":2,"range":4,"area":"radius1","target":"ally","duration":"1t","effects":["buff:initiative+1(1t)","buff:morale+1(1t)"],"tags":["song","support"]},
-    {"id":"mist_shroud","name":"Voile de Brume","faction":"sylvan_haven","type":"spell","school":"air","cost":10,"cooldown":3,"range":5,"area":"radius1","target":"ground","duration":"2t","effects":["ranged_dmg_taken:-25% allies in zone"],"tags":["zone","defense"]},
-    {"id":"entangle_roots","name":"Racines Entravantes","faction":"sylvan_haven","type":"spell","school":"nature","cost":8,"cooldown":2,"range":6,"area":"single","target":"enemy","duration":"1t","effects":["root:true","defence_melee:-1(1t)"],"tags":["control"]},
-    {"id":"wind_step","name":"Pas de Vent","faction":"sylvan_haven","type":"order","school":"air","cost":0,"cooldown":2,"range":"self","area":"self","target":"ally","duration":"instant","effects":["free_move:1"],"tags":["mobility"]},
-    {"id":"thorn_burst","name":"Gerbe d’Épines","faction":"sylvan_haven","type":"spell","school":"nature","cost":10,"cooldown":2,"range":5,"area":"cone_small","target":"enemy","duration":"instant","effects":["dmg_nature:12","status:bleed_light(2t)"],"tags":["aoe"]},
-    {"id":"regrowth","name":"Renaissance","faction":"sylvan_haven","type":"spell","school":"nature","cost":12,"cooldown":3,"range":6,"area":"single","target":"ally","duration":"2t","effects":["hot:6(2t)","dispel_poison:1"],"tags":["heal","hot"]},
-    {"id":"fae_glamour","name":"Glamour Féerique","faction":"sylvan_haven","type":"spell","school":"shadow","cost":10,"cooldown":3,"range":5,"area":"radius1","target":"enemy","duration":"1t","effects":["debuff:accuracy-15%(1t)","status:disoriented(1t)"],"tags":["debuff"]},
-    {"id":"rebirth_once","name":"Renaissance (Phénix de Rosée)","faction":"sylvan_haven","type":"passive","school":"nature","cost":null,"cooldown":null,"range":"self","area":"self","target":"self","duration":"passive","effects":["on_death:revive:50%hp (1/combat)"],"tags":["revive"]}
-  
-    /* ===== Solaceheim — skill tree IDs manquants ===== */
-    {"id":"sun_bless_start","name":"Aurore Bienveillante","faction":"solaceheim","type":"passive","school":"light","area":"army","target":"ally","duration":"precombat","effects":["apply:bless(1t) to 1 ally at battle start"]},
-    {"id":"lumen_matrix_e","name":"Lumen Matrix","faction":"solaceheim","type":"passive","school":"light","effects":["light_power:+15%","order_power:+15%","spell_cost:-1(min1)"]},
-    {"id":"solar_zenith_m","name":"Zénith du Soleil","faction":"solaceheim","type":"passive","school":"light","effects":["aura:initiative+1,morale+1(radius2)","1x/combat:cast sun_burst free"]},
-
-    {"id":"dune_march_n","name":"Marche des Dunes","faction":"solaceheim","type":"passive","school":"order","effects":["world:mp+5%"]},
-    {"id":"sand_step_a","name":"Pas de Sable","faction":"solaceheim","type":"passive","school":"order","effects":["world:mp+10%","world:ignore_sand_penalties"]},
-    {"id":"sirocco_e","name":"Brise du Sirocco","faction":"solaceheim","type":"passive","school":"air","effects":["desert_battle:initiative+1(round1)"]},
-    {"id":"sun_paths_m","name":"Chemins Solaires","faction":"solaceheim","type":"passive","school":"order","effects":["world:mp+15%","world:vision+1_desert","world:immune_sandstorm"]},
-
-    {"id":"ritual_beats_n","name":"Battements Rituels","faction":"solaceheim","type":"passive","school":"order","effects":["army:T1-T3 initiative+1"]},
-    {"id":"maneuver_chorale_a","name":"Chorale de Manœuvre","faction":"solaceheim","type":"order","school":"order","cost":0,"cooldown":3,"range":4,"area":"single","target":"ally","duration":"instant","effects":["reposition:+1hex","buff:morale+1(1t)"]},
-    {"id":"harmony_formation_e","name":"Formation Harmonie","faction":"solaceheim","type":"passive","school":"order","effects":["round1:line_formation_projectiles_taken:-1"]},
-    {"id":"ascetic_cadence_m","name":"Cadence Ascétique","faction":"solaceheim","type":"order","school":"order","cost":0,"cooldown":3,"range":"global","area":"multi2","target":"ally","duration":"1t","effects":["reposition:2 stacks","ally_flanking_dmg:+10%(1t)"]},
-
-    {"id":"mantra_ward_n","name":"Mantra de Protection","faction":"solaceheim","type":"passive","school":"order","effects":["army:defence_magic+1"]},
-    {"id":"guardian_intercession_e","name":"Intercession du Gardien","faction":"solaceheim","type":"reaction","school":"order","cooldown":1,"range":2,"area":"single","target":"ally","duration":"instant","effects":["if_ally<=30%hp_on_hit:damage_taken:-20%"]},
-    {"id":"solar_bulwark_m","name":"Rempart Solaire","faction":"solaceheim","type":"order","school":"order","cost":0,"cooldown":3,"range":6,"area":"single","target":"ally","duration":"1t","effects":["immune:spells","aoe_dmg_taken:-30%"]},
-
-    /* ===== Sylvan — skill tree IDs & sorts manquants ===== */
-    {"id":"dew_mend_n","name":"Dew Mend","faction":"sylvan_haven","type":"spell","school":"nature","cost":6,"range":6,"area":"single","target":"ally","duration":"instant","effects":["cleanse:poison,slow,burn"] , "tags":["cleanse"]},
-    {"id":"ripple_shield_a","name":"Ripple Shield","faction":"sylvan_haven","type":"order","school":"water","cost":6,"cooldown":3,"range":6,"area":"single","target":"ally","duration":"1t","effects":["buff:defence_magic+2(1t)"]},
-    {"id":"rebirth_chance_e","name":"Rebirth Chance","faction":"sylvan_haven","type":"passive","school":"nature","effects":["postbattle:revive_T1-T3:+10%"]},
-    {"id":"sanctuary_m","name":"Sanctuary","faction":"sylvan_haven","type":"spell","school":"light","cost":12,"cooldown":3,"range":5,"area":"radius1","target":"ground","duration":"2t","effects":["zone:regen_small_allies","zone:defence+1_allies"]},
-
-    {"id":"Slick_Ground_a","name":"Slick Ground","faction":"sylvan_haven","type":"order","school":"water","cost":8,"cooldown":3,"range":5,"area":"radius1","target":"ground","duration":"2t","effects":["hazard:slippery(move_cost+1,initiative-1_on_enter)"]},
-    {"id":"Whirlpool_Pull_e","name":"Whirlpool Pull","faction":"sylvan_haven","type":"order","school":"water","cost":10,"cooldown":3,"range":5,"area":"radius1","target":"enemy","duration":"instant","effects":["pull:1_toward_center"]},
-    {"id":"Mist_Portal_m","name":"Mist Portal","faction":"sylvan_haven","type":"order","school":"air","cost":12,"cooldown":4,"range":6,"area":"single","target":"ally","duration":"instant","effects":["teleport_short:ignore_los"]},
-
-    {"id":"Zephyr_Step_n","name":"Zephyr Step","faction":"sylvan_haven","type":"order","school":"air","cost":0,"cooldown":2,"range":"self","area":"self","target":"ally","duration":"instant","effects":["free_move:+1"]},
-    {"id":"song_gust","name":"Gust","faction":"sylvan_haven","type":"order","school":"air","cost":0,"cooldown":3,"range":3,"area":"cone_small","target":"enemy","duration":"1t","effects":["push:1","debuff:initiative-1(1t)"]},
-    {"id":"Lullaby_e","name":"Lullaby","faction":"sylvan_haven","type":"spell","school":"shadow","cost":10,"cooldown":3,"range":6,"area":"single","target":"enemy","duration":"1t","effects":["sleep:1t (resistible)"]},
-    {"id":"mass_haste_once","name":"Wind Chorus","faction":"sylvan_haven","type":"spell","school":"air","cost":14,"cooldown":99,"range":"global","area":"army","target":"ally","duration":"1t","effects":["buff:initiative+1(1t)","buff:speed+1(1t)"],"tags":["1x_combat"]},
-
-    {"id":"Bramble_Field_a","name":"Bramble Field","faction":"sylvan_haven","type":"order","school":"nature","cost":8,"cooldown":2,"range":5,"area":"line3","target":"ground","duration":"2t","effects":["hazard:brambles (on_enter:thorn_small,slow)"]},
-    {"id":"Summon_Sprite_e","name":"Summon Sprite","faction":"sylvan_haven","type":"spell","school":"nature","cost":12,"cooldown":4,"range":4,"area":"single","target":"ground","duration":"instant","effects":["summon:fae_T1_temp"]},
-    {"id":"Forest_Heart_m","name":"Forest Heart","faction":"sylvan_haven","type":"order","school":"nature","cost":12,"cooldown":3,"range":4,"area":"radius1","target":"ground","duration":"2t","effects":["totem:heal_small_allies","totem:thorns_enemies"]},
-
-    /* ===== Sylvan — capacités d’unités manquantes ===== */
-    {"id":"forest_step","name":"Forest Step","faction":"sylvan_haven","type":"passive","school":"nature","effects":["world:forest_move_cost:-1","battle:forest_move_cost:-1"]},
-    {"id":"trick_dust","name":"Trick Dust","faction":"sylvan_haven","type":"ability","school":"shadow","cost":0,"cooldown":2,"range":1,"area":"single","target":"enemy","duration":"1t","effects":["morale:-1"]},
-    {"id":"pounce","name":"Pounce","faction":"sylvan_haven","type":"ability","school":null,"cost":0,"cooldown":2,"range":"melee","area":"single","target":"enemy","duration":"instant","effects":["charge:2","status:bleed_light(2t)","bonus_vs_flanked:+25%"]},
-    {"id":"flanking_bonus","name":"Flanking Bonus","faction":"sylvan_haven","type":"passive","school":null,"effects":["flank_dmg:+25%"]},
-    {"id":"amphibious","name":"Amphibious","faction":"sylvan_haven","type":"passive","school":"water","effects":["ignore_river/ford_penalties"]},
-    {"id":"water_strike","name":"Water Strike","faction":"sylvan_haven","type":"passive","school":"water","effects":["vs_burning:+25% dmg"]},
-    {"id":"serpentine_dodge","name":"Serpentine Dodge","faction":"sylvan_haven","type":"passive","school":"air","effects":["projectile_evade:+20%"]},
-    {"id":"rooted_guard","name":"Rooted Guard","faction":"sylvan_haven","type":"order","school":"nature","cost":0,"cooldown":2,"range":"self","area":"self","target":"ally","duration":"1t","effects":["posture:+2_defences","initiative:-1"]},
-    {"id":"taunt","name":"Taunt","faction":"sylvan_haven","type":"order","school":"warcry","cost":0,"cooldown":3,"range":2,"area":"radius1","target":"enemy","duration":"1t","effects":["forced_target:self"]},
-    {"id":"song_of_wind","name":"Song of Wind","faction":"sylvan_haven","type":"order","school":"air","cost":8,"cooldown":3,"range":3,"area":"cone_small","target":"enemy","duration":"instant","effects":["push:1"]},
-    {"id":"veil_aura","name":"Veil Aura","faction":"sylvan_haven","type":"aura","school":"air","effects":["enemy_vision:-1(radius2)"]},
-    {"id":"fear","name":"Fear","faction":"sylvan_haven","type":"ability","school":"shadow","cost":0,"cooldown":3,"range":2,"area":"radius1","target":"enemy","duration":"instant","effects":["morale_test:panic"]},
-    {"id":"purifying_mist","name":"Purifying Mist","faction":"sylvan_haven","type":"order","school":"water","cost":0,"cooldown":3,"range":2,"area":"radius1","target":"ally","duration":"instant","effects":["heal:6","cleanse:1"]},
-
-    /* ===== Red Knights — capacités/sorts manquants ===== */
-    {"id":"shield_block","name":"Shield Block","faction":"red_knights","type":"passive","school":null,"effects":["block_chance:+20% melee"]},
-    {"id":"focus","name":"Focus","faction":"red_knights","type":"order","school":"warcry","cost":0,"cooldown":2,"range":"self","area":"self","target":"ally","duration":"1t","effects":["ranged_accuracy:+15%","crit+5%"]},
-    {"id":"chain_lightning","name":"Chain Lightning","faction":"red_knights","type":"spell","school":"air","cost":14,"cooldown":3,"range":6,"area":"chain3","target":"enemy","duration":"instant","effects":["dmg_lightning:14 -> 10 -> 6"]},
-    {"id":"ice_wall","name":"Ice Wall","faction":"red_knights","type":"spell","school":"water","cost":12,"cooldown":3,"range":6,"area":"line3","target":"ground","duration":"2t","effects":["create_wall:blocks_LOS_and_path"]},
-    {"id":"charge","name":"Charge","faction":"red_knights","type":"ability","school":"tactics","cost":0,"cooldown":2,"range":"melee","area":"single","target":"enemy","duration":"instant","effects":["charge:2","dmg_physical:+25%"]},
-    {"id":"multi_shot","name":"Multi Shot","faction":"red_knights","type":"ability","school":"tactics","cost":0,"cooldown":3,"range":5,"area":"line3","target":"enemy","duration":"instant","effects":["ranged_attack:3_targets_line"]},
-    {"id":"dragon_breath_cone","name":"Dragon Breath","faction":"red_knights","type":"ability","school":"fire","cost":0,"cooldown":2,"range":1,"area":"cone_small","target":"enemy","duration":"instant","effects":["dmg_fire:weaponx1.2","pierce_line:true"]},
-    {"id":"passive_heal","name":"Passive Heal","faction":"red_knights","type":"passive","school":"light","effects":["end_turn:heal_self_small"]},
-
-    /* ===== Bestiaire “scarlet” — capacités génériques ===== */
-    {"id":"ember_spit","name":"Ember Spit","faction":null,"type":"ability","school":"fire","cost":0,"cooldown":2,"range":2,"area":"single","target":"enemy","duration":"instant","effects":["dmg_fire:small"]},
-    {"id":"fire_resistance","name":"Fire Resistance","faction":null,"type":"passive","school":"fire","effects":["fire_dmg_taken:-25%"]},
-    {"id":"heated_scales","name":"Heated Scales","faction":null,"type":"passive","school":"fire","effects":["on_melee_hit:dot_burn:20%"]},
-    {"id":"forest_camouflage","name":"Forest Camouflage","faction":null,"type":"passive","school":"nature","effects":["forest_evade:+20%"]},
-    {"id":"stalk","name":"Stalk","faction":null,"type":"passive","school":"shadow","effects":["if_undetected:first_strike"]},
-    {"id":"gore_charge","name":"Gore Charge","faction":null,"type":"ability","school":"tactics","cost":0,"cooldown":2,"range":"melee","area":"single","effects":["after_move>=2:+50% dmg","knockback:1"]},
-    {"id":"thick_hide","name":"Thick Hide","faction":null,"type":"passive","school":null,"effects":["melee_dmg_taken:-20%"]},
-    {"id":"scavenge_on_kill","name":"Scavenge on Kill","faction":null,"type":"passive","school":null,"effects":["on_kill:heal:6"]},
-    {"id":"wail","name":"Wail","faction":null,"type":"ability","school":"shadow","cost":0,"cooldown":2,"range":2,"area":"radius1","effects":["morale:-1 (fear test)"]},
-    {"id":"incorporeal","name":"Incorporeal","faction":null,"type":"passive","school":"shadow","effects":["miss_physical:+20%"]},
-    {"id":"hover","name":"Hover","faction":null,"type":"passive","school":"air","effects":["ignore_terrain_penalties"]},
-    {"id":"water_resistance","name":"Water Resistance","faction":null,"type":"passive","school":"water","effects":["water_dmg_taken:-25%"]},
-    {"id":"constrict","name":"Constrict","faction":null,"type":"ability","school":"nature","cost":0,"cooldown":2,"range":"melee","area":"single","effects":["immobilize:1t"]}
- ]
+  "schools": {
+    "light": {
+      "1": {
+        "active": [
+          {
+            "id": "bless",
+            "name": "Bless",
+            "faction": "solaceheim",
+            "type": "spell",
+            "school": "light",
+            "cost": 6,
+            "cooldown": 0,
+            "range": 6,
+            "area": "single",
+            "target": "ally",
+            "duration": "1t",
+            "effects": [
+              "buff:attack_min+1(1t)",
+              "buff:attack_max+1(1t)"
+            ],
+            "tags": [
+              "core"
+            ]
+          },
+          {
+            "id": "mass_bless_I",
+            "name": "Mass Bless I",
+            "faction": "solaceheim",
+            "type": "spell",
+            "school": "light",
+            "cost": 16,
+            "cooldown": 3,
+            "range": "global",
+            "area": "army",
+            "target": "ally",
+            "duration": "1t",
+            "effects": [
+              "buff:attack_min+1(1t)",
+              "buff:attack_max+1(1t)"
+            ],
+            "tags": [
+              "group"
+            ]
+          },
+          {
+            "id": "minor_heal",
+            "name": "Minor Heal",
+            "faction": "solaceheim",
+            "type": "spell",
+            "school": "light",
+            "cost": 6,
+            "cooldown": 0,
+            "range": 6,
+            "area": "single",
+            "target": "ally",
+            "duration": "instant",
+            "effects": [
+              "heal:8"
+            ],
+            "tags": [
+              "heal"
+            ]
+          },
+          {
+            "id": "heal",
+            "name": "Heal",
+            "faction": null,
+            "type": "spell",
+            "school": "light",
+            "cost": 6,
+            "cooldown": 0,
+            "range": 6,
+            "area": "single",
+            "target": "ally",
+            "duration": "instant",
+            "effects": [
+              "heal:20"
+            ],
+            "tags": [
+              "heal"
+            ]
+          },
+          {
+            "id": "cleanse",
+            "name": "Cleanse",
+            "faction": "solaceheim",
+            "type": "spell",
+            "school": "light",
+            "cost": 8,
+            "cooldown": 1,
+            "range": 6,
+            "area": "single",
+            "target": "ally",
+            "duration": "instant",
+            "effects": [
+              "dispel:1"
+            ],
+            "tags": [
+              "cleanse"
+            ]
+          },
+          {
+            "id": "mass_cleanse",
+            "name": "Mass Cleanse",
+            "faction": "solaceheim",
+            "type": "spell",
+            "school": "light",
+            "cost": 24,
+            "cooldown": 4,
+            "range": "global",
+            "area": "army",
+            "target": "ally",
+            "duration": "instant",
+            "effects": [
+              "dispel:1_all_allies"
+            ],
+            "tags": [
+              "cleanse",
+              "group"
+            ]
+          },
+          {
+            "id": "sun_burst",
+            "name": "Sun Burst",
+            "faction": "solaceheim",
+            "type": "spell",
+            "school": "light",
+            "cost": 10,
+            "cooldown": 1,
+            "range": 6,
+            "area": "radius1",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "dmg_light:14"
+            ],
+            "tags": [
+              "nuke"
+            ]
+          },
+          {
+            "id": "chant_sacre_I",
+            "name": "Chant Sacré I",
+            "faction": "solaceheim",
+            "type": "order",
+            "school": "light",
+            "cost": 10,
+            "cooldown": 3,
+            "range": 3,
+            "area": "radius1",
+            "target": "mixed",
+            "duration": "1t",
+            "effects": [
+              "ally:buff:initiative+1(1t)",
+              "enemy:debuff:defence_magic-1(1t)"
+            ],
+            "tags": [
+              "chant"
+            ]
+          },
+          {
+            "id": "sanctuary_m",
+            "name": "Sanctuary",
+            "faction": "sylvan_haven",
+            "type": "spell",
+            "school": "light",
+            "cost": 12,
+            "cooldown": 3,
+            "range": 5,
+            "area": "radius1",
+            "target": "ground",
+            "duration": "2t",
+            "effects": [
+              "zone:regen_small_allies",
+              "zone:defence+1_allies"
+            ]
+          }
+        ],
+        "passive": [
+          {
+            "id": "radiant_aura",
+            "name": "Radiant Aura",
+            "faction": "solaceheim",
+            "type": "aura",
+            "school": "light",
+            "cost": null,
+            "cooldown": null,
+            "range": "adjacent",
+            "area": "radius1",
+            "target": "ally",
+            "duration": "passive",
+            "effects": [
+              "buff:morale+1(adjacent)"
+            ],
+            "tags": [
+              "aura"
+            ]
+          },
+          {
+            "id": "light_immunity",
+            "name": "Immunité Lumière",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "light",
+            "cost": null,
+            "cooldown": null,
+            "range": "self",
+            "area": "self",
+            "target": "self",
+            "duration": "passive",
+            "effects": [
+              "immune:shadow_curses_minor"
+            ],
+            "tags": [
+              "resist"
+            ]
+          },
+          {
+            "id": "sun_bless_start",
+            "name": "Aurore Bienveillante",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "light",
+            "area": "army",
+            "target": "ally",
+            "duration": "precombat",
+            "effects": [
+              "apply:bless(1t) to 1 ally at battle start"
+            ]
+          },
+          {
+            "id": "lumen_matrix_e",
+            "name": "Lumen Matrix",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "light",
+            "effects": [
+              "light_power:+15%",
+              "order_power:+15%",
+              "spell_cost:-1(min1)"
+            ]
+          },
+          {
+            "id": "solar_zenith_m",
+            "name": "Zénith du Soleil",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "light",
+            "effects": [
+              "aura:initiative+1,morale+1(radius2)",
+              "1x/combat:cast sun_burst free"
+            ]
+          },
+          {
+            "id": "passive_heal",
+            "name": "Passive Heal",
+            "faction": "red_knights",
+            "type": "passive",
+            "school": "light",
+            "effects": [
+              "end_turn:heal_self_small"
+            ]
+          }
+        ]
+      },
+      "2": {
+        "active": [
+          {
+            "id": "mass_bless_II",
+            "name": "Mass Bless II",
+            "faction": "solaceheim",
+            "type": "spell",
+            "school": "light",
+            "cost": 22,
+            "cooldown": 3,
+            "range": "global",
+            "area": "army",
+            "target": "ally",
+            "duration": "1t",
+            "effects": [
+              "buff:attack_min+1(1t)",
+              "buff:attack_max+1(1t)",
+              "buff:initiative+1(1t)"
+            ],
+            "tags": [
+              "group",
+              "improved"
+            ]
+          },
+          {
+            "id": "sun_burst_II",
+            "name": "Sun Burst II",
+            "faction": "solaceheim",
+            "type": "spell",
+            "school": "light",
+            "cost": 14,
+            "cooldown": 1,
+            "range": 6,
+            "area": "radius1",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "dmg_light:18",
+              "debuff:defence_magic-1(1t)"
+            ],
+            "tags": [
+              "nuke",
+              "improved"
+            ]
+          },
+          {
+            "id": "chant_sacre_II",
+            "name": "Chant Sacré II",
+            "faction": "solaceheim",
+            "type": "order",
+            "school": "light",
+            "cost": 12,
+            "cooldown": 3,
+            "range": 3,
+            "area": "radius1",
+            "target": "mixed",
+            "duration": "1t",
+            "effects": [
+              "ally:buff:initiative+1(1t)",
+              "ally:buff:morale+1(1t)",
+              "enemy:debuff:defence_magic-1(1t)"
+            ],
+            "tags": [
+              "chant",
+              "improved"
+            ]
+          }
+        ],
+        "passive": []
+      }
+    },
+    "order": {
+      "1": {
+        "active": [
+          {
+            "id": "hymn_light",
+            "name": "Hymne Lumineux",
+            "faction": "solaceheim",
+            "type": "order",
+            "school": "order",
+            "cost": 8,
+            "cooldown": 3,
+            "range": 4,
+            "area": "cone_small",
+            "target": "mixed",
+            "duration": "1t",
+            "effects": [
+              "ally:buff:attack_min+1(1t)",
+              "ally:buff:attack_max+1(1t)",
+              "enemy:debuff:defence_magic-1(1t)"
+            ],
+            "tags": [
+              "chant"
+            ]
+          },
+          {
+            "id": "aegis",
+            "name": "Aegis des Sutras",
+            "faction": "solaceheim",
+            "type": "order",
+            "school": "order",
+            "cost": 10,
+            "cooldown": 2,
+            "range": 6,
+            "area": "single",
+            "target": "ally",
+            "duration": "1t",
+            "effects": [
+              "buff:defence_melee+2(1t)",
+              "buff:defence_magic+2(1t)",
+              "cleanse:1"
+            ],
+            "tags": [
+              "protect"
+            ]
+          },
+          {
+            "id": "sonic_bell_I",
+            "name": "Cloche Sonore I",
+            "faction": "solaceheim",
+            "type": "order",
+            "school": "order",
+            "cost": 8,
+            "cooldown": 2,
+            "range": 3,
+            "area": "radius1",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "dmg_sonic:8",
+              "debuff:accuracy-5%(1t)"
+            ],
+            "tags": [
+              "aoe"
+            ]
+          },
+          {
+            "id": "debuff_precision_I",
+            "name": "Maladresse I",
+            "faction": "solaceheim",
+            "type": "order",
+            "school": "order",
+            "cost": 4,
+            "cooldown": 1,
+            "range": 6,
+            "area": "single",
+            "target": "enemy",
+            "duration": "1t",
+            "effects": [
+              "debuff:accuracy-5%"
+            ],
+            "tags": [
+              "control"
+            ]
+          },
+          {
+            "id": "protect_ally_I",
+            "name": "Protection d’Allié I",
+            "faction": "solaceheim",
+            "type": "reaction",
+            "school": "order",
+            "cost": null,
+            "cooldown": 1,
+            "range": "adjacent",
+            "area": "single",
+            "target": "ally",
+            "duration": "1t",
+            "effects": [
+              "redirect:20%"
+            ],
+            "tags": [
+              "guard"
+            ]
+          },
+          {
+            "id": "silent_guard",
+            "name": "Garde Silencieuse",
+            "faction": "solaceheim",
+            "type": "reaction",
+            "school": "order",
+            "cost": null,
+            "cooldown": 3,
+            "range": "adjacent",
+            "area": "single",
+            "target": "ally",
+            "duration": "instant",
+            "effects": [
+              "intercept_hit:1"
+            ],
+            "tags": [
+              "bodyguard"
+            ]
+          },
+          {
+            "id": "maneuver_chorale_a",
+            "name": "Chorale de Manœuvre",
+            "faction": "solaceheim",
+            "type": "order",
+            "school": "order",
+            "cost": 0,
+            "cooldown": 3,
+            "range": 4,
+            "area": "single",
+            "target": "ally",
+            "duration": "instant",
+            "effects": [
+              "reposition:+1hex",
+              "buff:morale+1(1t)"
+            ]
+          },
+          {
+            "id": "ascetic_cadence_m",
+            "name": "Cadence Ascétique",
+            "faction": "solaceheim",
+            "type": "order",
+            "school": "order",
+            "cost": 0,
+            "cooldown": 3,
+            "range": "global",
+            "area": "multi2",
+            "target": "ally",
+            "duration": "1t",
+            "effects": [
+              "reposition:2 stacks",
+              "ally_flanking_dmg:+10%(1t)"
+            ]
+          },
+          {
+            "id": "guardian_intercession_e",
+            "name": "Intercession du Gardien",
+            "faction": "solaceheim",
+            "type": "reaction",
+            "school": "order",
+            "cooldown": 1,
+            "range": 2,
+            "area": "single",
+            "target": "ally",
+            "duration": "instant",
+            "effects": [
+              "if_ally<=30%hp_on_hit:damage_taken:-20%"
+            ]
+          },
+          {
+            "id": "solar_bulwark_m",
+            "name": "Rempart Solaire",
+            "faction": "solaceheim",
+            "type": "order",
+            "school": "order",
+            "cost": 0,
+            "cooldown": 3,
+            "range": 6,
+            "area": "single",
+            "target": "ally",
+            "duration": "1t",
+            "effects": [
+              "immune:spells",
+              "aoe_dmg_taken:-30%"
+            ]
+          }
+        ],
+        "passive": [
+          {
+            "id": "ward_I",
+            "name": "Ward I",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "order",
+            "cost": null,
+            "cooldown": null,
+            "range": "self",
+            "area": "self",
+            "target": "self",
+            "duration": "passive",
+            "effects": [
+              "reduce_first_magic_hit:10%"
+            ],
+            "tags": [
+              "barrier"
+            ]
+          },
+          {
+            "id": "chant_courage_I",
+            "name": "Chant de Courage I",
+            "faction": "solaceheim",
+            "type": "aura",
+            "school": "order",
+            "cost": null,
+            "cooldown": null,
+            "range": "adjacent",
+            "area": "radius1",
+            "target": "ally",
+            "duration": "passive",
+            "effects": [
+              "buff:morale+1"
+            ],
+            "tags": [
+              "chant"
+            ]
+          },
+          {
+            "id": "inspire_initiative_I",
+            "name": "Inspiration d’Initiative I",
+            "faction": "solaceheim",
+            "type": "aura",
+            "school": "order",
+            "cost": null,
+            "cooldown": null,
+            "range": "adjacent",
+            "area": "radius1",
+            "target": "ally",
+            "duration": "passive",
+            "effects": [
+              "buff:initiative+1"
+            ],
+            "tags": [
+              "aura"
+            ]
+          },
+          {
+            "id": "discipline_aura_I",
+            "name": "Aura de Discipline I",
+            "faction": "solaceheim",
+            "type": "aura",
+            "school": "order",
+            "cost": null,
+            "cooldown": null,
+            "range": "adjacent",
+            "area": "radius1",
+            "target": "ally",
+            "duration": "passive",
+            "effects": [
+              "resist:fear",
+              "resist:stun_minor"
+            ],
+            "tags": [
+              "aura"
+            ]
+          },
+          {
+            "id": "fervor_I",
+            "name": "Ferveur I",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "order",
+            "cost": null,
+            "cooldown": null,
+            "range": "self",
+            "area": "self",
+            "target": "self",
+            "duration": "passive",
+            "effects": [
+              "dmg_bonus:+20% if morale>=2"
+            ],
+            "tags": [
+              "zeal"
+            ]
+          },
+          {
+            "id": "thorn_aura",
+            "name": "Aura d’Épines",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "order",
+            "cost": null,
+            "cooldown": null,
+            "range": "self",
+            "area": "self",
+            "target": "enemy",
+            "duration": "passive",
+            "effects": [
+              "return_melee:25%"
+            ],
+            "tags": [
+              "thorns"
+            ]
+          },
+          {
+            "id": "punish_magic",
+            "name": "Punition Magique",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "order",
+            "cost": null,
+            "cooldown": null,
+            "range": "self",
+            "area": "self",
+            "target": "enemy",
+            "duration": "passive",
+            "effects": [
+              "return_magic:25%"
+            ],
+            "tags": [
+              "reflect"
+            ]
+          },
+          {
+            "id": "no_morale_penalty",
+            "name": "Froid Fanatisme",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "order",
+            "cost": null,
+            "cooldown": null,
+            "range": "army",
+            "area": "army",
+            "target": "self",
+            "duration": "passive",
+            "effects": [
+              "ignore_morale_penalty_on_ally_death:true"
+            ],
+            "tags": [
+              "zeal"
+            ]
+          },
+          {
+            "id": "dune_march_n",
+            "name": "Marche des Dunes",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "order",
+            "effects": [
+              "world:mp+5%"
+            ]
+          },
+          {
+            "id": "sand_step_a",
+            "name": "Pas de Sable",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "order",
+            "effects": [
+              "world:mp+10%",
+              "world:ignore_sand_penalties"
+            ]
+          },
+          {
+            "id": "sun_paths_m",
+            "name": "Chemins Solaires",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "order",
+            "effects": [
+              "world:mp+15%",
+              "world:vision+1_desert",
+              "world:immune_sandstorm"
+            ]
+          },
+          {
+            "id": "ritual_beats_n",
+            "name": "Battements Rituels",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "order",
+            "effects": [
+              "army:T1-T3 initiative+1"
+            ]
+          },
+          {
+            "id": "harmony_formation_e",
+            "name": "Formation Harmonie",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "order",
+            "effects": [
+              "round1:line_formation_projectiles_taken:-1"
+            ]
+          },
+          {
+            "id": "mantra_ward_n",
+            "name": "Mantra de Protection",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "order",
+            "effects": [
+              "army:defence_magic+1"
+            ]
+          }
+        ]
+      },
+      "2": {
+        "active": [
+          {
+            "id": "sonic_bell_II",
+            "name": "Cloche Sonore II",
+            "faction": "solaceheim",
+            "type": "order",
+            "school": "order",
+            "cost": 10,
+            "cooldown": 2,
+            "range": 3,
+            "area": "radius1",
+            "target": "enemy",
+            "duration": "1t",
+            "effects": [
+              "dmg_sonic:10",
+              "debuff:accuracy-10%(1t)",
+              "status:stagger(1t)"
+            ],
+            "tags": [
+              "aoe",
+              "control"
+            ]
+          },
+          {
+            "id": "debuff_precision_II",
+            "name": "Maladresse II",
+            "faction": "solaceheim",
+            "type": "order",
+            "school": "order",
+            "cost": 6,
+            "cooldown": 1,
+            "range": 6,
+            "area": "single",
+            "target": "enemy",
+            "duration": "1t",
+            "effects": [
+              "debuff:accuracy-10%"
+            ],
+            "tags": [
+              "control",
+              "improved"
+            ]
+          },
+          {
+            "id": "protect_ally_II",
+            "name": "Protection d’Allié II",
+            "faction": "solaceheim",
+            "type": "reaction",
+            "school": "order",
+            "cost": null,
+            "cooldown": 1,
+            "range": "adjacent",
+            "area": "single",
+            "target": "ally",
+            "duration": "1t",
+            "effects": [
+              "redirect:35%",
+              "buff:defence_magic+1(1t)"
+            ],
+            "tags": [
+              "guard",
+              "improved"
+            ]
+          }
+        ],
+        "passive": [
+          {
+            "id": "chant_courage_II",
+            "name": "Chant de Courage II",
+            "faction": "solaceheim",
+            "type": "aura",
+            "school": "order",
+            "cost": null,
+            "cooldown": null,
+            "range": "adjacent",
+            "area": "radius1",
+            "target": "ally",
+            "duration": "passive",
+            "effects": [
+              "buff:morale+2"
+            ],
+            "tags": [
+              "chant",
+              "improved"
+            ]
+          },
+          {
+            "id": "inspire_initiative_II",
+            "name": "Inspiration d’Initiative II",
+            "faction": "solaceheim",
+            "type": "aura",
+            "school": "order",
+            "cost": null,
+            "cooldown": null,
+            "range": "adjacent",
+            "area": "radius1",
+            "target": "ally",
+            "duration": "passive",
+            "effects": [
+              "buff:initiative+2"
+            ],
+            "tags": [
+              "aura",
+              "improved"
+            ]
+          },
+          {
+            "id": "discipline_aura_II",
+            "name": "Aura de Discipline II",
+            "faction": "solaceheim",
+            "type": "aura",
+            "school": "order",
+            "cost": null,
+            "cooldown": null,
+            "range": "adjacent",
+            "area": "radius1",
+            "target": "ally",
+            "duration": "passive",
+            "effects": [
+              "resist:fear",
+              "resist:stun",
+              "resist:charm_minor"
+            ],
+            "tags": [
+              "aura",
+              "improved"
+            ]
+          }
+        ]
+      }
+    },
+    "none": {
+      "1": {
+        "active": [
+          {
+            "id": "sweep_attack",
+            "name": "Balayage",
+            "faction": "solaceheim",
+            "type": "ability",
+            "school": null,
+            "cost": null,
+            "cooldown": 2,
+            "range": "melee",
+            "area": "line3",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "dmg_physical:weapon",
+              "cleave:2"
+            ],
+            "tags": [
+              "melee",
+              "cleave"
+            ]
+          },
+          {
+            "id": "impale",
+            "name": "Empaler",
+            "faction": "solaceheim",
+            "type": "ability",
+            "school": null,
+            "cost": 0,
+            "cooldown": 2,
+            "range": "melee",
+            "area": "single",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "charge:2",
+              "ignore:defence_melee:2",
+              "dmg_physical:weapon+"
+            ],
+            "tags": [
+              "charge"
+            ]
+          },
+          {
+            "id": "pounce",
+            "name": "Pounce",
+            "faction": "sylvan_haven",
+            "type": "ability",
+            "school": null,
+            "cost": 0,
+            "cooldown": 2,
+            "range": "melee",
+            "area": "single",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "charge:2",
+              "status:bleed_light(2t)",
+              "bonus_vs_flanked:+25%"
+            ]
+          }
+        ],
+        "passive": [
+          {
+            "id": "counterstrike_I",
+            "name": "Riposte I",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": null,
+            "cost": null,
+            "cooldown": null,
+            "range": "self",
+            "area": "self",
+            "target": "self",
+            "duration": "passive",
+            "effects": [
+              "counterattacks:+1"
+            ],
+            "tags": [
+              "melee"
+            ]
+          },
+          {
+            "id": "reflect_small_I",
+            "name": "Renvoi Mineur",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": null,
+            "cost": null,
+            "cooldown": null,
+            "range": "self",
+            "area": "self",
+            "target": "enemy",
+            "duration": "passive",
+            "effects": [
+              "return_melee:15%"
+            ],
+            "tags": [
+              "thorns"
+            ]
+          },
+          {
+            "id": "flanking_bonus",
+            "name": "Flanking Bonus",
+            "faction": "sylvan_haven",
+            "type": "passive",
+            "school": null,
+            "effects": [
+              "flank_dmg:+25%"
+            ]
+          },
+          {
+            "id": "shield_block",
+            "name": "Shield Block",
+            "faction": "red_knights",
+            "type": "passive",
+            "school": null,
+            "effects": [
+              "block_chance:+20% melee"
+            ]
+          },
+          {
+            "id": "thick_hide",
+            "name": "Thick Hide",
+            "faction": null,
+            "type": "passive",
+            "school": null,
+            "effects": [
+              "melee_dmg_taken:-20%"
+            ]
+          },
+          {
+            "id": "scavenge_on_kill",
+            "name": "Scavenge on Kill",
+            "faction": null,
+            "type": "passive",
+            "school": null,
+            "effects": [
+              "on_kill:heal:6"
+            ]
+          }
+        ]
+      },
+      "2": {
+        "active": [],
+        "passive": [
+          {
+            "id": "counterstrike_II",
+            "name": "Riposte II",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": null,
+            "cost": null,
+            "cooldown": null,
+            "range": "self",
+            "area": "self",
+            "target": "self",
+            "duration": "passive",
+            "effects": [
+              "counterattacks:+2"
+            ],
+            "tags": [
+              "melee",
+              "improved"
+            ]
+          }
+        ]
+      }
+    },
+    "shadow": {
+      "1": {
+        "active": [
+          {
+            "id": "camouflage_I",
+            "name": "Camouflage I",
+            "faction": "solaceheim",
+            "type": "order",
+            "school": "shadow",
+            "cost": 6,
+            "cooldown": 3,
+            "range": "self",
+            "area": "self",
+            "target": "self",
+            "duration": "1t",
+            "effects": [
+              "invisible:true"
+            ],
+            "tags": [
+              "stealth"
+            ]
+          },
+          {
+            "id": "accuracy_curse_I",
+            "name": "Anathème de Précision",
+            "faction": "solaceheim",
+            "type": "order",
+            "school": "shadow",
+            "cost": 6,
+            "cooldown": 2,
+            "range": 6,
+            "area": "single",
+            "target": "enemy",
+            "duration": "1t",
+            "effects": [
+              "debuff:accuracy-10%"
+            ],
+            "tags": [
+              "hex"
+            ]
+          },
+          {
+            "id": "panic_screech",
+            "name": "Hurlement de Panique",
+            "faction": "solaceheim",
+            "type": "ability",
+            "school": "shadow",
+            "cost": 0,
+            "cooldown": 3,
+            "range": 2,
+            "area": "radius1",
+            "target": "enemy",
+            "duration": "1t",
+            "effects": [
+              "status:fear(T1-T3)"
+            ],
+            "tags": [
+              "control"
+            ]
+          },
+          {
+            "id": "silence_step",
+            "name": "Pas de Silence",
+            "faction": "solaceheim",
+            "type": "ability",
+            "school": "shadow",
+            "cost": 0,
+            "cooldown": 2,
+            "range": "melee",
+            "area": "single",
+            "target": "enemy",
+            "duration": "1t",
+            "effects": [
+              "next_spell_cost:+5"
+            ],
+            "tags": [
+              "tax"
+            ]
+          },
+          {
+            "id": "consume_corpse",
+            "name": "Consumer le Cadavre",
+            "faction": "solaceheim",
+            "type": "ability",
+            "school": "shadow",
+            "cost": 0,
+            "cooldown": 3,
+            "range": 1,
+            "area": "single",
+            "target": "ground",
+            "duration": "instant",
+            "effects": [
+              "heal:15"
+            ],
+            "tags": [
+              "corpse"
+            ]
+          },
+          {
+            "id": "fae_glamour",
+            "name": "Glamour Féerique",
+            "faction": "sylvan_haven",
+            "type": "spell",
+            "school": "shadow",
+            "cost": 10,
+            "cooldown": 3,
+            "range": 5,
+            "area": "radius1",
+            "target": "enemy",
+            "duration": "1t",
+            "effects": [
+              "debuff:accuracy-15%(1t)",
+              "status:disoriented(1t)"
+            ],
+            "tags": [
+              "debuff"
+            ]
+          },
+          {
+            "id": "Lullaby_e",
+            "name": "Lullaby",
+            "faction": "sylvan_haven",
+            "type": "spell",
+            "school": "shadow",
+            "cost": 10,
+            "cooldown": 3,
+            "range": 6,
+            "area": "single",
+            "target": "enemy",
+            "duration": "1t",
+            "effects": [
+              "sleep:1t (resistible)"
+            ]
+          },
+          {
+            "id": "trick_dust",
+            "name": "Trick Dust",
+            "faction": "sylvan_haven",
+            "type": "ability",
+            "school": "shadow",
+            "cost": 0,
+            "cooldown": 2,
+            "range": 1,
+            "area": "single",
+            "target": "enemy",
+            "duration": "1t",
+            "effects": [
+              "morale:-1"
+            ]
+          },
+          {
+            "id": "fear",
+            "name": "Fear",
+            "faction": "sylvan_haven",
+            "type": "ability",
+            "school": "shadow",
+            "cost": 0,
+            "cooldown": 3,
+            "range": 2,
+            "area": "radius1",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "morale_test:panic"
+            ]
+          },
+          {
+            "id": "wail",
+            "name": "Wail",
+            "faction": null,
+            "type": "ability",
+            "school": "shadow",
+            "cost": 0,
+            "cooldown": 2,
+            "range": 2,
+            "area": "radius1",
+            "effects": [
+              "morale:-1 (fear test)"
+            ]
+          }
+        ],
+        "passive": [
+          {
+            "id": "terror_aura",
+            "name": "Aura de Terreur",
+            "faction": "solaceheim",
+            "type": "aura",
+            "school": "shadow",
+            "cost": null,
+            "cooldown": null,
+            "range": "adjacent",
+            "area": "radius1",
+            "target": "enemy",
+            "duration": "passive",
+            "effects": [
+              "morale:-1"
+            ],
+            "tags": [
+              "fear"
+            ]
+          },
+          {
+            "id": "stalk",
+            "name": "Stalk",
+            "faction": null,
+            "type": "passive",
+            "school": "shadow",
+            "effects": [
+              "if_undetected:first_strike"
+            ]
+          },
+          {
+            "id": "incorporeal",
+            "name": "Incorporeal",
+            "faction": null,
+            "type": "passive",
+            "school": "shadow",
+            "effects": [
+              "miss_physical:+20%"
+            ]
+          }
+        ]
+      },
+      "2": {
+        "active": [
+          {
+            "id": "camouflage_II",
+            "name": "Camouflage II",
+            "faction": "solaceheim",
+            "type": "order",
+            "school": "shadow",
+            "cost": 8,
+            "cooldown": 4,
+            "range": "self",
+            "area": "self",
+            "target": "self",
+            "duration": "2t",
+            "effects": [
+              "invisible:true",
+              "break_on_attack:true"
+            ],
+            "tags": [
+              "stealth",
+              "improved"
+            ]
+          }
+        ],
+        "passive": []
+      }
+    },
+    "earth": {
+      "1": {
+        "active": [
+          {
+            "id": "sand_burrow",
+            "name": "Fouissement des Sables",
+            "faction": "solaceheim",
+            "type": "ability",
+            "school": "earth",
+            "cost": 0,
+            "cooldown": 3,
+            "range": "self",
+            "area": "self",
+            "target": "self",
+            "duration": "instant",
+            "effects": [
+              "tunnel:3hex",
+              "ignore_low_obstacles:true"
+            ],
+            "tags": [
+              "mobility"
+            ]
+          }
+        ],
+        "passive": []
+      }
+    },
+    "fire": {
+      "1": {
+        "active": [
+          {
+            "id": "blood_zeal",
+            "name": "Zèle de Sang",
+            "faction": "solaceheim",
+            "type": "order",
+            "school": "fire",
+            "cost": 0,
+            "cooldown": 2,
+            "range": "self",
+            "area": "self",
+            "target": "self",
+            "duration": "1t",
+            "effects": [
+              "self_damage:3",
+              "buff:attack_min+1(1t)",
+              "buff:attack_max+1(1t)"
+            ],
+            "tags": [
+              "risk_reward"
+            ]
+          },
+          {
+            "id": "penitence_bell",
+            "name": "Cloche d’Expiation",
+            "faction": "solaceheim",
+            "type": "order",
+            "school": "fire",
+            "cost": 10,
+            "cooldown": 3,
+            "range": 3,
+            "area": "radius1",
+            "target": "enemy",
+            "duration": "2t",
+            "effects": [
+              "dot_burn:6(2t)",
+              "debuff:accuracy-10%(1t)"
+            ],
+            "tags": [
+              "aoe",
+              "burn"
+            ]
+          },
+          {
+            "id": "holy_burn",
+            "name": "Brûlure Sacrée",
+            "faction": "solaceheim",
+            "type": "ability",
+            "school": "fire",
+            "cost": 0,
+            "cooldown": 2,
+            "range": "melee",
+            "area": "single",
+            "target": "enemy",
+            "duration": "2t",
+            "effects": [
+              "dot_burn:6(2t)",
+              "heal_received:-25%(1t)"
+            ],
+            "tags": [
+              "anti_heal"
+            ]
+          },
+          {
+            "id": "scorching_anthem",
+            "name": "Hymne Scorchant",
+            "faction": "solaceheim",
+            "type": "order",
+            "school": "fire",
+            "cost": 12,
+            "cooldown": 3,
+            "range": 3,
+            "area": "cone_small",
+            "target": "enemy",
+            "duration": "2t",
+            "effects": [
+              "dmg_fire:10",
+              "dot_burn:6(2t)",
+              "debuff:defence_magic-1(1t)"
+            ],
+            "tags": [
+              "aoe",
+              "burn"
+            ]
+          },
+          {
+            "id": "pillar_of_sacred_fire",
+            "name": "Pilier de Feu Sacré",
+            "faction": "solaceheim",
+            "type": "spell",
+            "school": "fire",
+            "cost": 18,
+            "cooldown": 3,
+            "range": 6,
+            "area": "radius1",
+            "target": "ground",
+            "duration": "1t",
+            "effects": [
+              "dmg_fire:18",
+              "heal_received:-50%(1t)"
+            ],
+            "tags": [
+              "aoe",
+              "anti_heal"
+            ]
+          },
+          {
+            "id": "firebolt",
+            "name": "Firebolt",
+            "faction": "red_knights",
+            "type": "spell",
+            "school": "fire",
+            "cost": 8,
+            "cooldown": 1,
+            "range": 6,
+            "area": "single",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "dmg_fire:12"
+            ],
+            "tags": [
+              "nuke"
+            ]
+          },
+          {
+            "id": "fireball",
+            "name": "Fireball",
+            "faction": "red_knights",
+            "type": "spell",
+            "school": "fire",
+            "cost": 14,
+            "cooldown": 2,
+            "range": 6,
+            "area": "radius1",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "dmg_fire:18"
+            ],
+            "tags": [
+              "aoe"
+            ]
+          },
+          {
+            "id": "dragon_breath_cone",
+            "name": "Dragon Breath",
+            "faction": "red_knights",
+            "type": "ability",
+            "school": "fire",
+            "cost": 0,
+            "cooldown": 2,
+            "range": 1,
+            "area": "cone_small",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "dmg_fire:weaponx1.2",
+              "pierce_line:true"
+            ]
+          },
+          {
+            "id": "ember_spit",
+            "name": "Ember Spit",
+            "faction": null,
+            "type": "ability",
+            "school": "fire",
+            "cost": 0,
+            "cooldown": 2,
+            "range": 2,
+            "area": "single",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "dmg_fire:small"
+            ]
+          }
+        ],
+        "passive": [
+          {
+            "id": "burning_talons",
+            "name": "Serres Brûlantes",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "fire",
+            "cost": null,
+            "cooldown": null,
+            "range": "self",
+            "area": "self",
+            "target": "enemy",
+            "duration": "passive",
+            "effects": [
+              "on_crit:dot_burn:4(2t)"
+            ],
+            "tags": [
+              "burn"
+            ]
+          },
+          {
+            "id": "blazing_malice",
+            "name": "Malice Flamboyante",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "fire",
+            "cost": null,
+            "cooldown": null,
+            "range": "self",
+            "area": "self",
+            "target": "enemy",
+            "duration": "passive",
+            "effects": [
+              "on_hit:heal_received:-30%(1t)"
+            ],
+            "tags": [
+              "anti_heal"
+            ]
+          },
+          {
+            "id": "fire_resistance",
+            "name": "Fire Resistance",
+            "faction": null,
+            "type": "passive",
+            "school": "fire",
+            "effects": [
+              "fire_dmg_taken:-25%"
+            ]
+          },
+          {
+            "id": "heated_scales",
+            "name": "Heated Scales",
+            "faction": null,
+            "type": "passive",
+            "school": "fire",
+            "effects": [
+              "on_melee_hit:dot_burn:20%"
+            ]
+          }
+        ]
+      }
+    },
+    "warcry": {
+      "1": {
+        "active": [
+          {
+            "id": "volley",
+            "name": "Volley",
+            "faction": "red_knights",
+            "type": "order",
+            "school": "warcry",
+            "cost": 0,
+            "cooldown": 2,
+            "range": 6,
+            "area": "radius1",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "ranged_attack:low_aoe"
+            ],
+            "tags": [
+              "ranged",
+              "tactics"
+            ]
+          },
+          {
+            "id": "deadeye",
+            "name": "Deadeye",
+            "faction": "red_knights",
+            "type": "order",
+            "school": "warcry",
+            "cost": 0,
+            "cooldown": 3,
+            "range": "self",
+            "area": "single",
+            "target": "ally",
+            "duration": "1t",
+            "effects": [
+              "next_ranged:+50%",
+              "ignore:defence_ranged:1"
+            ],
+            "tags": [
+              "buff",
+              "ranged"
+            ]
+          },
+          {
+            "id": "sharpen",
+            "name": "Sharpen",
+            "faction": "red_knights",
+            "type": "order",
+            "school": "warcry",
+            "cost": 0,
+            "cooldown": 3,
+            "range": 3,
+            "area": "radius1",
+            "target": "ally",
+            "duration": "1t",
+            "effects": [
+              "melee_dmg:+15% (up to 3 targets)"
+            ],
+            "tags": [
+              "melee",
+              "buff"
+            ]
+          },
+          {
+            "id": "taunt",
+            "name": "Taunt",
+            "faction": "sylvan_haven",
+            "type": "order",
+            "school": "warcry",
+            "cost": 0,
+            "cooldown": 3,
+            "range": 2,
+            "area": "radius1",
+            "target": "enemy",
+            "duration": "1t",
+            "effects": [
+              "forced_target:self"
+            ]
+          },
+          {
+            "id": "focus",
+            "name": "Focus",
+            "faction": "red_knights",
+            "type": "order",
+            "school": "warcry",
+            "cost": 0,
+            "cooldown": 2,
+            "range": "self",
+            "area": "self",
+            "target": "ally",
+            "duration": "1t",
+            "effects": [
+              "ranged_accuracy:+15%",
+              "crit+5%"
+            ]
+          }
+        ],
+        "passive": [
+          {
+            "id": "overrun",
+            "name": "Overrun",
+            "faction": "red_knights",
+            "type": "passive",
+            "school": "warcry",
+            "cost": null,
+            "cooldown": null,
+            "range": "self",
+            "area": "self",
+            "target": "self",
+            "duration": "passive",
+            "effects": [
+              "on_kill:free_move:1 (1/combat)"
+            ],
+            "tags": [
+              "momentum"
+            ]
+          }
+        ]
+      }
+    },
+    "tactics": {
+      "1": {
+        "active": [
+          {
+            "id": "guard_order",
+            "name": "Garde !",
+            "faction": "red_knights",
+            "type": "order",
+            "school": "tactics",
+            "cost": 0,
+            "cooldown": 1,
+            "range": 6,
+            "area": "single",
+            "target": "ally",
+            "duration": "1t",
+            "effects": [
+              "defend:+30%",
+              "retaliations:+1"
+            ],
+            "tags": [
+              "defend"
+            ]
+          },
+          {
+            "id": "deploy_stakes",
+            "name": "Piquerets",
+            "faction": "red_knights",
+            "type": "order",
+            "school": "tactics",
+            "cost": 0,
+            "cooldown": 3,
+            "range": 4,
+            "area": "line3",
+            "target": "ground",
+            "duration": "2t",
+            "effects": [
+              "hazard:stakes (cav_move_cost+2, dmg_small_on_enter)"
+            ],
+            "tags": [
+              "zone_control"
+            ]
+          },
+          {
+            "id": "valiant_charge",
+            "name": "Charge Vaillante",
+            "faction": "red_knights",
+            "type": "ability",
+            "school": "tactics",
+            "cost": 0,
+            "cooldown": 3,
+            "range": "melee",
+            "area": "single",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "charge:2",
+              "dmg_physical:+25%"
+            ],
+            "tags": [
+              "charge"
+            ]
+          },
+          {
+            "id": "charge",
+            "name": "Charge",
+            "faction": "red_knights",
+            "type": "ability",
+            "school": "tactics",
+            "cost": 0,
+            "cooldown": 2,
+            "range": "melee",
+            "area": "single",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "charge:2",
+              "dmg_physical:+25%"
+            ]
+          },
+          {
+            "id": "multi_shot",
+            "name": "Multi Shot",
+            "faction": "red_knights",
+            "type": "ability",
+            "school": "tactics",
+            "cost": 0,
+            "cooldown": 3,
+            "range": 5,
+            "area": "line3",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "ranged_attack:3_targets_line"
+            ]
+          },
+          {
+            "id": "gore_charge",
+            "name": "Gore Charge",
+            "faction": null,
+            "type": "ability",
+            "school": "tactics",
+            "cost": 0,
+            "cooldown": 2,
+            "range": "melee",
+            "area": "single",
+            "effects": [
+              "after_move>=2:+50% dmg",
+              "knockback:1"
+            ]
+          }
+        ],
+        "passive": []
+      }
+    },
+    "nature": {
+      "1": {
+        "active": [
+          {
+            "id": "song_inspire",
+            "name": "Chant d’Inspiration",
+            "faction": "sylvan_haven",
+            "type": "order",
+            "school": "nature",
+            "cost": 6,
+            "cooldown": 2,
+            "range": 4,
+            "area": "radius1",
+            "target": "ally",
+            "duration": "1t",
+            "effects": [
+              "buff:initiative+1(1t)",
+              "buff:morale+1(1t)"
+            ],
+            "tags": [
+              "song",
+              "support"
+            ]
+          },
+          {
+            "id": "entangle_roots",
+            "name": "Racines Entravantes",
+            "faction": "sylvan_haven",
+            "type": "spell",
+            "school": "nature",
+            "cost": 8,
+            "cooldown": 2,
+            "range": 6,
+            "area": "single",
+            "target": "enemy",
+            "duration": "1t",
+            "effects": [
+              "root:true",
+              "defence_melee:-1(1t)"
+            ],
+            "tags": [
+              "control"
+            ]
+          },
+          {
+            "id": "thorn_burst",
+            "name": "Gerbe d’Épines",
+            "faction": "sylvan_haven",
+            "type": "spell",
+            "school": "nature",
+            "cost": 10,
+            "cooldown": 2,
+            "range": 5,
+            "area": "cone_small",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "dmg_nature:12",
+              "status:bleed_light(2t)"
+            ],
+            "tags": [
+              "aoe"
+            ]
+          },
+          {
+            "id": "regrowth",
+            "name": "Renaissance",
+            "faction": "sylvan_haven",
+            "type": "spell",
+            "school": "nature",
+            "cost": 12,
+            "cooldown": 3,
+            "range": 6,
+            "area": "single",
+            "target": "ally",
+            "duration": "2t",
+            "effects": [
+              "hot:6(2t)",
+              "dispel_poison:1"
+            ],
+            "tags": [
+              "heal",
+              "hot"
+            ]
+          },
+          {
+            "id": "dew_mend_n",
+            "name": "Dew Mend",
+            "faction": "sylvan_haven",
+            "type": "spell",
+            "school": "nature",
+            "cost": 6,
+            "range": 6,
+            "area": "single",
+            "target": "ally",
+            "duration": "instant",
+            "effects": [
+              "cleanse:poison,slow,burn"
+            ],
+            "tags": [
+              "cleanse"
+            ]
+          },
+          {
+            "id": "Bramble_Field_a",
+            "name": "Bramble Field",
+            "faction": "sylvan_haven",
+            "type": "order",
+            "school": "nature",
+            "cost": 8,
+            "cooldown": 2,
+            "range": 5,
+            "area": "line3",
+            "target": "ground",
+            "duration": "2t",
+            "effects": [
+              "hazard:brambles (on_enter:thorn_small,slow)"
+            ]
+          },
+          {
+            "id": "Summon_Sprite_e",
+            "name": "Summon Sprite",
+            "faction": "sylvan_haven",
+            "type": "spell",
+            "school": "nature",
+            "cost": 12,
+            "cooldown": 4,
+            "range": 4,
+            "area": "single",
+            "target": "ground",
+            "duration": "instant",
+            "effects": [
+              "summon:fae_T1_temp"
+            ]
+          },
+          {
+            "id": "Forest_Heart_m",
+            "name": "Forest Heart",
+            "faction": "sylvan_haven",
+            "type": "order",
+            "school": "nature",
+            "cost": 12,
+            "cooldown": 3,
+            "range": 4,
+            "area": "radius1",
+            "target": "ground",
+            "duration": "2t",
+            "effects": [
+              "totem:heal_small_allies",
+              "totem:thorns_enemies"
+            ]
+          },
+          {
+            "id": "rooted_guard",
+            "name": "Rooted Guard",
+            "faction": "sylvan_haven",
+            "type": "order",
+            "school": "nature",
+            "cost": 0,
+            "cooldown": 2,
+            "range": "self",
+            "area": "self",
+            "target": "ally",
+            "duration": "1t",
+            "effects": [
+              "posture:+2_defences",
+              "initiative:-1"
+            ]
+          },
+          {
+            "id": "constrict",
+            "name": "Constrict",
+            "faction": null,
+            "type": "ability",
+            "school": "nature",
+            "cost": 0,
+            "cooldown": 2,
+            "range": "melee",
+            "area": "single",
+            "effects": [
+              "immobilize:1t"
+            ]
+          }
+        ],
+        "passive": [
+          {
+            "id": "rebirth_once",
+            "name": "Renaissance (Phénix de Rosée)",
+            "faction": "sylvan_haven",
+            "type": "passive",
+            "school": "nature",
+            "cost": null,
+            "cooldown": null,
+            "range": "self",
+            "area": "self",
+            "target": "self",
+            "duration": "passive",
+            "effects": [
+              "on_death:revive:50%hp (1/combat)"
+            ],
+            "tags": [
+              "revive"
+            ]
+          },
+          {
+            "id": "rebirth_chance_e",
+            "name": "Rebirth Chance",
+            "faction": "sylvan_haven",
+            "type": "passive",
+            "school": "nature",
+            "effects": [
+              "postbattle:revive_T1-T3:+10%"
+            ]
+          },
+          {
+            "id": "forest_step",
+            "name": "Forest Step",
+            "faction": "sylvan_haven",
+            "type": "passive",
+            "school": "nature",
+            "effects": [
+              "world:forest_move_cost:-1",
+              "battle:forest_move_cost:-1"
+            ]
+          },
+          {
+            "id": "forest_camouflage",
+            "name": "Forest Camouflage",
+            "faction": null,
+            "type": "passive",
+            "school": "nature",
+            "effects": [
+              "forest_evade:+20%"
+            ]
+          }
+        ]
+      }
+    },
+    "air": {
+      "1": {
+        "active": [
+          {
+            "id": "mist_shroud",
+            "name": "Voile de Brume",
+            "faction": "sylvan_haven",
+            "type": "spell",
+            "school": "air",
+            "cost": 10,
+            "cooldown": 3,
+            "range": 5,
+            "area": "radius1",
+            "target": "ground",
+            "duration": "2t",
+            "effects": [
+              "ranged_dmg_taken:-25% allies in zone"
+            ],
+            "tags": [
+              "zone",
+              "defense"
+            ]
+          },
+          {
+            "id": "wind_step",
+            "name": "Pas de Vent",
+            "faction": "sylvan_haven",
+            "type": "order",
+            "school": "air",
+            "cost": 0,
+            "cooldown": 2,
+            "range": "self",
+            "area": "self",
+            "target": "ally",
+            "duration": "instant",
+            "effects": [
+              "free_move:1"
+            ],
+            "tags": [
+              "mobility"
+            ]
+          },
+          {
+            "id": "Mist_Portal_m",
+            "name": "Mist Portal",
+            "faction": "sylvan_haven",
+            "type": "order",
+            "school": "air",
+            "cost": 12,
+            "cooldown": 4,
+            "range": 6,
+            "area": "single",
+            "target": "ally",
+            "duration": "instant",
+            "effects": [
+              "teleport_short:ignore_los"
+            ]
+          },
+          {
+            "id": "Zephyr_Step_n",
+            "name": "Zephyr Step",
+            "faction": "sylvan_haven",
+            "type": "order",
+            "school": "air",
+            "cost": 0,
+            "cooldown": 2,
+            "range": "self",
+            "area": "self",
+            "target": "ally",
+            "duration": "instant",
+            "effects": [
+              "free_move:+1"
+            ]
+          },
+          {
+            "id": "song_gust",
+            "name": "Gust",
+            "faction": "sylvan_haven",
+            "type": "order",
+            "school": "air",
+            "cost": 0,
+            "cooldown": 3,
+            "range": 3,
+            "area": "cone_small",
+            "target": "enemy",
+            "duration": "1t",
+            "effects": [
+              "push:1",
+              "debuff:initiative-1(1t)"
+            ]
+          },
+          {
+            "id": "mass_haste_once",
+            "name": "Wind Chorus",
+            "faction": "sylvan_haven",
+            "type": "spell",
+            "school": "air",
+            "cost": 14,
+            "cooldown": 99,
+            "range": "global",
+            "area": "army",
+            "target": "ally",
+            "duration": "1t",
+            "effects": [
+              "buff:initiative+1(1t)",
+              "buff:speed+1(1t)"
+            ],
+            "tags": [
+              "1x_combat"
+            ]
+          },
+          {
+            "id": "song_of_wind",
+            "name": "Song of Wind",
+            "faction": "sylvan_haven",
+            "type": "order",
+            "school": "air",
+            "cost": 8,
+            "cooldown": 3,
+            "range": 3,
+            "area": "cone_small",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "push:1"
+            ]
+          },
+          {
+            "id": "chain_lightning",
+            "name": "Chain Lightning",
+            "faction": "red_knights",
+            "type": "spell",
+            "school": "air",
+            "cost": 14,
+            "cooldown": 3,
+            "range": 6,
+            "area": "chain3",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "dmg_lightning:14 -> 10 -> 6"
+            ]
+          }
+        ],
+        "passive": [
+          {
+            "id": "sirocco_e",
+            "name": "Brise du Sirocco",
+            "faction": "solaceheim",
+            "type": "passive",
+            "school": "air",
+            "effects": [
+              "desert_battle:initiative+1(round1)"
+            ]
+          },
+          {
+            "id": "serpentine_dodge",
+            "name": "Serpentine Dodge",
+            "faction": "sylvan_haven",
+            "type": "passive",
+            "school": "air",
+            "effects": [
+              "projectile_evade:+20%"
+            ]
+          },
+          {
+            "id": "veil_aura",
+            "name": "Veil Aura",
+            "faction": "sylvan_haven",
+            "type": "aura",
+            "school": "air",
+            "effects": [
+              "enemy_vision:-1(radius2)"
+            ]
+          },
+          {
+            "id": "hover",
+            "name": "Hover",
+            "faction": null,
+            "type": "passive",
+            "school": "air",
+            "effects": [
+              "ignore_terrain_penalties"
+            ]
+          }
+        ]
+      }
+    },
+    "water": {
+      "1": {
+        "active": [
+          {
+            "id": "ripple_shield_a",
+            "name": "Ripple Shield",
+            "faction": "sylvan_haven",
+            "type": "order",
+            "school": "water",
+            "cost": 6,
+            "cooldown": 3,
+            "range": 6,
+            "area": "single",
+            "target": "ally",
+            "duration": "1t",
+            "effects": [
+              "buff:defence_magic+2(1t)"
+            ]
+          },
+          {
+            "id": "Slick_Ground_a",
+            "name": "Slick Ground",
+            "faction": "sylvan_haven",
+            "type": "order",
+            "school": "water",
+            "cost": 8,
+            "cooldown": 3,
+            "range": 5,
+            "area": "radius1",
+            "target": "ground",
+            "duration": "2t",
+            "effects": [
+              "hazard:slippery(move_cost+1,initiative-1_on_enter)"
+            ]
+          },
+          {
+            "id": "Whirlpool_Pull_e",
+            "name": "Whirlpool Pull",
+            "faction": "sylvan_haven",
+            "type": "order",
+            "school": "water",
+            "cost": 10,
+            "cooldown": 3,
+            "range": 5,
+            "area": "radius1",
+            "target": "enemy",
+            "duration": "instant",
+            "effects": [
+              "pull:1_toward_center"
+            ]
+          },
+          {
+            "id": "purifying_mist",
+            "name": "Purifying Mist",
+            "faction": "sylvan_haven",
+            "type": "order",
+            "school": "water",
+            "cost": 0,
+            "cooldown": 3,
+            "range": 2,
+            "area": "radius1",
+            "target": "ally",
+            "duration": "instant",
+            "effects": [
+              "heal:6",
+              "cleanse:1"
+            ]
+          },
+          {
+            "id": "ice_wall",
+            "name": "Ice Wall",
+            "faction": "red_knights",
+            "type": "spell",
+            "school": "water",
+            "cost": 12,
+            "cooldown": 3,
+            "range": 6,
+            "area": "line3",
+            "target": "ground",
+            "duration": "2t",
+            "effects": [
+              "create_wall:blocks_LOS_and_path"
+            ]
+          }
+        ],
+        "passive": [
+          {
+            "id": "amphibious",
+            "name": "Amphibious",
+            "faction": "sylvan_haven",
+            "type": "passive",
+            "school": "water",
+            "effects": [
+              "ignore_river/ford_penalties"
+            ]
+          },
+          {
+            "id": "water_strike",
+            "name": "Water Strike",
+            "faction": "sylvan_haven",
+            "type": "passive",
+            "school": "water",
+            "effects": [
+              "vs_burning:+25% dmg"
+            ]
+          },
+          {
+            "id": "water_resistance",
+            "name": "Water Resistance",
+            "faction": null,
+            "type": "passive",
+            "school": "water",
+            "effects": [
+              "water_dmg_taken:-25%"
+            ]
+          }
+        ]
+      }
+    }
+  }
 }
-
