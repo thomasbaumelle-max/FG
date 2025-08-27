@@ -18,7 +18,11 @@ from typing import Any, Dict, List
 from tools.icon import get_icon
 
 
-def load_skill_manifest(repo_root: str, assets: Dict[str, Any] | None = None) -> List[Dict[str, Any]]:
+def load_skill_manifest(
+    repo_root: str,
+    assets: Dict[str, Any] | None = None,
+    faction_id: str | None = None,
+) -> List[Dict[str, Any]]:
     """Return raw skill entries from JSON manifests.
 
     Parameters
@@ -26,11 +30,15 @@ def load_skill_manifest(repo_root: str, assets: Dict[str, Any] | None = None) ->
     repo_root:
         Path to the repository root.  The function looks for ``assets/skills.json``
         (legacy flat list) and for additional ``*.json`` files under
-        ``assets/skills``.
+        ``assets/skills``.  When ``faction_id`` is provided only the
+        corresponding ``skills_<faction_id>.json`` file is loaded from this
+        directory.
     assets:
         Optional mapping where extracted icons will be stored.  When provided
         the loader expects each manifest to specify a ``sheet`` key pointing to
         a spritesheet containing the skill icons.
+    faction_id:
+        Optional faction identifier limiting which modern manifest is loaded.
     """
 
     entries: List[Dict[str, Any]] = []
@@ -48,10 +56,17 @@ def load_skill_manifest(repo_root: str, assets: Dict[str, Any] | None = None) ->
     skills_dir = os.path.join(repo_root, "assets", "skills")
     rank_order = ["N", "A", "E", "M"]
     if os.path.isdir(skills_dir):
-        for fname in sorted(os.listdir(skills_dir)):
+        if faction_id:
+            fnames = [f"skills_{faction_id}.json"]
+        else:
+            fnames = sorted(f for f in os.listdir(skills_dir) if f.endswith(".json"))
+
+        for fname in fnames:
             if not fname.endswith(".json"):
                 continue
             path = os.path.join(skills_dir, fname)
+            if not os.path.exists(path):
+                continue
             try:
                 with open(path, "r", encoding="utf-8") as fh:
                     data = json.load(fh)

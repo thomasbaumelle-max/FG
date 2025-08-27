@@ -1,28 +1,28 @@
 {
-  "solaceheim_tree": {
-    "Verdant_Grace": {
-      "N": {"id":"dew_mend_n","name":"Dew Mend","effect":"Cleanse (retire Poison/Brûlure/Lenteur)"},
-      "A": {"id":"ripple_shield_a","name":"Ripple Shield","type":"order","cd":3,"effect":"(+armure magique mono, courte durée)."},
-      "E": {"id":"rebirth_chance_e","name":"Rebirth Chance","effect":"(+10 % chance de relever 1 unité T1–T3 à la fin du combat"},
-      "M": {"id":"sanctuary_m","name":"Sanctuary","effect":"zone sacrée : alliés reçoivent +defense & regen légère dans l’aire"}
-    },
-    "Mists_Streams": {
-      "N": {"id":"mist_veil_n","name":"Mist Veil","effect":"nuage de brume, −LoS & −def_ranged ennemie dans l’aire"},
-      "A": {"id":"Slick_Ground_a","name":"Slick Ground","effect":"terrain glissant, −init & malus de déplacement sur quelques cases"},
-      "E": {"id":"Whirlpool_Pull_e","name":"Whirlpool Pull","effect":"attire légèrement les cibles au centre, petite zone"},
-      "M": {"id":"Mist_Portal_m","name":"Mist Portal","effect":"téléport court mono-cible alliée, ligne de vue non requise mais portée limitée"}
-    },
-    "Song_Wind": {
-      "N": {"id":"Zephyr_Step_n","name":"Zephyr Step","effect":"+AP ou +1 case de déplacement au tour en cours"},
-      "A": {"id":"Gust_a","name":"Gust","type":"order","cd":3,"effect":"cône, repousse de 1 case, −1 initiative"},
-      "E": {"id":"Lullaby_e","name":"Lullaby","effect":"sommeil 1 tour sur cible unique, test de résistance"},
-      "M": {"id":"Wind Chorus_m","name":"Wind Chorus","effect":"Mass Haste : +init/+speed de l’armée 1 tour"}
-    },
-    "Sylvan_Heart": {
-      "N": {"id":"Entangling_Vines_n","name":"Entangling Vines","effect":"Entravé 1 tour, −init"},
-      "A": {"id":"Bramble_Field_a","name":"Bramble Field","type":"order","cd":2,"effect":"pièges d’épines, dégâts & lenteur à l’entrée"},
-      "E": {"id":"Summon_Sprite_e","name":"Summon Sprite","effect":"petite unité faë éphémère T1"},
-      "M": {"id":"Forest_Heart_m","name":"Forest Heart","type":"order","cd":3,"effect":"totem/semis : petite zone qui soigne alliés et inflige épines aux ennemis"}
-    }
+  "sheet": "sylvan_skills.png",
+  "Verdant_Grace": {
+    "N": {"id": "dew_mend_n", "name": "Dew Mend", "desc": "Cleanse (retire Poison/Brûlure/Lenteur)"},
+    "A": {"id": "ripple_shield_a", "name": "Ripple Shield", "type": "order", "cd": 3, "desc": "(+armure magique mono, courte durée)."},
+    "E": {"id": "rebirth_chance_e", "name": "Rebirth Chance", "desc": "+10 % chance de relever 1 unité T1–T3 à la fin du combat"},
+    "M": {"id": "sanctuary_m", "name": "Sanctuary", "desc": "zone sacrée : alliés reçoivent +defense & regen légère dans l’aire"}
+  },
+  "Mists_Streams": {
+    "N": {"id": "mist_veil_n", "name": "Mist Veil", "desc": "nuage de brume, −LoS & −def_ranged ennemie dans l’aire"},
+    "A": {"id": "Slick_Ground_a", "name": "Slick Ground", "desc": "terrain glissant, −init & malus de déplacement sur quelques cases"},
+    "E": {"id": "Whirlpool_Pull_e", "name": "Whirlpool Pull", "desc": "attire légèrement les cibles au centre, petite zone"},
+    "M": {"id": "Mist_Portal_m", "name": "Mist Portal", "desc": "téléport court mono-cible alliée, ligne de vue non requise mais portée limitée"}
+  },
+  "Song_Wind": {
+    "N": {"id": "Zephyr_Step_n", "name": "Zephyr Step", "desc": "+AP ou +1 case de déplacement au tour en cours"},
+    "A": {"id": "Gust_a", "name": "Gust", "type": "order", "cd": 3, "desc": "cône, repousse de 1 case, −1 initiative"},
+    "E": {"id": "Lullaby_e", "name": "Lullaby", "desc": "sommeil 1 tour sur cible unique, test de résistance"},
+    "M": {"id": "Wind_Chorus_m", "name": "Wind Chorus", "desc": "Mass Haste : +init/+speed de l’armée 1 tour"}
+  },
+  "Sylvan_Heart": {
+    "N": {"id": "Entangling_Vines_n", "name": "Entangling Vines", "desc": "Entravé 1 tour, −init"},
+    "A": {"id": "Bramble_Field_a", "name": "Bramble Field", "type": "order", "cd": 2, "desc": "pièges d’épines, dégâts & lenteur à l’entrée"},
+    "E": {"id": "Summon_Sprite_e", "name": "Summon Sprite", "desc": "petite unité faë éphémère T1"},
+    "M": {"id": "Forest_Heart_m", "name": "Forest Heart", "type": "order", "cd": 3, "desc": "totem/semis : petite zone qui soigne alliés et inflige épines aux ennemis"}
   }
 }
+

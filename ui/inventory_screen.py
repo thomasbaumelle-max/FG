@@ -23,8 +23,8 @@ from core.entities import (
     Unit,
     SKILL_CATALOG,
     REPO_ROOT,
+    build_skill_catalog,
 )
-from tools.skill_manifest import load_skill_manifest
 from .inventory_interface import InventoryInterface
 
 # --------------------------------------------------------------------------- #
@@ -144,7 +144,8 @@ class InventoryScreen:
     # ------------------------------------------------------------------ Skills
     def _build_skill_trees(self) -> None:
         """Populate skill trees and positions from the JSON manifest."""
-        manifest = load_skill_manifest(REPO_ROOT)
+        faction_id = self.hero.faction.id if self.hero.faction else None
+        manifest = build_skill_catalog(faction_id)
         rank_order = ["N", "A", "E", "M"]
         order: List[str] = []
         for entry in manifest:
