@@ -759,19 +759,28 @@ class Game:
                 continue
             try:
                 with open(manifest_path, "r", encoding="utf-8") as f:
-                    entries = json.load(f)
+                    data = json.load(f)
             except Exception:
                 continue
+            if isinstance(data, dict):
+                templates = data.get("templates", {})
+                entries = data.get("units") or data.get("creatures") or []
+            else:
+                templates = {}
+                entries = data
             for entry in entries:
+                tpl_id = entry.get("template")
+                base = templates.get(tpl_id, {}) if isinstance(templates, dict) else {}
+                merged = {**base, **entry}
                 try:
-                    self.unit_shadow_baked[entry["id"]] = bool(entry.get("shadow_baked", False))
-                    surf = self.assets.get(entry["image"])
+                    self.unit_shadow_baked[merged["id"]] = bool(merged.get("shadow_baked", False))
+                    surf = self.assets.get(merged["image"])
                     surf = scale_surface(
                         surf,
                         (constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE),
                         smooth=True,
                     )
-                    self.assets[entry["id"]] = surf
+                    self.assets[merged["id"]] = surf
                 except Exception:
                     continue
 
@@ -780,27 +789,41 @@ class Game:
         if os.path.isfile(heroes_path):
             try:
                 with open(heroes_path, "r", encoding="utf-8") as f:
-                    entries = json.load(f)
-                    for entry in entries:
-                        try:
-                            portrait = self.assets.get(entry.get("portrait", ""))
-                            battlefield = self.assets.get(entry.get("battlefield", ""))
-                            icon_info = entry.get("icon", {})
-                            icon_surf = self.assets.get(icon_info.get("image", ""))
-                            size = icon_info.get("scale", constants.TILE_SIZE)
-                            icon_surf = scale_surface(icon_surf, (size, size), smooth=True)
-                            self.assets[entry["id"]] = {
-                                "portrait": portrait,
-                                "battlefield": battlefield,
-                                "icon": {
-                                    "surface": icon_surf,
-                                    "anchor": tuple(icon_info.get("anchor", (0, 0))),
-                                },
-                            }
-                        except Exception:
-                            continue
+                    data = json.load(f)
             except Exception:
-                pass
+                data = None
+            if data:
+                if isinstance(data, dict):
+                    templates = data.get("templates", {})
+                    entries = data.get("heroes", [])
+                else:
+                    templates = {}
+                    entries = data
+                for entry in entries:
+                    tpl_id = entry.get("template")
+                    base = templates.get(tpl_id, {}) if isinstance(templates, dict) else {}
+                    merged = {**base, **entry}
+                    try:
+                        portrait = self.assets.get(
+                            merged.get("portrait") or merged.get("PortraitSprite", "")
+                        )
+                        battlefield = self.assets.get(
+                            merged.get("battlefield") or merged.get("BattlefieldSprite", "")
+                        )
+                        icon_info = merged.get("icon", {})
+                        icon_surf = self.assets.get(icon_info.get("image", ""))
+                        size = icon_info.get("scale", constants.TILE_SIZE)
+                        icon_surf = scale_surface(icon_surf, (size, size), smooth=True)
+                        self.assets[merged["id"]] = {
+                            "portrait": portrait,
+                            "battlefield": battlefield,
+                            "icon": {
+                                "surface": icon_surf,
+                                "anchor": tuple(icon_info.get("anchor", (0, 0))),
+                            },
+                        }
+                    except Exception:
+                        continue
 
         # Load resource icons declared in assets/resources/resources.json
         resources_path = os.path.join(

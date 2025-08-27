@@ -49,24 +49,38 @@ def load_heroes(ctx: Context, manifest: str = "units/heroes.json") -> Dict[str, 
     except Exception:
         return {}
 
+    templates: Dict[str, Dict[str, Any]] = {}
+    entries: List[Dict[str, Any]]
+    if isinstance(data, dict):
+        templates = data.get("templates", {})
+        entries = data.get("heroes", [])
+    else:
+        entries = data
+
     heroes: Dict[str, HeroDef] = {}
-    for entry in data:
+    for entry in entries:
+        tpl_id = entry.get("template")
+        base: Dict[str, Any] = templates.get(tpl_id, {}) if isinstance(templates, dict) else {}
+        merged: Dict[str, Any] = {**base, **entry}
         try:
-            require_keys(entry, ["id", "faction"])
+            require_keys(merged, ["id", "faction"])
         except Exception:
             continue
+        stats = merged.get("stats", {})
+        overworld = dict(merged.get("overworld", stats.get("overworld", {})))
+        combat = dict(merged.get("combat", stats.get("combat", {})))
         hero = HeroDef(
-            id=entry["id"],
-            name=entry.get("name", entry["id"]),
-            faction=entry.get("faction", ""),
-            overworld=dict(entry.get("overworld", {})),
-            combat=dict(entry.get("combat", {})),
-            starting_army=_parse_army(entry.get("starting_army", [])),
-            starting_skills=[dict(s) for s in entry.get("starting_skills", [])],
-            known_spells=list(entry.get("known_spells", [])),
-            portrait=entry.get("PortraitSprite"),
-            overworld_sprite=entry.get("OverWorldSprite"),
-            battlefield_sprite=entry.get("BattlefieldSprite"),
+            id=merged["id"],
+            name=merged.get("name", merged["id"]),
+            faction=merged.get("faction", ""),
+            overworld=overworld,
+            combat=combat,
+            starting_army=_parse_army(merged.get("starting_army", [])),
+            starting_skills=[dict(s) for s in merged.get("starting_skills", [])],
+            known_spells=list(merged.get("known_spells", [])),
+            portrait=merged.get("PortraitSprite"),
+            overworld_sprite=merged.get("OverWorldSprite"),
+            battlefield_sprite=merged.get("BattlefieldSprite"),
         )
         heroes[hero.id] = hero
     return heroes

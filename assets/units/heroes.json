@@ -1,15 +1,55 @@
-[
-  {
-    "id": "scarletia_aurianne",
-    "name": "Lady Aurianne",
-    "class": "Banner Marshal",
-    "faction": "red_knights",
-    "level": 5,
-    "overworld": { "movement": 12, "vision": 3 },
-      "combat": {
-        "mana": 30, "spellpower": 3, "knowledge": 2,
-        "morale": 1, "luck": 0
+{
+  "templates": {
+    "red_marshal": {
+      "stats": {
+        "overworld": {"movement": 12, "vision": 3},
+        "combat": {"mana": 30, "spellpower": 3, "knowledge": 2, "morale": 1, "luck": 0}
       },
+      "palette": ["#B22222", "#FFD700"]
+    },
+    "red_cinderblade": {
+      "stats": {
+        "overworld": {"movement": 12, "vision": 3},
+        "combat": {"mana": 30, "spellpower": 4, "knowledge": 1, "morale": 0, "luck": 1}
+      },
+      "palette": ["#B22222", "#8B0000"]
+    },
+    "sylvan_warden": {
+      "stats": {
+        "overworld": {"movement": 12, "vision": 4},
+        "combat": {"mana": 40, "spellpower": 2, "knowledge": 3, "morale": 1, "luck": 0}
+      },
+      "palette": ["#006400", "#8FBC8F"]
+    },
+    "sylvan_druid": {
+      "stats": {
+        "overworld": {"movement": 12, "vision": 4},
+        "combat": {"mana": 35, "spellpower": 3, "knowledge": 2, "morale": 0, "luck": 1}
+      },
+      "palette": ["#228B22", "#2E8B57"]
+    },
+    "sol_sage": {
+      "stats": {
+        "overworld": {"movement": 12, "vision": 4},
+        "combat": {"mana": 120, "spellpower": 2, "knowledge": 3, "morale": 1, "luck": 0}
+      },
+      "palette": ["#FFD700", "#FFFACD"]
+    },
+    "sol_scorpion": {
+      "stats": {
+        "overworld": {"movement": 12, "vision": 4},
+        "combat": {"mana": 35, "spellpower": 3, "knowledge": 2, "morale": 0, "luck": 1}
+      },
+      "palette": ["#DAA520", "#8B4513"]
+    }
+  },
+  "heroes": [
+    {
+      "id": "scarletia_aurianne",
+      "template": "red_marshal",
+      "name": "Lady Aurianne",
+      "class": "Banner Marshal",
+      "faction": "red_knights",
       "starting_army": [
         {"unit": "Swordsman", "count": 22},
         {"unit": "Archer", "count": 30},
@@ -19,137 +59,113 @@
         {"unit": "Priest", "count": 15}
       ],
       "starting_skills": [
-        {"branch":"logistics","rank":"N","id":"logistics_N"},
-        {"branch":"logistics","rank":"A","id":"logistics_A"},
-        {"branch":"tactics","rank":"N","id":"tactics_N"},
-        {"branch":"logistics","rank":"E","id":"logistics_E"}
-    ],
-    "known_spells": ["Crimson Surge","Valiant Charge","Guard Order","Rally on the Road"],
-    "PortraitSprite": "hero/red_knights/lady_aurianne.png",
-    "OverWorldSprite": "hero/red_knights/lady_aurianne.png",
-    "BattlefieldSprite": "hero/bf_default.png",
-    "battlefield_scale": 1.0,
-    "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
-  },
-  {
-    "id": "scarletia_draxen",
-    "name": "Draxen the Cinderblade",
-    "class": "Cinderblade",
-    "faction": "red_knights",
-    "level": 5,
-    "overworld": { "movement": 12, "vision": 3 },
-    "combat": {
-      "mana": 30, "spellpower": 4, "knowledge": 1,
-      "morale": 0, "luck": 1
-    },
-      "starting_skills": [
-        {"branch":"marksmanship","rank":"N","id":"marksmanship_N"},
-        {"branch":"marksmanship","rank":"A","id":"marksmanship_A"},
-        {"branch":"weaponsmithing","rank":"N","id":"weaponsmithing_N"},
-        {"branch":"weaponsmithing","rank":"A","id":"weaponsmithing_A"}
+        {"branch": "logistics", "rank": "N", "id": "logistics_N"},
+        {"branch": "logistics", "rank": "A", "id": "logistics_A"},
+        {"branch": "tactics", "rank": "N", "id": "tactics_N"},
+        {"branch": "logistics", "rank": "E", "id": "logistics_E"}
       ],
-    "known_spells": ["sand_screen"],
-    "PortraitSprite": "hero/red_knights/draxen.png",
-    "OverWorldSprite": "hero/red_knights/draxen.png",
-    "BattlefieldSprite": "hero/bf_default.png",
-    "battlefield_scale": 1.0,
-    "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
-  },
-  {
-    "id": "sylvan_lirael",
-    "name": "Lirael",
-    "class": "Mist Grove Warden",
-    "faction": "sylvan",
-    "level": 5,
-    "overworld": { "movement": 12, "vision": 4 },
-    "combat": {
-      "mana": 40, "spellpower": 2, "knowledge": 3,
-      "morale": 1, "luck": 0
+      "known_spells": ["Crimson Surge", "Valiant Charge", "Guard Order", "Rally on the Road"],
+      "PortraitSprite": "hero/red_knights/lady_aurianne.png",
+      "OverWorldSprite": "hero/red_knights/lady_aurianne.png",
+      "BattlefieldSprite": "hero/bf_default.png",
+      "battlefield_scale": 1.0,
+      "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
     },
-    "starting_skills": [
-      {"branch":"Mists & Streams","rank":"N","id":"Mist Veil"},
-      {"branch":"Sylvan Heart","rank":"N","id":"Entangling Vines"},
-      {"branch":"Verdant Grace","rank":"N","id":"Dew Mend"},
-      {"branch":"Song of the Wind","rank":"N","id":"Zephyr Step"}
-    ],
-    "known_spells": ["sand_screen"],
-    "PortraitSprite": "hero/sylvan_haven/lirael.png",
-    "OverWorldSprite": "hero/sylvan_haven/lirael.png",
-    "BattlefieldSprite": "hero/bf_default.png",
-    "battlefield_scale": 1.0,
-    "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
-  },
-  {
-    "id": "sylvan_thorne",
-    "name": "Thorne of the Umbra Grove",
-    "class": "Umbra Druid",
-    "faction": "sylvan",
-    "level": 5,
-    "overworld": { "movement": 12, "vision": 4 },
-    "combat": {
-      "mana": 35, "spellpower": 3, "knowledge": 2,
-      "morale": 0, "luck": 1
+    {
+      "id": "scarletia_draxen",
+      "template": "red_cinderblade",
+      "name": "Draxen the Cinderblade",
+      "class": "Cinderblade",
+      "faction": "red_knights",
+      "starting_skills": [
+        {"branch": "marksmanship", "rank": "N", "id": "marksmanship_N"},
+        {"branch": "marksmanship", "rank": "A", "id": "marksmanship_A"},
+        {"branch": "weaponsmithing", "rank": "N", "id": "weaponsmithing_N"},
+        {"branch": "weaponsmithing", "rank": "A", "id": "weaponsmithing_A"}
+      ],
+      "known_spells": ["sand_screen"],
+      "PortraitSprite": "hero/red_knights/draxen.png",
+      "OverWorldSprite": "hero/red_knights/draxen.png",
+      "BattlefieldSprite": "hero/bf_default.png",
+      "battlefield_scale": 1.0,
+      "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
     },
-    "starting_skills": [
-      {"branch":"Sylvan Heart","rank":"N","id":"Entangling Vines"},
-      {"branch":"Sylvan Heart","rank":"A","id":"Bramble Field"},
-      {"branch":"Sylvan Heart","rank":"E","id":"Summon Sprite"},
-      {"branch":"Verdant Grace","rank":"N","id":"Dew Mend"}
-    ],
-    "known_spells": ["sand_screen"],
-    "PortraitSprite": "hero/sylvan_haven/thorne.png",
-    "OverWorldSprite": "hero/sylvan_haven/thorne.png",
-    "BattlefieldSprite": "hero/bf_default.png",
-    "battlefield_scale": 1.0,
-    "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
-  },
-  {
-    "id": "sol_aurelion",
-    "name": "Hiérophante Aurelion",
-    "class": "Sage solaire",
-    "faction": "solaceheim",
-    "level": 5,
-    "overworld": { "movement": 12, "vision": 4 },
-    "combat": {
-      "mana": 120, "spellpower": 2, "knowledge": 3,
-      "morale": 1, "luck": 0
+    {
+      "id": "sylvan_lirael",
+      "template": "sylvan_warden",
+      "name": "Lirael",
+      "class": "Mist Grove Warden",
+      "faction": "sylvan",
+      "starting_skills": [
+        {"branch": "Mists & Streams", "rank": "N", "id": "Mist Veil"},
+        {"branch": "Sylvan Heart", "rank": "N", "id": "Entangling Vines"},
+        {"branch": "Verdant Grace", "rank": "N", "id": "Dew Mend"},
+        {"branch": "Song of the Wind", "rank": "N", "id": "Zephyr Step"}
+      ],
+      "known_spells": ["sand_screen"],
+      "PortraitSprite": "hero/sylvan_haven/lirael.png",
+      "OverWorldSprite": "hero/sylvan_haven/lirael.png",
+      "BattlefieldSprite": "hero/bf_default.png",
+      "battlefield_scale": 1.0,
+      "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
     },
-    "starting_skills": [
-      {"branch":"solar_doctrine","rank":"A","id":"hymn_light"},
-      {"branch":"solar_doctrine","rank":"N","id":"sun_bless"},
-      {"branch":"sutra_guard","rank":"N","id":"mantra_ward"},
-      {"branch":"desert_way","rank":"N","id":"dune_march"}
-    ],
-    "known_spells": ["bless", "minor_heal", "cleanse", "sunburst"],
-    "PortraitSprite": "hero/solaceheim/Aurelion.png",
-    "OverWorldSprite": "hero/solaceheim/Aurelion.png",
-    "BattlefieldSprite": "hero/bf_default.png",
-    "battlefield_scale": 1.0,
-    "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
-  },
-  
-{    
-    "id": "Serkath",
-    "name": "Ser’kath, le Parangon Scorpion",
-    "class": "Stratège ascétique (scorpiokin)",
-    "faction": "solaceheim",
-    "level": 5,
-    "overworld": { "movement": 12, "vision": 4 },
-    "combat": {
-      "mana": 35, "spellpower": 3, "knowledge": 2,
-      "morale": 0, "luck": 1
+    {
+      "id": "sylvan_thorne",
+      "template": "sylvan_druid",
+      "name": "Thorne of the Umbra Grove",
+      "class": "Umbra Druid",
+      "faction": "sylvan",
+      "starting_skills": [
+        {"branch": "Sylvan Heart", "rank": "N", "id": "Entangling Vines"},
+        {"branch": "Sylvan Heart", "rank": "A", "id": "Bramble Field"},
+        {"branch": "Sylvan Heart", "rank": "E", "id": "Summon Sprite"},
+        {"branch": "Verdant Grace", "rank": "N", "id": "Dew Mend"}
+      ],
+      "known_spells": ["sand_screen"],
+      "PortraitSprite": "hero/sylvan_haven/thorne.png",
+      "OverWorldSprite": "hero/sylvan_haven/thorne.png",
+      "BattlefieldSprite": "hero/bf_default.png",
+      "battlefield_scale": 1.0,
+      "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
     },
-    "starting_skills": [
-      {"branch":"resonant_tactics","rank":"N","id":"ritual_beats"},
-      {"branch":"resonant_tactics","rank":"A","id":"maneuver_chorale"},
-      {"branch":"desert_way","rank":"A","id":"sand_step"},
-      {"branch":"sutra_guard","rank":"N","id":"mantra_ward"}
-    ],
-    "known_spells": ["sand_screen"],
-    "PortraitSprite": "hero/solaceheim/Serk'Ath.png",
-    "OverWorldSprite": "hero/solaceheim/Serk'Ath.png",
-    "BattlefieldSprite": "hero/bf_default.png",
-    "battlefield_scale": 1.0,
-    "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
-  }
-]
+    {
+      "id": "sol_aurelion",
+      "template": "sol_sage",
+      "name": "Hiérophante Aurelion",
+      "class": "Sage solaire",
+      "faction": "solaceheim",
+      "starting_skills": [
+        {"branch": "solar_doctrine", "rank": "A", "id": "hymn_light"},
+        {"branch": "solar_doctrine", "rank": "N", "id": "sun_bless"},
+        {"branch": "sutra_guard", "rank": "N", "id": "mantra_ward"},
+        {"branch": "desert_way", "rank": "N", "id": "dune_march"}
+      ],
+      "known_spells": ["bless", "minor_heal", "cleanse", "sunburst"],
+      "PortraitSprite": "hero/solaceheim/Aurelion.png",
+      "OverWorldSprite": "hero/solaceheim/Aurelion.png",
+      "BattlefieldSprite": "hero/bf_default.png",
+      "battlefield_scale": 1.0,
+      "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
+    },
+    {
+      "id": "Serkath",
+      "template": "sol_scorpion",
+      "name": "Ser'kath, le Parangon Scorpion",
+      "class": "Stratège ascétique (scorpiokin)",
+      "faction": "solaceheim",
+      "starting_skills": [
+        {"branch": "resonant_tactics", "rank": "N", "id": "ritual_beats"},
+        {"branch": "resonant_tactics", "rank": "A", "id": "maneuver_chorale"},
+        {"branch": "desert_way", "rank": "A", "id": "sand_step"},
+        {"branch": "sutra_guard", "rank": "N", "id": "mantra_ward"}
+      ],
+      "known_spells": ["sand_screen"],
+      "PortraitSprite": "hero/solaceheim/Serk'Ath.png",
+      "OverWorldSprite": "hero/solaceheim/Serk'Ath.png",
+      "BattlefieldSprite": "hero/bf_default.png",
+      "battlefield_scale": 1.0,
+      "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
+    }
+  ]
+}
+
