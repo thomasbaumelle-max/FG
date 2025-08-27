@@ -29,8 +29,6 @@ class _DragState:
 
 class HeroArmyPanel:
     """Display a portrait and a grid for the hero's army."""
-
-    PORTRAIT_SIZE = 72  # default size for placeholder surfaces
     PADDING = 4
     # (columns, half-cell offset)
     GRID_LAYOUT = [(4, 0), (3, 1)]
@@ -84,29 +82,18 @@ class HeroArmyPanel:
             except Exception:  # pragma: no cover - loading may fail
                 portrait = None
         if portrait is not None and hasattr(portrait, "blit"):
-            size_fn = getattr(portrait, "get_size", None)
-            if size_fn:
-                width, height = size_fn()
-            else:
-                width, height = portrait.get_width(), portrait.get_height()
-            if (width, height) != (self.PORTRAIT_SIZE, self.PORTRAIT_SIZE):
-                try:
-                    portrait = pygame.transform.scale(
-                        portrait, (self.PORTRAIT_SIZE, self.PORTRAIT_SIZE)
-                    )
-                except Exception:  # pragma: no cover
-                    portrait = None
-            if portrait is not None:
-                self.portrait = portrait
-        if portrait is None:
+            self.portrait = portrait
+        else:
             self.portrait = self._make_portrait()
 
     # ------------------------------------------------------------------
     def _make_portrait(self) -> pygame.Surface:
-        surf = pygame.Surface((self.PORTRAIT_SIZE, self.PORTRAIT_SIZE))
+        surf = pygame.Surface((1, 1))
         surf.fill(theme.PALETTE["panel"])
         if hasattr(pygame, "draw") and hasattr(pygame.draw, "rect"):
-            pygame.draw.rect(surf, theme.FRAME_COLOURS["normal"], surf.get_rect(), theme.FRAME_WIDTH)
+            pygame.draw.rect(
+                surf, theme.FRAME_COLOURS["normal"], surf.get_rect(), theme.FRAME_WIDTH
+            )
         return surf
 
     # ------------------------------------------------------------------
@@ -117,23 +104,29 @@ class HeroArmyPanel:
         ``grid_x``/``grid_y`` is the top-left corner of the unit grid.
         """
 
-        content_h = rect.height - self.FORMATION_BUTTON_HEIGHT - self.PADDING
-        portrait_size = max(32, content_h - self.SPLIT_BUTTON_HEIGHT - self.PADDING)
+        content_h = max(1, rect.height - self.FORMATION_BUTTON_HEIGHT - self.PADDING)
+        portrait_max_h = max(1, content_h - self.SPLIT_BUTTON_HEIGHT - self.PADDING)
+        grid_min_w = self.GRID_COLS * 1 + (self.GRID_COLS - 1) * self.PADDING
+        portrait_max_w = max(1, rect.width - grid_min_w - 2 * self.PADDING)
+        portrait_size = max(1, min(portrait_max_h, portrait_max_w))
 
-        avail_w = rect.width - portrait_size - 2 * self.PADDING
-        cell_w = (
-            avail_w - (self.GRID_COLS - 1) * self.PADDING
-        ) // self.GRID_COLS
-        cell_h = (
-            content_h - (self.GRID_ROWS - 1) * self.PADDING
-        ) // self.GRID_ROWS
+        avail_w = max(1, rect.width - portrait_size - 2 * self.PADDING)
+        cell_w = max(
+            1, (avail_w - (self.GRID_COLS - 1) * self.PADDING) // self.GRID_COLS
+        )
+        cell_h = max(
+            1, (content_h - (self.GRID_ROWS - 1) * self.PADDING) // self.GRID_ROWS
+        )
         cell_size = max(1, min(cell_w, cell_h))
 
         grid_w = self.GRID_COLS * cell_size + (self.GRID_COLS - 1) * self.PADDING
         grid_h = self.GRID_ROWS * cell_size + (self.GRID_ROWS - 1) * self.PADDING
 
-        gx = rect.x + portrait_size + self.PADDING + (avail_w - grid_w) // 2
-        gy = rect.y + (content_h - grid_h) // 2
+        gx = rect.x + portrait_size + self.PADDING + max(0, (avail_w - grid_w) // 2)
+        rect_right = rect.x + rect.width
+        gx = max(rect.x, min(gx, rect_right - grid_w))
+        gy = rect.y + max(0, (content_h - grid_h) // 2)
+        gy = max(rect.y, min(gy, rect.y + content_h - grid_h))
         return cell_size, portrait_size, gx, gy
 
     def _portrait_rect(self, rect: pygame.Rect) -> pygame.Rect:
