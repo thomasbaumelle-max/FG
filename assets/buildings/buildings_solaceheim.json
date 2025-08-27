@@ -1,0 +1,14 @@
+[
+  {"id":"sanctuary_of_the_sun","unlocks":["sol_t1_disciple_initie"],"visit_bonus":{"mana_per_day":1}},
+  {"id":"cloister_of_resonance","unlocks":["sol_t2_ascete_cloche"],"grants_scroll":"sonic_bell_once","requires":["sanctuary_of_the_sun"]},
+  {"id":"celestial_aeries","unlocks":["sol_t3_aigle_choeur"],"city_bonus":{"vision_radius":1},"requires":["cloister_of_resonance"]},
+  {"id":"sutra_guardhouse","unlocks":["sol_t4_gardien_sutras"],"city_bonus":{"defence_magic_city":1},"requires":["celestial_aeries"]},
+  {"id":"hall_of_ascetics","unlocks":["sol_t5_guerrier_ascete"],"hero_depart_bonus":{"desert_move_pct":10},"requires":["sutra_guardhouse"]},
+  {"id":"sanctum_of_the_veil","unlocks":["sol_t6_chimere_ascese"],"city_bonus":{"ambush_detection":1},"requires":["hall_of_ascetics"]},
+  {"id":"choir_of_singing_dunes","unlocks":["sol_t7_serpent_cantique"],"map_bonus":{"desert_move_cost_bonus":1},"requires":["sanctum_of_the_veil","cloister_of_resonance"]},
+  {"id":"spire_of_solar_apotheosis","unlocks":["sol_t8_avatar_soleil"],"requires":["sutra_guardhouse","choir_of_singing_dunes"]},
+
+  {"id":"terrace_of_discipline","growth_bonus":{"tiers":["T1","T2","T3"],"pct":10}},
+  {"id":"voice_of_the_dunes","visit_bonus":{"mana_per_day":1},"map_bonus":{"desert_hazard_res_pct":15}},
+  {"id":"colossus_of_sutras","city_bonus":{"global_defence_magic":1}}
+]
