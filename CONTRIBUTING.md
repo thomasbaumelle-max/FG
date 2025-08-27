@@ -26,3 +26,7 @@ make precommit-test
 Cette commande lance une suite de tests rapide
 (`pytest --maxfail=1 -q -m "not slow and not worldgen and not combat and not serial"`)
 utilisée par le hook pre-commit pour détecter les régressions.
+
+La configuration `pytest` inclut également `--durations=20` afin d'afficher les vingt tests les plus lents.
+Consultez cette liste après vos exécutions et tenez à jour le fichier
+[docs/test_durations.md](docs/test_durations.md) pour orienter l'optimisation des tests.
