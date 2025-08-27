@@ -1151,6 +1151,7 @@ class Combat:
         for u in self.hero_units:
             u.count = 0
         self.add_log("The hero flees!")
+        audio.play_sound('defeat')
         self.exit_to_menu = True
 
     def surrender(self) -> None:
@@ -1160,6 +1161,7 @@ class Combat:
             for res in self.hero.resources:
                 self.hero.resources[res] = self.hero.resources[res] // 2
         self.add_log("The hero surrenders!")
+        audio.play_sound('defeat')
         self.exit_to_menu = True
 
     def auto_resolve(self) -> None:
@@ -1176,6 +1178,8 @@ class Combat:
         ar.show_summary(self.screen, heroes, enemies, hero_wins, exp, self.hero)
         if hero_wins:
             audio.play_sound('victory')
+        else:
+            audio.play_sound('defeat')
         self._auto_resolve_done = True
 
     def auto_combat(self) -> None:
@@ -1215,6 +1219,7 @@ class Combat:
             enemy_alive = any(u.is_alive for u in self.enemy_units)
             if not hero_alive:
                 if not self._auto_resolve_done:
+                    audio.play_sound('defeat')
                     self.show_stats()
                 return False, self.experience_gained()
             if not enemy_alive:

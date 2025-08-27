@@ -7,7 +7,10 @@ from typing import Iterable, List, Optional, Tuple
 
 import pygame
 
-import constants
+try:  # pragma: no cover - allow package and script use
+    from .. import constants, audio
+except ImportError:  # pragma: no cover
+    import constants, audio  # type: ignore
 
 
 def _load_background() -> Optional[pygame.Surface]:
@@ -67,11 +70,15 @@ def simple_menu(
             if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_UP, pygame.K_w):
                     selected = (selected - 1) % len(opts)
+                    audio.play_sound("move")
                 elif event.key in (pygame.K_DOWN, pygame.K_s):
                     selected = (selected + 1) % len(opts)
+                    audio.play_sound("move")
                 elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
+                    audio.play_sound("click")
                     return selected, screen
                 elif event.key == pygame.K_ESCAPE:
+                    audio.play_sound("click")
                     return None, screen
                 elif event.key == pygame.K_F11:
                     pygame.display.toggle_fullscreen()
