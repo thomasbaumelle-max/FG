@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import random
 from collections import deque
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Set
 
 Cell = Tuple[int, int]
@@ -116,17 +118,19 @@ def _generate_rivers(grid: List[List[bool]], biome_map: Dict[Cell, str]) -> None
             x, y = random.choice(candidates)
 
 
-DEFAULT_BIOME_COMPATIBILITY: Dict[str, set[str]] = {
-    "G": {"G", "F", "D", "M", "H", "S", "J", "I", "R"},  # scarletia echo plain
-    "F": {"G", "F", "H", "S", "J", "R"},  # scarletia crimson forest
-    "D": {"G", "D", "M", "H", "R"},  # scarletia volcanic cannot touch ice
-    "M": {"G", "M", "D", "H", "I", "R"},  # mountains allow ice
-    "H": {"G", "F", "D", "M", "H", "S", "I", "R"},
-    "S": {"S", "G", "F", "H", "R"},
-    "J": {"J", "F", "G", "H", "R"},
-    "I": {"G", "M", "H", "I", "R"},  # ice cannot touch scarletia volcanic
-    "R": {"G", "F", "D", "M", "H", "S", "J", "I", "R"},
-}
+def load_biome_compatibility(path: Optional[str] = None) -> Dict[str, set[str]]:
+    """Return biome adjacency rules from ``path`` or the default JSON file."""
+    if path is None:
+        repo_root = Path(__file__).resolve().parents[1]
+        path = repo_root / "assets" / "biome_compatibility.json"
+    data = {}
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            raw: Dict[str, List[str]] = json.load(fh)
+        data = {k: set(v) for k, v in raw.items()}
+    except Exception:  # pragma: no cover - fallback to empty rules
+        data = {}
+    return data
 
 
 def _assign_biomes(grid: List[List[bool]],
@@ -234,7 +238,7 @@ def generate_continent_map(
         _remove_small_continents(grid, min_continent_size)
         continents = _label_continents(grid)
     if biome_compatibility is None:
-        biome_compatibility = DEFAULT_BIOME_COMPATIBILITY
+        biome_compatibility = load_biome_compatibility()
     biome_map = _assign_biomes(grid, continents, biome_chars, biome_compatibility)
     _generate_rivers(grid, biome_map)
     rows: List[str] = []

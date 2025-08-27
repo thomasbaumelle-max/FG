@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from mapgen.continents import generate_continent_map, load_biome_compatibility
+
 
 def _load_rows() -> list[str]:
     path = Path(__file__).parent / "fixtures" / "mini_continent_map.txt"
@@ -23,7 +25,7 @@ def test_biome_adjacency_respects_rules():
     grid = [[row[i] for i in range(0, len(row), 2)] for row in rows]
     height = len(grid)
     width = len(grid[0]) if grid else 0
-    from mapgen.continents import DEFAULT_BIOME_COMPATIBILITY
+    rules = load_biome_compatibility()
     for y in range(height):
         for x in range(width):
             c1 = grid[y][x]
@@ -35,5 +37,35 @@ def test_biome_adjacency_respects_rules():
                     c2 = grid[ny][nx]
                     if c2 in ("W",):
                         continue
-                    assert c2 in DEFAULT_BIOME_COMPATIBILITY.get(c1, {c2})
+                    assert c2 in rules.get(c1, {c2})
+
+
+def test_generate_map_with_custom_rules():
+    custom = {"A": {"A", "B"}, "B": {"A", "B"}}
+    rows = generate_continent_map(
+        10,
+        10,
+        seed=0,
+        land_chance=1.0,
+        smoothing_iterations=0,
+        biome_chars="AB",
+        biome_compatibility=custom,
+    )
+    grid = [[row[i] for i in range(0, len(row), 2)] for row in rows]
+    chars = {c for row in grid for c in row}
+    assert "A" in chars and "B" in chars
+    height = len(grid)
+    width = len(grid[0]) if height else 0
+    for y in range(height):
+        for x in range(width):
+            c1 = grid[y][x]
+            if c1 in ("W",):
+                continue
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < width and 0 <= ny < height:
+                    c2 = grid[ny][nx]
+                    if c2 in ("W",):
+                        continue
+                    assert c2 in custom.get(c1, {c2})
 
