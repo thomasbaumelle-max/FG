@@ -1,14 +1,105 @@
 [
-  {"id":"sanctuary_of_the_sun","unlocks":["disciple_initie"],"visit_bonus":{"mana_per_day":1}},
-  {"id":"cloister_of_resonance","unlocks":["ascete_cloche"],"grants_scroll":"sonic_bell_once","requires":["sanctuary_of_the_sun"]},
-  {"id":"celestial_aeries","unlocks":["aigle_choeur"],"city_bonus":{"vision_radius":1},"requires":["cloister_of_resonance"]},
-  {"id":"sutra_guardhouse","unlocks":["gardien_sutras"],"city_bonus":{"defence_magic_city":1},"requires":["celestial_aeries"]},
-  {"id":"hall_of_ascetics","unlocks":["guerrier_ascete"],"hero_depart_bonus":{"desert_move_pct":10},"requires":["sutra_guardhouse"]},
-  {"id":"sanctum_of_the_veil","unlocks":["chimere_ascese"],"city_bonus":{"ambush_detection":1},"requires":["hall_of_ascetics"]},
-  {"id":"choir_of_singing_dunes","unlocks":["serpent_cantique"],"map_bonus":{"desert_move_cost_bonus":1},"requires":["sanctum_of_the_veil","cloister_of_resonance"]},
-  {"id":"spire_of_solar_apotheosis","unlocks":["avatar_soleil"],"requires":["sutra_guardhouse","choir_of_singing_dunes"]},
-
-  {"id":"terrace_of_discipline","growth_bonus":{"tiers":["T1","T2","T3"],"pct":10}},
-  {"id":"voice_of_the_dunes","visit_bonus":{"mana_per_day":1},"map_bonus":{"desert_hazard_res_pct":15}},
-  {"id":"colossus_of_sutras","city_bonus":{"global_defence_magic":1}}
+  {
+    "id": "sanctuary_of_the_sun",
+    "dwelling": {"disciple_initie": 1},
+    "cost": {},
+    "desc": "",
+    "image": "buildings/sanctuary_of_the_sun.png",
+    "unlocks": ["disciple_initie"],
+    "visit_bonus": {"mana_per_day": 1}
+  },
+  {
+    "id": "cloister_of_resonance",
+    "dwelling": {"ascete_cloche": 1},
+    "cost": {},
+    "desc": "",
+    "image": "buildings/cloister_of_resonance.png",
+    "unlocks": ["ascete_cloche"],
+    "grants_scroll": "sonic_bell_once",
+    "requires": ["sanctuary_of_the_sun"]
+  },
+  {
+    "id": "celestial_aeries",
+    "dwelling": {"aigle_choeur": 1},
+    "cost": {},
+    "desc": "",
+    "image": "buildings/celestial_aeries.png",
+    "unlocks": ["aigle_choeur"],
+    "city_bonus": {"vision_radius": 1},
+    "requires": ["cloister_of_resonance"]
+  },
+  {
+    "id": "sutra_guardhouse",
+    "dwelling": {"gardien_sutras": 1},
+    "cost": {},
+    "desc": "",
+    "image": "buildings/sutra_guardhouse.png",
+    "unlocks": ["gardien_sutras"],
+    "city_bonus": {"defence_magic_city": 1},
+    "requires": ["celestial_aeries"]
+  },
+  {
+    "id": "hall_of_ascetics",
+    "dwelling": {"guerrier_ascete": 1},
+    "cost": {},
+    "desc": "",
+    "image": "buildings/hall_of_ascetics.png",
+    "unlocks": ["guerrier_ascete"],
+    "hero_depart_bonus": {"desert_move_pct": 10},
+    "requires": ["sutra_guardhouse"]
+  },
+  {
+    "id": "sanctum_of_the_veil",
+    "dwelling": {"chimere_ascese": 1},
+    "cost": {},
+    "desc": "",
+    "image": "buildings/sanctum_of_the_veil.png",
+    "unlocks": ["chimere_ascese"],
+    "city_bonus": {"ambush_detection": 1},
+    "requires": ["hall_of_ascetics"]
+  },
+  {
+    "id": "choir_of_singing_dunes",
+    "dwelling": {"serpent_cantique": 1},
+    "cost": {},
+    "desc": "",
+    "image": "buildings/choir_of_singing_dunes.png",
+    "unlocks": ["serpent_cantique"],
+    "map_bonus": {"desert_move_cost_bonus": 1},
+    "requires": ["sanctum_of_the_veil", "cloister_of_resonance"]
+  },
+  {
+    "id": "spire_of_solar_apotheosis",
+    "dwelling": {"avatar_soleil": 1},
+    "cost": {},
+    "desc": "",
+    "image": "buildings/spire_of_solar_apotheosis.png",
+    "unlocks": ["avatar_soleil"],
+    "requires": ["sutra_guardhouse", "choir_of_singing_dunes"]
+  },
+  {
+    "id": "terrace_of_discipline",
+    "dwelling": {},
+    "cost": {},
+    "desc": "",
+    "image": "buildings/terrace_of_discipline.png",
+    "growth_bonus": {"tiers": ["T1", "T2", "T3"], "pct": 10}
+  },
+  {
+    "id": "voice_of_the_dunes",
+    "dwelling": {},
+    "cost": {},
+    "desc": "",
+    "image": "buildings/voice_of_the_dunes.png",
+    "visit_bonus": {"mana_per_day": 1},
+    "map_bonus": {"desert_hazard_res_pct": 15}
+  },
+  {
+    "id": "colossus_of_sutras",
+    "dwelling": {},
+    "cost": {},
+    "desc": "",
+    "image": "buildings/colossus_of_sutras.png",
+    "city_bonus": {"global_defence_magic": 1}
+  }
 ]

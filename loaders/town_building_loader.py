@@ -7,10 +7,10 @@ from .core import Context, read_json
 
 # Mapping of faction identifiers to their town building manifest paths
 FACTION_TOWN_BUILDING_MANIFESTS: Dict[str, str] = {
+    "red_knights": "buildings/buildings_red_knights.json",
     "sylvan": "buildings/buildings_sylvan.json",
     "solaceheim": "buildings/buildings_solaceheim.json",
 }
-
 
 def load_town_buildings(ctx: Context, manifest: str) -> Dict[str, Dict[str, object]]:
     """Load town structure definitions from ``manifest``.

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "crimson_watch",
+    "cost": {"wood": 5, "stone": 5},
+    "prereq": [],
+    "dwelling": {"red_squire": 5},
+    "desc": "Train the order's squires.",
+    "image": "buildings/crimson_watch.png"
+  },
+  {
+    "id": "scarlet_fletchery",
+    "cost": {"wood": 3, "stone": 2},
+    "prereq": ["crimson_watch"],
+    "dwelling": {"scarlet_archer": 5},
+    "desc": "Recruit archers loyal to the Flame.",
+    "image": "buildings/scarlet_fletchery.png"
+  },
+  {
+    "id": "sun_spire",
+    "cost": {"wood": 10, "stone": 10, "crystal": 5},
+    "prereq": ["scarlet_fletchery"],
+    "dwelling": {"sun_priest": 3},
+    "desc": "Sanctum for the Sun Priests.",
+    "image": "buildings/sun_spire.png"
+  }
+]
