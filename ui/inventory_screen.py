@@ -133,6 +133,8 @@ class InventoryScreen:
         # Skills --------------------------------------------------------------
         self.skill_trees: Dict[str, List[SkillNode]] = {}
         self.skill_positions: Dict[str, Dict[str, Tuple[int, int]]] = {}
+        self.skill_branch_of: Dict[str, str] = {}
+        self.skill_nodes: Dict[str, SkillNode] = {}
         self.SKILL_TABS: List[str] = []
         self._build_skill_trees()
         self.active_skill_tab = self.SKILL_TABS[0] if self.SKILL_TABS else ""
@@ -155,6 +157,8 @@ class InventoryScreen:
         self.SKILL_TABS = order
         self.skill_trees = {b: [] for b in order}
         self.skill_positions = {b: {} for b in order}
+        self.skill_branch_of.clear()
+        self.skill_nodes.clear()
         for entry in manifest:
             branch = entry.get("branch", "")
             nid = entry.get("id")
@@ -167,7 +171,10 @@ class InventoryScreen:
                 if entry.get("rank", "N") in rank_order
                 else 0
             )
-            self.skill_positions[branch][nid] = (0, row)
+            col = order.index(branch)
+            self.skill_positions[branch][nid] = (col, row)
+            self.skill_branch_of[nid] = branch
+            self.skill_nodes[nid] = node
         for branch in self.skill_trees:
             self.skill_trees[branch].sort(
                 key=lambda n: rank_order.index(n.rank) if n.rank in rank_order else 0
@@ -472,10 +479,11 @@ class InventoryScreen:
                         lines = self._item_tooltip(self.hero.inventory[idx], equip=True)
                         break
             elif self.active_tab == "skills":
-                for node in self.skill_trees.get(self.active_skill_tab, []):
-                    r = self.skill_rects.get(node.id)
+                for nid, r in self.skill_rects.items():
                     if r and r.collidepoint(mouse):
-                        lines = self._skill_tooltip(node)
+                        node = self.skill_nodes.get(nid)
+                        if node:
+                            lines = self._skill_tooltip(node)
                         break
             else:
                 for slot, rect in self.slot_rects.items():
@@ -750,13 +758,12 @@ class InventoryScreen:
                     return
 
         elif self.active_tab == "skills":
-            # Left-click learn; right-click refund handled in mouse
-            # down/up split (simpler here)
-            for node in self.skill_trees.get(self.active_skill_tab, []):
-                rect = self.skill_rects.get(node.id)
+            # Left-click learn; right-click refund handled in mouse down/up split
+            for nid, rect in self.skill_rects.items():
                 if rect and rect.collidepoint(pos):
-                    # Left click = learn
-                    if not self.hero.learn_skill(node, self.active_skill_tab):
+                    node = self.skill_nodes[nid]
+                    branch = self.skill_branch_of.get(nid, "")
+                    if not self.hero.learn_skill(node, branch):
                         self._toast("Cannot learn")
                     return
 
@@ -802,11 +809,12 @@ class InventoryScreen:
         # Skills: right-click refund (safe if no dependent learned)
         if self.active_tab == "skills" and pygame.mouse.get_pressed()[2]:
             pos_now = self._mouse_pos()
-            for node in self.skill_trees.get(self.active_skill_tab, []):
-                rect = self.skill_rects.get(node.id)
+            for nid, rect in self.skill_rects.items():
                 if rect and rect.collidepoint(pos_now):
-                    if self._can_refund(node.id):
-                        self.hero.refund_skill(node, self.active_skill_tab)
+                    node = self.skill_nodes[nid]
+                    branch = self.skill_branch_of.get(nid, "")
+                    if self._can_refund(branch, nid):
+                        self.hero.refund_skill(node, branch)
                     else:
                         self._toast("Cannot refund (dependent skills)")
                     break
@@ -819,5 +827,5 @@ class InventoryScreen:
     def _dependents_of(self, tree: str, nid: str) -> Set[str]:
         return skills_tab.dependents_of(self, tree, nid)
 
-    def _can_refund(self, nid: str) -> bool:
-        return skills_tab.can_refund(self, nid)
+    def _can_refund(self, tree: str, nid: str) -> bool:
+        return skills_tab.can_refund(self, tree, nid)
