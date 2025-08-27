@@ -8,6 +8,7 @@ import constants
 from loaders import building_loader
 from loaders.building_loader import BuildingAsset
 from loaders.core import Context
+from loaders.town_building_loader import load_faction_town_buildings
 
 if TYPE_CHECKING:  # pragma: no cover
     from core.entities import Hero, Unit
@@ -181,7 +182,7 @@ class Town(Building):
     image = "town"
     _counter = 0
 
-    def __init__(self, name: Optional[str] = None) -> None:
+    def __init__(self, name: Optional[str] = None, faction_id: Optional[str] = None) -> None:
         super().__init__()
         if name is None:
             Town._counter += 1
@@ -212,6 +213,18 @@ class Town(Building):
                 "dwelling": entry.get("dwelling", {}),
             }
         self.ui_order = order
+
+        if faction_id:
+            repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+            ctx = Context(
+                repo_root=repo_root,
+                search_paths=[os.path.join(repo_root, "assets")],
+                asset_loader=None,
+            )
+            extras = load_faction_town_buildings(ctx, faction_id)
+            for sid, info in extras.items():
+                self.structures[sid] = info
+                self.ui_order.append(sid)
 
         # Tavern is present by default in every town
         self.built_structures: Set[str] = {"tavern"}
