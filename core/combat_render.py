@@ -129,11 +129,6 @@ def draw(combat, frame: int = 0) -> None:
     # Hex grid overlay
     for x in range(constants.COMBAT_GRID_WIDTH):
         for y in range(constants.COMBAT_GRID_HEIGHT):
-            if (
-                x in (0, constants.COMBAT_GRID_WIDTH - 1)
-                or y in (0, constants.COMBAT_GRID_HEIGHT - 1)
-            ):
-                continue
             rect = combat.cell_rect(x, y)
             draw_hex(overlay, rect, theme.PALETTE["panel"], 15, width=1)
 
