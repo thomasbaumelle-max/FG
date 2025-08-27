@@ -59,7 +59,7 @@ def make_screen_and_hero():
     return screen, hero
 
 
-def test_switch_skill_tabs(monkeypatch):
+def test_all_branches_drawn(monkeypatch):
     monkeypatch.setattr(pygame, "Rect", Rect)
     screen, hero = make_screen_and_hero()
     inv = InventoryScreen(screen, {}, hero)
@@ -69,16 +69,15 @@ def test_switch_skill_tabs(monkeypatch):
         "draw",
         types.SimpleNamespace(rect=lambda *a, **k: None, line=lambda *a, **k: None),
     )
-    rect = inv.skill_tab_buttons["tactics"]
-    assert inv.active_skill_tab == inv.SKILL_TABS[0]
-    assert inv._check_skill_tab_click((rect.x + 1, rect.y + 1))
-    assert inv.active_skill_tab == "tactics"
+    inv._draw_skills_content()
+    assert "logistics_N" in inv.skill_rects
+    assert "tactics_N" in inv.skill_rects
 
 
-def test_skill_acquisition_per_tree(monkeypatch):
+def test_skill_acquisition_multiple_branches(monkeypatch):
     monkeypatch.setattr(pygame, "Rect", Rect)
     screen, hero = make_screen_and_hero()
-    hero.skill_points = 1
+    hero.skill_points = 2
     inv = InventoryScreen(screen, {}, hero)
     inv.active_tab = "skills"
     monkeypatch.setattr(
@@ -89,11 +88,8 @@ def test_skill_acquisition_per_tree(monkeypatch):
     inv._draw_skills_content()
     rect = inv.skill_rects["logistics_N"]
     inv._on_lmb_down((rect.centerx, rect.centery))
-    assert "logistics_N" in hero.learned_skills["logistics"]
-
-    rect_tactics = inv.skill_tab_buttons["tactics"]
-    inv._check_skill_tab_click((rect_tactics.x + 1, rect_tactics.y + 1))
-    inv._draw_skills_content()
-    assert "tactics_N" in inv.skill_rects
-    assert hero.learned_skills.get("tactics", set()) == set()
+    rect2 = inv.skill_rects["tactics_N"]
+    inv._on_lmb_down((rect2.centerx, rect2.centery))
+    assert "logistics_N" in hero.learned_skills.get("logistics", set())
+    assert "tactics_N" in hero.learned_skills.get("tactics", set())
 
