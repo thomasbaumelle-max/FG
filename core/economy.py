@@ -1,9 +1,21 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Set
+from typing import Dict, List, Optional, Any, Set, Tuple
 
 # Ressources par défaut (tu peux en ajouter)
 DEFAULT_RESOURCES = ("gold", "wood", "stone", "crystal")
+
+# Rates for the market building.  They mirror the values used by
+# ``core.buildings.Town`` so that both the high level economy module and the
+# in-game implementation stay in sync.
+DEFAULT_MARKET_RATES: Dict[Tuple[str, str], int] = {
+    ("gold", "wood"): 100,
+    ("gold", "stone"): 100,
+    ("gold", "crystal"): 250,
+    ("wood", "gold"): 8,
+    ("stone", "gold"): 8,
+    ("crystal", "gold"): 25,
+}
 
 @dataclass
 class PlayerEconomy:
@@ -87,6 +99,56 @@ def can_afford(player: PlayerEconomy, cost: Dict[str, int]) -> bool:
 def pay(player: PlayerEconomy, cost: Dict[str, int]) -> None:
     for k, v in cost.items():
         player.resources[k] = player.resources.get(k, 0) - int(v)
+
+
+def can_trade(
+    player: PlayerEconomy,
+    give_res: str,
+    take_res: str,
+    amount_take: int,
+    rates: Optional[Dict[Tuple[str, str], int]] = None,
+) -> bool:
+    """Return ``True`` if ``player`` can exchange resources on the market.
+
+    ``amount_take`` represents the quantity of ``take_res`` the player wishes to
+    acquire.  ``give_res`` is the resource used for payment.  The cost is
+    determined by the provided ``rates`` mapping which defaults to
+    :data:`DEFAULT_MARKET_RATES`.
+    """
+
+    if amount_take <= 0:
+        return False
+    rate_table = rates or DEFAULT_MARKET_RATES
+    rate = rate_table.get((give_res, take_res))
+    if rate is None:
+        return False
+    cost = rate * amount_take
+    return player.resources.get(give_res, 0) >= cost
+
+
+def trade(
+    player: PlayerEconomy,
+    give_res: str,
+    take_res: str,
+    amount_take: int,
+    rates: Optional[Dict[Tuple[str, str], int]] = None,
+) -> bool:
+    """Perform a resource trade on the market.
+
+    Resources are deducted from ``player`` according to the exchange ``rates``
+    and the requested ``amount_take``.  Returns ``True`` if the transaction was
+    completed successfully.
+    """
+
+    if not can_trade(player, give_res, take_res, amount_take, rates):
+        return False
+    rate_table = rates or DEFAULT_MARKET_RATES
+    rate = rate_table.get((give_res, take_res))
+    assert rate is not None  # for type checkers
+    cost = rate * amount_take
+    player.resources[give_res] = player.resources.get(give_res, 0) - cost
+    player.resources[take_res] = player.resources.get(take_res, 0) + amount_take
+    return True
 
 
 def build_structure(b: Building, sid: str) -> bool:
