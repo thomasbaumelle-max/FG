@@ -2806,6 +2806,8 @@ class Game:
                             continue
                         hero.army.append(Unit(stats, amount, "enemy"))
                         b.garrison[unit_id] = 0
+        if getattr(self, "ai_player", None):
+            self.ai_player.update_visibility(self.world)
 
     def move_enemy_heroes(self) -> None:
         """Move each enemy hero one step toward the hero or nearest resource."""
@@ -2881,6 +2883,8 @@ class Game:
                 self._update_caches_for_tile(enemy.x, enemy.y)
             if enemy.x == self.hero.x and enemy.y == self.hero.y:
                 self.combat_with_enemy_hero(enemy, initiated_by="enemy")
+        if getattr(self, "ai_player", None):
+            self.ai_player.update_visibility(self.world)
 
     def combat_with_enemy_hero(self, enemy: EnemyHero, initiated_by: str) -> bool:
         """Handle combat between the player and an enemy hero.

@@ -48,8 +48,11 @@ class FactionAI:
 
         best: Optional[Tuple[int, int]] = None
         best_dist = radius + 1
+        vis = getattr(world, "visible", {}).get(1)
         for y in range(max(0, hero.y - radius), min(world.height, hero.y + radius + 1)):
             for x in range(max(0, hero.x - radius), min(world.width, hero.x + radius + 1)):
+                if vis and not vis[y][x]:
+                    continue
                 tile = world.grid[y][x]
                 b = getattr(tile, "building", None)
                 if not isinstance(b, Building):
@@ -95,11 +98,52 @@ class FactionAI:
         if default_hero is not None and default_hero not in heroes:
             heroes.append(default_hero)
 
+        vis = getattr(world, "visible", {}).get(1)
         for hero in heroes:
             hx, hy = getattr(hero, "x", 0), getattr(hero, "y", 0)
+            if vis and not vis[hy][hx]:
+                continue
             if abs(hx - tx) + abs(hy - ty) <= radius:
                 return True
         return False
+
+    def update_visibility(self, world) -> None:
+        """Recompute fog-of-war information for the faction."""
+
+        heroes = list(self.heroes)
+        if heroes:
+            first = True
+            for hero in heroes:
+                world.update_visibility(1, hero, reset=first)
+                first = False
+        else:
+            ensure = getattr(world, "_ensure_player_fog", None)
+            if ensure:
+                ensure(1)
+                vis = world.visible[1]
+                for row in vis:
+                    for i in range(len(row)):
+                        row[i] = False
+
+        towns_attr = getattr(world, "towns", None)
+        towns = towns_attr() if callable(towns_attr) else towns_attr
+        for town in towns or []:
+            if getattr(town, "owner", None) != 1:
+                continue
+            loc = None
+            for y, row in enumerate(world.grid):
+                for x, tile in enumerate(row):
+                    if tile.building is town:
+                        loc = (x, y)
+                        break
+                if loc:
+                    break
+            if loc:
+                ox, oy = loc
+            else:
+                ox, oy = getattr(town, "origin", (0, 0))
+            for dx, dy in getattr(town, "footprint", [(0, 0)]):
+                world.reveal(1, ox + dx, oy + dy, radius=2)
 
     # ------------------------------------------------------------------
     # Public API
