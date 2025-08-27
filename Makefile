@@ -11,7 +11,8 @@ lf:
 all-fast:
 	pytest -q -n auto --dist=loadgroup -m "not slow and not worldgen and not combat and not serial"
 
-precommit-test: all-fast
+precommit-test:
+	pytest --maxfail=1 -q -m "not slow and not worldgen and not combat and not serial"
 
 serial:
 	pytest -q -n 1 -m serial
