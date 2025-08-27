@@ -35,7 +35,7 @@ def test_weekly_transfer_to_garrison():
 
 def test_town_available_units():
     pygame.init()
-    town = Town()
+    town = Town(faction_id="red_knights")
     hero = Hero(0, 0, [])
     hero.resources['wood'] = 5
     hero.resources['stone'] = 5

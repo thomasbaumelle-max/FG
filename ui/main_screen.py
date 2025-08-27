@@ -11,6 +11,7 @@ this stub with a more feature complete interface.
 
 from typing import Dict, Optional, List
 
+import os
 import pygame
 from . import theme, constants
 
@@ -135,7 +136,10 @@ class MainScreen:
         path = getattr(self.game, "default_save_path", None)
         profile = getattr(self.game, "default_profile_path", None)
         if cb and path:
-            cb(path, profile)
+            if os.path.exists(path):
+                cb(path, profile)
+            else:
+                EVENT_BUS.publish(ON_INFO_MESSAGE, f"Save file not found: {path}")
 
     def prev_hero(self) -> None:
         cb = getattr(self.game, "prev_hero", None)

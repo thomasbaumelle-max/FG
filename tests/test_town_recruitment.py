@@ -17,7 +17,7 @@ def _create_game_with_town():
     Game = game_module.Game
     world = WorldMap(map_data=["G"])
     tile = world.grid[0][0]
-    tile.building = Town()
+    tile.building = Town(faction_id="red_knights")
     hero = Hero(0, 0, [])
     game = Game.__new__(Game)
     game.world = world
@@ -46,7 +46,7 @@ def test_town_build_and_recruit():
 
 def test_town_recruitment_limited_by_stock():
     pygame.init()
-    town = Town()
+    town = Town(faction_id="red_knights")
     hero = Hero(0, 0, [])
     hero.resources['wood'] = 5
     hero.resources['stone'] = 5
@@ -62,7 +62,7 @@ def test_town_recruitment_limited_by_stock():
 
 def test_recruit_into_garrison():
     pygame.init()
-    town = Town()
+    town = Town(faction_id="red_knights")
     hero = Hero(0, 0, [])
     hero.resources['wood'] = 5
     hero.resources['stone'] = 5
@@ -76,7 +76,7 @@ def test_recruit_into_garrison():
 
 def test_recruit_into_visiting_army():
     pygame.init()
-    town = Town()
+    town = Town(faction_id="red_knights")
     hero = Hero(0, 0, [])
     visiting = Hero(1, 0, [])
     hero.resources['wood'] = 5
@@ -106,7 +106,7 @@ def test_townscreen_recruit_with_hero_goes_to_garrison(monkeypatch, pygame_stub)
     monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
     from ui.town_screen import TownScreen
 
-    town = Town()
+    town = Town(faction_id="red_knights")
     hero = Hero(0, 0, [])
     hero.resources['wood'] = 5
     hero.resources['stone'] = 5
@@ -153,7 +153,7 @@ def test_townscreen_recruit_visiting_army(monkeypatch, pygame_stub):
     from ui.town_screen import TownScreen
     from core.entities import Army
 
-    town = Town()
+    town = Town(faction_id="red_knights")
     hero = Hero(1, 0, [])
     hero.resources['wood'] = 5
     hero.resources['stone'] = 5
