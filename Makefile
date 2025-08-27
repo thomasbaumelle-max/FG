@@ -1,9 +1,12 @@
-.PHONY: fast all-fast serial long fast-test precommit-test
+.PHONY: fast lf all-fast serial long fast-test precommit-test
 
 fast:
-pytest -q -n auto
+	pytest --testmon -q -n auto
 
 fast-test: fast
+
+lf:
+	pytest --lf -q -n auto
 
 all-fast:
 	pytest -q -n auto --dist=loadgroup -m "not slow and not worldgen and not combat and not serial"

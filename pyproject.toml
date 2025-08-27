@@ -17,7 +17,7 @@ dev = [
     "pre-commit",
     "pytest",
     "pytest-xdist",
-    "pytest-testmon",
+    "pytest-testmon",  # run only impacted tests
 ]
 
 [project.scripts]
