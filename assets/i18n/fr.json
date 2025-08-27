@@ -1,5 +1,16 @@
 {
   "Novice": "Novice",
   "Intermédiaire": "Intermédiaire",
-  "Avancé": "Avancé"
+  "Avancé": "Avancé",
+  "Spells": "Sorts",
+  "Status": "Statuts",
+  "Next": "Suivant",
+  "Auto resolve": "Résolution auto",
+  "Auto combat": "Combat auto",
+  "Spellbook": "Grimoire",
+  "Back": "Retour",
+  "Level": "Niveau",
+  "Mana": "Mana",
+  "Cooldown": "Temps de recharge",
+  "Range": "Portée"
 }

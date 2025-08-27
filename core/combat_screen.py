@@ -9,6 +9,7 @@ import theme
 import settings
 from ui.widgets.icon_button import IconButton
 from loaders import icon_loader as IconLoader
+from loaders.i18n import load_locale
 
 BUTTON_H = 28
 # Slightly wider and taller panel to fit spells/statuses
@@ -26,6 +27,7 @@ class CombatHUD:
         self.small = pygame.font.SysFont(None, 16)
         self.title = pygame.font.SysFont(None, 22)
         self.action_labels = self._load_action_labels(settings.LANGUAGE)
+        self.texts = load_locale(settings.LANGUAGE)
 
         # Preload commonly used action and stat icons
         self.action_icon_keys = {
@@ -73,7 +75,7 @@ class CombatHUD:
 
     def _load_action_labels(self, language: str) -> Dict[str, str]:
         """Load translated action labels from ``assets/i18n/action_labels.json``."""
-        default = "en"
+        default = "fr"
         path = (
             Path(__file__).resolve().parents[1]
             / "assets"
@@ -182,7 +184,11 @@ class CombatHUD:
                     spells.append((name, cost))
             if spells:
                 screen.blit(
-                    self.small.render("Spells:", True, theme.PALETTE["text"]),
+                    self.small.render(
+                        f"{self.texts.get('Spells', 'Spells')}:",
+                        True,
+                        theme.PALETTE["text"],
+                    ),
                     (right.x + 10, y),
                 )
                 y += 18
@@ -196,7 +202,11 @@ class CombatHUD:
             if effects:
                 y += 6
                 screen.blit(
-                    self.small.render("Status:", True, theme.PALETTE["text"]),
+                    self.small.render(
+                        f"{self.texts.get('Status', 'Status')}:",
+                        True,
+                        theme.PALETTE["text"],
+                    ),
                     (right.x + 10, y),
                 )
                 y += 18
@@ -225,7 +235,11 @@ class CombatHUD:
             # Turn order thumbnails
             y0 = y + 10
             screen.blit(
-                self.small.render("Next:", True, theme.PALETTE["text"]),
+                self.small.render(
+                    f"{self.texts.get('Next', 'Next')}:",
+                    True,
+                    theme.PALETTE["text"],
+                ),
                 (right.x + 10, y0),
             )
             y = y0 + 18
@@ -252,7 +266,7 @@ class CombatHUD:
                 "action_auto_resolve",
                 combat.auto_resolve,
                 hotkey=self.hotkeys.get("action_auto_resolve"),
-                tooltip="Auto resolve",
+                tooltip=self.texts.get("Auto resolve", "Auto resolve"),
             )
             auto_resolve_btn.draw(screen)
             action_buttons["auto_resolve"] = auto_resolve_btn
@@ -264,7 +278,7 @@ class CombatHUD:
                 "action_auto_combat",
                 combat.auto_combat,
                 hotkey=self.hotkeys.get("action_auto_combat"),
-                tooltip="Auto combat",
+                tooltip=self.texts.get("Auto combat", "Auto combat"),
             )
             auto_button.draw(screen)
             y = auto_combat_rect.bottom + 6
@@ -275,7 +289,7 @@ class CombatHUD:
                 "action_cast",
                 lambda: combat.hero_spells and combat.show_spellbook(),
                 hotkey=getattr(pygame, "K_s", ord("s")),
-                tooltip="Spellbook",
+                tooltip=self.texts.get("Spellbook", "Spellbook"),
                 enabled=bool(combat.hero_spells),
             )
             spell_btn.draw(screen)
@@ -368,10 +382,14 @@ class CombatHUD:
                 rect,
                 "action_move",
                 lambda: setattr(combat, "selected_action", None),
-                tooltip="Back",
+                tooltip=self.texts.get("Back", "Back"),
             )
             back_btn.draw(screen)
-            txt = self.small.render("Back", True, theme.PALETTE["text"])
+            txt = self.small.render(
+                self.texts.get("Back", "Back"),
+                True,
+                theme.PALETTE["text"],
+            )
             screen.blit(txt, txt.get_rect(center=rect.center))
             action_buttons["back"] = back_btn
 

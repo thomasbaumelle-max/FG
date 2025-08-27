@@ -74,7 +74,7 @@ def _get_float(env_var: str, key: str, default: float) -> float:
 DEBUG_BUILDINGS: bool = _get_bool("FG_DEBUG_BUILDINGS", "debug_buildings", False)
 
 # Language used for UI text
-LANGUAGE: str = _get_str("FG_LANGUAGE", "language", "en")
+LANGUAGE: str = _get_str("FG_LANGUAGE", "language", "fr")
 
 # Master audio volume (0.0 - 1.0)
 VOLUME: float = _get_float("FG_VOLUME", "volume", 1.0)

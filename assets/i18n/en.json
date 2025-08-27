@@ -1,5 +1,16 @@
 {
   "Novice": "Novice",
   "Intermédiaire": "Intermediate",
-  "Avancé": "Advanced"
+  "Avancé": "Advanced",
+  "Spells": "Spells",
+  "Status": "Status",
+  "Next": "Next",
+  "Auto resolve": "Auto resolve",
+  "Auto combat": "Auto combat",
+  "Spellbook": "Spellbook",
+  "Back": "Back",
+  "Level": "Level",
+  "Mana": "Mana",
+  "Cooldown": "Cooldown",
+  "Range": "Range"
 }

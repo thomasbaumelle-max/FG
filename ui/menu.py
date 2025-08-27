@@ -26,7 +26,7 @@ _menu = simple_menu
 
 def _load_menu_texts(language: str) -> dict[str, str]:
     """Load translated menu strings from ``assets/i18n/menu.json``."""
-    default = "en"
+    default = "fr"
     path = Path(__file__).resolve().parents[1] / "assets" / "i18n" / "menu.json"
     try:
         with path.open("r", encoding="utf-8") as f:

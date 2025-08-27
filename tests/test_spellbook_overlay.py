@@ -2,6 +2,8 @@ import pygame
 from types import SimpleNamespace
 
 from core.spell import Spell
+from loaders.i18n import load_locale
+import settings
 
 
 class DummyCombat:
@@ -36,6 +38,7 @@ def test_pagination_and_tooltip(pygame_stub):
     overlay.handle_event(_make_event(pygame.MOUSEBUTTONDOWN, button=4))
     assert overlay.page == 0
 
+    strings = load_locale(settings.LANGUAGE)
     lines = overlay._spell_tooltip("spell1")
-    assert any("Mana" in ln for ln in lines)
-    assert any("Cooldown" in ln for ln in lines)
+    assert any(strings.get("Mana", "Mana") in ln for ln in lines)
+    assert any(strings.get("Cooldown", "Cooldown") in ln for ln in lines)
