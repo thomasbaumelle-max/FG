@@ -94,7 +94,8 @@ class SpellbookOverlay:
 
     def _load_town_spells(self) -> None:
         """Load spells grouped by school for town view."""
-        path = os.path.join("assets", "spells", "spells.json")
+        base = os.path.dirname(os.path.dirname(__file__))
+        path = os.path.join(base, "assets", "spells", "spells.json")
         try:
             with open(path, "r", encoding="utf-8") as fh:
                 data = json.load(fh)
@@ -197,6 +198,12 @@ class SpellbookOverlay:
                 overlay.blit(label, (rect.x + 10, rect.y + 5))
                 self._tab_rects.append((rect.move(offset_x, offset_y), cat))
                 x += rect.width + 5
+
+        if not self.spell_names:
+            msg = self.font.render(self.texts.get("No spells", "No spells"), True, self.TEXT)
+            overlay.blit(msg, ((w - msg.get_width()) // 2, (h - msg.get_height()) // 2))
+            self.screen.blit(overlay, (offset_x, offset_y))
+            return
 
         # Grid drawing
         grid_x = 20
