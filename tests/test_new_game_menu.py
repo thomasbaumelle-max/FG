@@ -7,6 +7,7 @@ import pygame
 
 from ui import menu
 import constants
+from core.faction import FactionDef
 
 
 def _init_screen(monkeypatch):
@@ -118,6 +119,14 @@ def test_scenario_config_confirm(monkeypatch):
         return events.pop(0) if events else []
 
     monkeypatch.setattr(pygame.event, "get", fake_get)
+
+    def fake_load_factions(_ctx):
+        return {
+            "red_knights": FactionDef(id="red_knights", name="Red Knights"),
+            "blue_knaves": FactionDef(id="blue_knaves", name="Blue Knaves"),
+        }
+
+    monkeypatch.setattr(menu, "load_factions", fake_load_factions)
     config, _ = menu._scenario_config(screen, "foo.json")
     assert config["scenario"] == "foo.json"
     assert config["map_size"] == list(constants.MAP_SIZE_PRESETS.keys())[0]

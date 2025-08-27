@@ -19,6 +19,8 @@ import constants, audio, settings
 from core.game import Game, SAVE_SLOT_FILES
 from ui.options_menu import options_menu
 from ui.menu_utils import simple_menu
+from loaders.faction_loader import load_factions
+from loaders.core import Context
 
 # Backwards compatibility: expose helper under old name
 _menu = simple_menu
@@ -179,13 +181,18 @@ def _scenario_config(screen: pygame.Surface, scenario: str) -> Tuple[Optional[di
     map_type_labels = [MENU_TEXTS[opt] for opt in map_type_opts]
     colour_labels = [MENU_TEXTS["blue"], MENU_TEXTS["red"]]
     colour_values = [constants.BLUE, constants.RED]
-    faction_opts = ["red_knights", None]
-    faction_labels = ["Red Knights" if f else MENU_TEXTS["random"] for f in faction_opts]
+    repo_root = os.path.dirname(os.path.dirname(__file__))
+    ctx = Context(repo_root=repo_root, search_paths=[os.path.join(repo_root, "assets")])
+    factions = load_factions(ctx)
+    faction_items = sorted(factions.items())
+    faction_opts = [fid for fid, _ in faction_items] + [None]
+    faction_labels = [f.name for _, f in faction_items] + [MENU_TEXTS["random"]]
     total_players_opts = [2, 3, 4]
     human_players_opts = [1, 2, 3, 4]
 
     # Current selection indices for each option group.
-    idx_size = idx_map = idx_diff = idx_total = idx_human = idx_colour = idx_faction = 0
+    idx_size = idx_map = idx_diff = idx_total = idx_human = idx_colour = 0
+    idx_faction = faction_opts.index("red_knights") if "red_knights" in faction_opts else 0
     player_name = MENU_TEXTS["default_player_name"]
 
     rows = [
