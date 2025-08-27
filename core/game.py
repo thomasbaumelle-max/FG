@@ -1034,6 +1034,19 @@ class Game:
                     positions.add((x, y))
         return tuple(sorted(positions))
 
+    def _should_avoid_enemies(self, actor: Any) -> bool:
+        """Return ``True`` if any visible enemy is stronger than ``actor``."""
+        my_strength = sum(u.count for u in getattr(actor, "army", []))
+        for enemy in getattr(self, "enemy_heroes", []):
+            strength = sum(u.count for u in enemy.army)
+            if strength > my_strength:
+                return True
+        for row in self.world.grid:
+            for tile in row:
+                if tile.enemy_units and sum(u.count for u in tile.enemy_units) > my_strength:
+                    return True
+        return False
+
     @lru_cache(maxsize=256)
     def _compute_path_cached(
         self,
@@ -1136,16 +1149,22 @@ class Game:
         self,
         start: Tuple[int, int],
         goal: Tuple[int, int],
-        avoid_enemies: bool = True,
+        avoid_enemies: Optional[bool] = None,
         frontier_limit: Optional[int] = None,
     ) -> Optional[List[Tuple[int, int]]]:
         """Compute a path using the A* algorithm.
 
         When ``avoid_enemies`` is ``True`` tiles occupied by enemy stacks or
         enemy heroes are treated as impassable unless they are the goal tile.
+        If ``avoid_enemies`` is ``None`` the value is determined automatically
+        based on the relative strength between the active actor and nearby
+        enemies.
         Movement cost is derived from the destination tile's biome.
         ``frontier_limit`` limits the search space to avoid endless searches.
         """
+        if avoid_enemies is None:
+            actor = getattr(self, "active_actor", getattr(self, "hero", None))
+            avoid_enemies = self._should_avoid_enemies(actor) if actor else True
         state_key = self._pathfinding_state_key()
         result = self._compute_path_cached(
             start, goal, avoid_enemies, frontier_limit, state_key
