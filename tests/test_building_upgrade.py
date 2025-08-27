@@ -16,6 +16,8 @@ def test_building_upgrade_updates_income_and_resources():
     hero = Hero(0, 0, [])
     hero.gold = 150
     hero.resources = {}
+    player = economy.PlayerEconomy()
+    player.resources["gold"] = 150
     b = Building()
     b.production_per_level = {"gold": 5}
     b.income = {"gold": 5}
@@ -27,7 +29,7 @@ def test_building_upgrade_updates_income_and_resources():
         upgrade_cost=dict(b.upgrade_cost),
         production_per_level=dict(b.production_per_level),
     )
-    assert b.upgrade(hero, econ_b)
+    assert b.upgrade(hero, player, econ_b)
     assert b.level == 2
     assert b.income["gold"] == 10
     assert hero.gold == 50
@@ -43,6 +45,8 @@ def test_building_upgrade_persisted(tmp_path):
     game.hero.equipment = {}
     game.hero.apply_bonuses_to_army()
     game.hero.gold = 200
+    player = economy.PlayerEconomy()
+    player.resources["gold"] = 200
 
     b = Building()
     b.name = "mine"
@@ -65,7 +69,7 @@ def test_building_upgrade_persisted(tmp_path):
     game.state.economy.buildings.append(econ_b)
     game.state.economy.players[0] = economy.PlayerEconomy()
 
-    assert b.upgrade(game.hero, econ_b)
+    assert b.upgrade(game.hero, player, econ_b)
 
     save_path = tmp_path / "save.json"
     game.save_game(save_path)

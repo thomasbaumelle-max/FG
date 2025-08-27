@@ -8,6 +8,7 @@ from core.buildings import Town
 from core.world import WorldMap
 from core.entities import Hero
 from state.game_state import GameState
+from core import economy
 
 
 def test_weekly_growth_via_next_day():
@@ -21,7 +22,11 @@ def test_weekly_growth_via_next_day():
     hero.resources["wood"] = 5
     hero.resources["stone"] = 5
     hero.gold = 100
-    assert town.build_structure("barracks", hero)
+    player = economy.PlayerEconomy()
+    player.resources["wood"] = 5
+    player.resources["stone"] = 5
+    player.resources["gold"] = 100
+    assert town.build_structure("barracks", hero, player)
     assert town.available_units("barracks").get("Swordsman") == 5
 
     for _ in range(7):

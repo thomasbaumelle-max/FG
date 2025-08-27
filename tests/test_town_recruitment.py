@@ -10,6 +10,7 @@ import types
 from core.buildings import Town
 from core.world import WorldMap
 from core.entities import Hero
+from core import economy
 
 
 def _create_game_with_town():
@@ -34,7 +35,11 @@ def test_town_build_and_recruit():
     hero.resources['wood'] = 5
     hero.resources['stone'] = 5
     hero.gold = 100
-    town.build_structure('barracks', hero)
+    player = economy.PlayerEconomy()
+    player.resources['wood'] = 5
+    player.resources['stone'] = 5
+    player.resources['gold'] = 100
+    town.build_structure('barracks', hero, player)
     town.next_week()
     town.recruit_units('Swordsman', hero, count=1)
     assert 'barracks' in town.built_structures
@@ -51,7 +56,11 @@ def test_town_recruitment_limited_by_stock():
     hero.resources['wood'] = 5
     hero.resources['stone'] = 5
     hero.gold = 1000
-    assert town.build_structure('barracks', hero)
+    player = economy.PlayerEconomy()
+    player.resources['wood'] = 5
+    player.resources['stone'] = 5
+    player.resources['gold'] = 1000
+    assert town.build_structure('barracks', hero, player)
     town.next_week()
     # 5 initial + 5 weekly growth
     assert town.available_units('barracks').get('Swordsman') == 10
@@ -67,7 +76,11 @@ def test_recruit_into_garrison():
     hero.resources['wood'] = 5
     hero.resources['stone'] = 5
     hero.gold = 1000
-    assert town.build_structure('barracks', hero)
+    player = economy.PlayerEconomy()
+    player.resources['wood'] = 5
+    player.resources['stone'] = 5
+    player.resources['gold'] = 1000
+    assert town.build_structure('barracks', hero, player)
     town.next_week()
     assert town.recruit_units('Swordsman', hero, count=2, target_units=town.garrison)
     assert any(u.stats.name == 'Swordsman' and u.count == 2 for u in town.garrison)
@@ -82,7 +95,11 @@ def test_recruit_into_visiting_army():
     hero.resources['wood'] = 5
     hero.resources['stone'] = 5
     hero.gold = 1000
-    assert town.build_structure('barracks', hero)
+    player = economy.PlayerEconomy()
+    player.resources['wood'] = 5
+    player.resources['stone'] = 5
+    player.resources['gold'] = 1000
+    assert town.build_structure('barracks', hero, player)
     town.next_week()
     assert town.recruit_units('Swordsman', hero, count=3, target_units=visiting.army)
     assert any(u.stats.name == 'Swordsman' and u.count == 3 for u in visiting.army)
@@ -111,7 +128,11 @@ def test_townscreen_recruit_with_hero_goes_to_garrison(monkeypatch, pygame_stub)
     hero.resources['wood'] = 5
     hero.resources['stone'] = 5
     hero.gold = 1000
-    assert town.build_structure('barracks', hero)
+    player = economy.PlayerEconomy()
+    player.resources['wood'] = 5
+    player.resources['stone'] = 5
+    player.resources['gold'] = 1000
+    assert town.build_structure('barracks', hero, player)
     town.next_week()
 
     game = types.SimpleNamespace(hero=hero)
@@ -158,7 +179,11 @@ def test_townscreen_recruit_visiting_army(monkeypatch, pygame_stub):
     hero.resources['wood'] = 5
     hero.resources['stone'] = 5
     hero.gold = 1000
-    assert town.build_structure('barracks', hero)
+    player = economy.PlayerEconomy()
+    player.resources['wood'] = 5
+    player.resources['stone'] = 5
+    player.resources['gold'] = 1000
+    assert town.build_structure('barracks', hero, player)
     town.next_week()
 
     visiting = Army(0, 0, [], ap=4)

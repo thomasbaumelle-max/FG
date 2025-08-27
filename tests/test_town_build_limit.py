@@ -15,12 +15,16 @@ def test_one_structure_per_day():
     hero.resources["wood"] = 10
     hero.resources["stone"] = 10
     hero.gold = 1000
+    player = economy.PlayerEconomy()
+    player.resources["wood"] = 10
+    player.resources["stone"] = 10
+    player.resources["gold"] = 1000
 
-    assert town.build_structure("barracks", hero)
-    assert not town.build_structure("market", hero)
+    assert town.build_structure("barracks", hero, player)
+    assert not town.build_structure("market", hero, player)
 
     town.advance_day()
-    assert town.build_structure("market", hero)
+    assert town.build_structure("market", hero, player)
 
 
 def test_economy_build_lock():

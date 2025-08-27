@@ -57,10 +57,15 @@ class Building:
         for res in self.income:
             hero.resources[res] = hero.resources.get(res, 0) + 5
 
-    def upgrade(self, hero: "Hero", econ_building: Optional["economy.Building"] = None) -> bool:
-        """Upgrade the building if ``hero`` can afford it.
+    def upgrade(
+        self,
+        hero: "Hero",
+        player: "economy.PlayerEconomy",
+        econ_building: Optional["economy.Building"] = None,
+    ) -> bool:
+        """Upgrade the building if ``player`` can afford it.
 
-        The hero's resources are deducted according to ``upgrade_cost`` and the
+        The player's resources are deducted according to ``upgrade_cost`` and the
         building's level and income are increased based on
         ``production_per_level``.  When ``econ_building`` is provided, the
         associated economy state is kept in sync.
@@ -68,19 +73,19 @@ class Building:
 
         if not self.upgrade_cost:
             return False
-        # Verify resources
-        for res, amt in self.upgrade_cost.items():
-            if res == "gold":
-                if hero.gold < amt:
-                    return False
-            elif hero.resources.get(res, 0) < amt:
-                return False
-        # Deduct cost
-        hero.gold -= self.upgrade_cost.get("gold", 0)
-        for res, amt in self.upgrade_cost.items():
+
+        from core import economy as econ
+
+        if not econ.can_afford(player, self.upgrade_cost):
+            return False
+
+        econ.pay(player, self.upgrade_cost)
+
+        hero.gold = player.resources.get("gold", hero.gold)
+        for res, amt in player.resources.items():
             if res == "gold":
                 continue
-            hero.resources[res] = hero.resources.get(res, 0) - int(amt)
+            hero.resources[res] = amt
         self.level += 1
         if self.production_per_level:
             self.income = {
@@ -368,6 +373,7 @@ class Town(Building):
         self,
         structure: str,
         hero: "Hero",
+        player: "economy.PlayerEconomy",
         econ_building: Optional["economy.Building"] = None,
     ) -> bool:
         info = self.structures.get(structure)
@@ -382,22 +388,21 @@ class Town(Building):
         if any(p not in self.built_structures for p in prereq):
             return False
         cost: Dict[str, int] = info.get("cost", {})  # type: ignore[assignment]
-        for res, amount in cost.items():
-            if res == "gold":
-                if hero.gold < amount:
-                    return False
-            elif hero.resources.get(res, 0) < amount:
-                return False
-        # pay
-        hero.gold -= cost.get("gold", 0)
-        for res, amount in cost.items():
+        from core import economy as econ
+
+        if not econ.can_afford(player, cost):
+            return False
+
+        econ.pay(player, cost)
+
+        hero.gold = player.resources.get("gold", hero.gold)
+        for res, amount in player.resources.items():
             if res == "gold":
                 continue
-            hero.resources[res] = hero.resources.get(res, 0) - amount
+            hero.resources[res] = amount
         self.built_structures.add(structure)
         self.built_today = True
         if econ_building is not None:
-            from core import economy as econ
             econ.build_structure(econ_building, structure)
         growth = info.get("dwelling", {}) if isinstance(info, dict) else {}
         if isinstance(growth, dict):
