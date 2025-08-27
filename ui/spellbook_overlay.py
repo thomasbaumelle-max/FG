@@ -13,7 +13,12 @@ class SpellbookOverlay:
 
     BG = theme.PALETTE["background"]
     TEXT = theme.PALETTE["text"]
-    PER_PAGE = 10
+    # grid layout - 5 columns x 2 rows by default
+    GRID_COLS = 5
+    GRID_ROWS = 2
+    ICON = 64  # placeholder icon size
+    GAP = 10
+    PER_PAGE = GRID_COLS * GRID_ROWS
 
     def __init__(self, screen: pygame.Surface, combat=None, *, town: bool = False) -> None:
         self.screen = screen
@@ -26,6 +31,9 @@ class SpellbookOverlay:
         # label rects for tooltip lookup populated during draw
         self._label_rects: list[tuple[pygame.Rect, str]] = []
         self._tab_rects: list[tuple[pygame.Rect, str]] = []
+
+        # mapping for non-combat spell details (cost and level)
+        self.spell_info: dict[str, dict[str, int | None]] = {}
 
         if not self.town and self.combat is not None:
             self.spell_names = sorted(self.combat.hero_spells.keys())
@@ -43,15 +51,25 @@ class SpellbookOverlay:
     def _spell_tooltip(self, name: str) -> list[str]:
         """Return tooltip lines for a spell name."""
         lines = [name.replace("_", " ").title()]
-        lvl = self.combat.hero_spells.get(name)
-        if lvl:
+
+        lvl = None
+        cost = None
+        if self.combat is not None:
+            lvl = self.combat.hero_spells.get(name)
+            spec = getattr(self.combat, "spell_defs", {}).get(name)
+            if spec:
+                cost = spec.cost_mana
+                if spec.cooldown:
+                    lines.append(f"{self.texts.get('Cooldown', 'Cooldown')}: {spec.cooldown}")
+                lines.append(f"{self.texts.get('Range', 'Range')}: {spec.range}")
+        info = self.spell_info.get(name, {})
+        lvl = lvl if lvl is not None else info.get("level")
+        cost = cost if cost is not None else info.get("cost")
+
+        if lvl is not None:
             lines.append(f"{self.texts.get('Level', 'Level')}: {lvl}")
-        spec = getattr(self.combat, "spell_defs", {}).get(name)
-        if spec:
-            lines.append(f"{self.texts.get('Mana', 'Mana')}: {spec.cost_mana}")
-            if spec.cooldown:
-                lines.append(f"{self.texts.get('Cooldown', 'Cooldown')}: {spec.cooldown}")
-            lines.append(f"{self.texts.get('Range', 'Range')}: {spec.range}")
+        if cost is not None:
+            lines.append(f"{self.texts.get('Mana', 'Mana')}: {cost}")
         return lines
 
     def _draw_tooltip(self, surface: pygame.Surface, pos: tuple[int, int], lines: list[str]) -> None:
@@ -82,23 +100,38 @@ class SpellbookOverlay:
                 data = json.load(fh)
         except Exception:
             data = {}
+
         schools = data.get("schools", {})
         self.school_spells: dict[str, list[str]] = {}
+        all_names: set[str] = set()
         for school, levels in schools.items():
             names: list[str] = []
-            for lvl in levels.values():
+            for lvl_num, lvl in levels.items():
                 for group in lvl.values():
                     for entry in group:
                         nm = entry.get("name") or entry.get("id")
-                        if nm:
-                            names.append(nm)
+                        if not nm:
+                            continue
+                        names.append(nm)
+                        all_names.add(nm)
+                        self.spell_info[nm] = {
+                            "cost": entry.get("cost"),
+                            "level": int(lvl_num) if str(lvl_num).isdigit() else None,
+                        }
             self.school_spells[school] = sorted(set(names))
         self.categories = sorted(self.school_spells.keys())
         self.current_cat = 0
         if self.categories:
-            self.spell_names = self.school_spells[self.categories[0]]
+            for idx, cat in enumerate(self.categories):
+                spells = self.school_spells.get(cat, [])
+                if spells:
+                    self.current_cat = idx
+                    self.spell_names = spells
+                    break
+            else:
+                self.spell_names = []
         else:
-            self.spell_names = []
+            self.spell_names = sorted(all_names)
 
     # ------------------------------------------------------------------ events
     def handle_event(self, event: pygame.event.Event) -> bool:
@@ -148,7 +181,7 @@ class SpellbookOverlay:
         self._label_rects.clear()
         start = self.page * self.PER_PAGE
         end = start + self.PER_PAGE
-        y = 60 if self.town else 40
+        grid_y = 60 if self.town else 40
 
         if self.town:
             # Draw category tabs
@@ -165,20 +198,45 @@ class SpellbookOverlay:
                 self._tab_rects.append((rect.move(offset_x, offset_y), cat))
                 x += rect.width + 5
 
-        for name in self.spell_names[start:end]:
-            label = self.font.render(name, True, self.TEXT)
-            pos = (40, y)
-            overlay.blit(label, pos)
-            lw, lh = label.get_size()
-            rect = pygame.Rect(pos[0], pos[1], lw, lh)
+        # Grid drawing
+        grid_x = 20
+        font_small = theme.get_font(14) or pygame.font.SysFont(None, 14)
+        for idx, name in enumerate(self.spell_names[start:end]):
+            col = idx % self.GRID_COLS
+            row = idx // self.GRID_COLS
+            x = grid_x + col * (self.ICON + self.GAP)
+            y = grid_y + row * (self.ICON + self.GAP)
+            rect = pygame.Rect(x, y, self.ICON, self.ICON)
+            pygame.draw.rect(overlay, (*self.BG, 0), rect)
+            theme.draw_frame(overlay, rect)
+
+            # text info
+            info = self.spell_info.get(name, {})
+            if self.combat is not None:
+                lvl = self.combat.hero_spells.get(name)
+                spec = getattr(self.combat, "spell_defs", {}).get(name)
+                cost = getattr(spec, "cost_mana", None) if spec else None
+            else:
+                lvl = info.get("level")
+                cost = info.get("cost")
+
+            name_surf = font_small.render(name, True, self.TEXT)
+            overlay.blit(name_surf, (x + 2, y + 2))
+            if cost is not None:
+                cost_surf = font_small.render(str(cost), True, self.TEXT)
+                overlay.blit(cost_surf, (x + 2, y + self.ICON - cost_surf.get_height() - 2))
+            if lvl is not None:
+                lvl_surf = font_small.render(str(lvl), True, self.TEXT)
+                overlay.blit(lvl_surf, (x + self.ICON - lvl_surf.get_width() - 2, y + self.ICON - lvl_surf.get_height() - 2))
+
             self._label_rects.append((rect.move(offset_x, offset_y), name))
-            y += label.get_height() + 8
 
         if self.num_pages > 1:
             pg = self.font.render(f"{self.page + 1}/{self.num_pages}", True, self.TEXT)
             overlay.blit(pg, (w - pg.get_width() - 10, h - pg.get_height() - 10))
 
-        if not self.town and self.combat is not None:
+        # Hover tooltip using shared logic for all modes
+        if hasattr(pygame, "mouse") and hasattr(pygame.mouse, "get_pos"):
             mx, my = pygame.mouse.get_pos()
             for rect, name in self._label_rects:
                 if rect.collidepoint((mx, my)):
