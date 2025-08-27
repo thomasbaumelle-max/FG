@@ -33,3 +33,15 @@ def test_faction_recruitment_buildings_present():
             if info.get("dwelling"):
                 assert bid in town.structures
                 assert town.structures[bid].get("dwelling") == info.get("dwelling")
+
+
+def test_loader_returns_expected_dwellings():
+    ctx = _ctx()
+    rk = load_faction_town_buildings(ctx, "red_knights")
+    assert rk["crimson_watch"]["dwelling"] == {"red_squire": 5}
+
+    syl = load_faction_town_buildings(ctx, "sylvan")
+    assert syl["grove_of_lirael"]["dwelling"] == {"moss_sprite": 1, "mist_nymph": 1}
+
+    sol = load_faction_town_buildings(ctx, "solaceheim")
+    assert sol["sanctuary_of_the_sun"]["dwelling"] == {"disciple_initie": 1}
