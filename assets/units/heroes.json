@@ -6,15 +6,23 @@
     "faction": "red_knights",
     "level": 5,
     "overworld": { "movement": 12, "vision": 3 },
-    "combat": {
-      "mana": 30, "spellpower": 3, "knowledge": 2,
-      "morale": 1, "luck": 0
-    },
-    "starting_skills": [
-      {"branch":"logistics","rank":"N","id":"logistics_N"},
-      {"branch":"logistics","rank":"A","id":"logistics_A"},
-      {"branch":"tactics","rank":"N","id":"tactics_N"},
-      {"branch":"logistics","rank":"E","id":"logistics_E"}
+      "combat": {
+        "mana": 30, "spellpower": 3, "knowledge": 2,
+        "morale": 1, "luck": 0
+      },
+      "starting_army": [
+        {"unit": "Swordsman", "count": 22},
+        {"unit": "Archer", "count": 30},
+        {"unit": "Mage", "count": 15},
+        {"unit": "Cavalry", "count": 16},
+        {"unit": "Dragon", "count": 5},
+        {"unit": "Priest", "count": 15}
+      ],
+      "starting_skills": [
+        {"branch":"logistics","rank":"N","id":"logistics_N"},
+        {"branch":"logistics","rank":"A","id":"logistics_A"},
+        {"branch":"tactics","rank":"N","id":"tactics_N"},
+        {"branch":"logistics","rank":"E","id":"logistics_E"}
     ],
     "known_spells": ["Crimson Surge","Valiant Charge","Guard Order","Rally on the Road"],
     "PortraitSprite": "hero/red_knights/lady_aurianne.png",
@@ -34,12 +42,12 @@
       "mana": 30, "spellpower": 4, "knowledge": 1,
       "morale": 0, "luck": 1
     },
-    "starting_skills": [
-      {"branch":"marksmanship","rank":"N","id":"marksmanship_N"},
-      {"branch":"marksmanship","rank":"A","id":"marksmanship_A},
-      {"branch":"weaponsmithing","rank":"N","id":"weaponsmithing_N"},
-      {"branch":"weaponsmithing","rank":"A","id":"weaponsmithing_A"}
-    ],
+      "starting_skills": [
+        {"branch":"marksmanship","rank":"N","id":"marksmanship_N"},
+        {"branch":"marksmanship","rank":"A","id":"marksmanship_A"},
+        {"branch":"weaponsmithing","rank":"N","id":"weaponsmithing_N"},
+        {"branch":"weaponsmithing","rank":"A","id":"weaponsmithing_A"}
+      ],
     "known_spells": ["sand_screen"],
     "PortraitSprite": "hero/red_knights/lady_aurianne.png",
     "OverWorldSprite": "hero/red_knights/lady_aurianne.png",

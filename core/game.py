@@ -30,6 +30,7 @@ from loaders.flora_loader import FloraLoader, PropInstance
 from loaders.resources_loader import load_resources, ResourceDef
 from loaders.biomes import BiomeCatalog, BiomeTileset, load_tileset
 from loaders import units_loader
+from loaders.hero_loader import load_heroes
 from loaders.boat_loader import load_boats, BoatDef
 from loaders.scenario_loader import load_scenario
 from tools.artifact_manifest import load_artifact_manifest
@@ -232,6 +233,10 @@ class Game:
             except Exception:
                 self.unit_defs = {}
             try:
+                self.hero_defs = load_heroes(self.ctx, "units/heroes.json")
+            except Exception:
+                self.hero_defs = {}
+            try:
                 self.boat_defs: Dict[str, BoatDef] = load_boats(
                     self.ctx, "boats.json"
                 )
@@ -250,6 +255,7 @@ class Game:
             )
             self.resources = {}
             self.unit_defs = {}
+            self.hero_defs = {}
             self.boat_defs = {}
             self.tile_variants = {}
             self.coast_edges = {}
@@ -381,32 +387,60 @@ class Game:
                 tile.enemy_units = None
                 empty_tiles = [(x, y)]
             hx, hy = random.choice(empty_tiles)
-        # Create hero with starting army
-        starting_army = [
-            Unit(SWORDSMAN_STATS, 22, 'hero'),
-            Unit(ARCHER_STATS, 30, 'hero'),
-            Unit(MAGE_STATS, 15, 'hero'),
-            Unit(CAVALRY_STATS, 16, 'hero'),
-            Unit(DRAGON_STATS, 5, 'hero'),
-            Unit(PRIEST_STATS, 15, 'hero'),
-        ]
+        # Create hero based on faction manifest
         portrait = None
         battlefield = None
+        starting_army: List[Unit] = []
+        hero_def = None
         if not fast_tests:
-            hero_asset = self.assets.get("default_hero")
-            if isinstance(hero_asset, dict):
-                portrait = hero_asset.get("portrait")
-                battlefield = hero_asset.get("battlefield")
+            hero_id = None
+            if getattr(self.faction, "heroes", None):
+                hero_id = self.faction.heroes[0].get("id")
+            hero_def = self.hero_defs.get(hero_id) if hero_id else None
+            if hero_def:
+                for unit_id, count in hero_def.starting_army:
+                    stats = STATS_BY_NAME.get(unit_id)
+                    if stats:
+                        starting_army.append(Unit(stats, count, "hero"))
+                if hero_def.portrait:
+                    portrait = self.assets.get(hero_def.portrait)
+                if hero_def.battlefield_sprite:
+                    battlefield = self.assets.get(hero_def.battlefield_sprite)
+        base_stats = None
+        if hero_def:
+            base_stats = HeroStats(
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                hero_def.combat.get("morale", 0),
+                hero_def.combat.get("luck", 0),
+            )
         self.hero = Hero(
             hx,
             hy,
             starting_army,
+            base_stats=base_stats,
             portrait=portrait,
             battlefield_image=battlefield,
             name=self.player_name,
             colour=self.player_colour,
             faction=self.faction,
         )
+        if hero_def:
+            self.hero.max_mana = hero_def.combat.get("mana", self.hero.max_mana)
+            self.hero.mana = self.hero.max_mana
+            for skill in hero_def.starting_skills:
+                sid = skill.get("id")
+                branch = skill.get("branch", "combat")
+                if sid:
+                    self.hero.learned_skills.setdefault(branch, set()).add(sid)
+            for spell in hero_def.known_spells:
+                self.hero.spells[spell] = 1
+            self.hero.apply_bonuses_to_army()
         self.hero.inventory.extend(STARTING_ARTIFACTS)
         # Quest system
         self.quest_manager = QuestManager(self)
