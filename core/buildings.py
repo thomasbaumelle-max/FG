@@ -184,6 +184,7 @@ class Town(Building):
 
     def __init__(self, name: Optional[str] = None, faction_id: Optional[str] = None) -> None:
         super().__init__()
+        self.faction_id = faction_id
         if name is None:
             Town._counter += 1
             self.name = f"Town {Town._counter}"

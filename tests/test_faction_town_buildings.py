@@ -22,3 +22,14 @@ def test_faction_town_buildings_available():
         expected = load_faction_town_buildings(ctx, faction_id)
         for bid in expected:
             assert bid in town.structures
+
+
+def test_faction_recruitment_buildings_present():
+    ctx = _ctx()
+    for faction_id in FACTION_TOWN_BUILDING_MANIFESTS:
+        town = Town(faction_id=faction_id)
+        expected = load_faction_town_buildings(ctx, faction_id)
+        for bid, info in expected.items():
+            if info.get("dwelling"):
+                assert bid in town.structures
+                assert town.structures[bid].get("dwelling") == info.get("dwelling")

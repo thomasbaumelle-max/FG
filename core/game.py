@@ -202,6 +202,15 @@ class Game:
                 if self.factions
                 else FactionDef("default", "Default")
             )
+            if self.factions:
+                others = [fid for fid in self.factions if fid != self.faction_id]
+                self.enemy_faction_id = others[0] if others else self.faction_id
+                self.enemy_faction = self.factions.get(
+                    self.enemy_faction_id, self.faction
+                )
+            else:
+                self.enemy_faction_id = self.faction_id
+                self.enemy_faction = self.faction
 
             BiomeCatalog.load(self.ctx, "biomes/biomes.json")
             init_biome_images()
@@ -248,6 +257,8 @@ class Game:
         else:
             self.factions = {}
             self.faction = FactionDef("default", "Default")
+            self.enemy_faction_id = self.faction_id
+            self.enemy_faction = self.faction
             self.battlefields = {}
             self.biome_tilesets = {}
             self.flora_loader = FloraLoader(
@@ -277,7 +288,11 @@ class Game:
         if world_path and os.path.isfile(world_path):
             with open(world_path, "r", encoding="utf-8") as f:
                 map_rows = [line.rstrip("\n") for line in f]
-            self.world = WorldMap.from_file(world_path)
+            self.world = WorldMap.from_file(
+                world_path,
+                player_faction=self.faction_id,
+                enemy_faction=self.enemy_faction_id,
+            )
         else:
             # Fallback to procedurally generated continents using the chosen size
             width, height = constants.MAP_SIZE_PRESETS.get(
@@ -291,7 +306,11 @@ class Game:
                 smoothing_iterations=5,
                 biome_chars="GFD",
             )
-            self.world = WorldMap(map_data=map_rows)
+            self.world = WorldMap(
+                map_data=map_rows,
+                player_faction=self.faction_id,
+                enemy_faction=self.enemy_faction_id,
+            )
 
             # Populate the world with additional features scaled to available land
             free_land = len(self.world._empty_land_tiles())
@@ -3358,6 +3377,10 @@ class Game:
                         "owner": tile.building.owner,
                         "level": getattr(tile.building, "level", 1),
                     }
+                    if isinstance(tile.building, Town) and getattr(
+                        tile.building, "faction_id", None
+                    ):
+                        t["building"]["faction"] = tile.building.faction_id
                     if tile.building.garrison:
                         t["building"]["garrison"] = [
                             self._unit_to_dict(u) for u in tile.building.garrison
@@ -3437,7 +3460,17 @@ class Game:
         world_info = data["world"]
         width = world_info["width"]
         height = world_info["height"]
-        world = WorldMap(width=width, height=height, num_obstacles=0, num_treasures=0, num_enemies=0)
+        pfid = getattr(self, "faction_id", "red_knights")
+        efid = getattr(self, "enemy_faction_id", pfid)
+        world = WorldMap(
+            width=width,
+            height=height,
+            num_obstacles=0,
+            num_treasures=0,
+            num_enemies=0,
+            player_faction=pfid,
+            enemy_faction=efid,
+        )
         for y, row in enumerate(world_info["tiles"]):
             for x, tile_data in enumerate(row):
                 tile = world.grid[y][x]
@@ -3457,9 +3490,13 @@ class Game:
                 building_info = tile_data.get("building")
                 if building_info:
                     bid = building_info.get("id")
+                    owner = building_info.get("owner")
                     building: Building | None = None
                     if bid == "town":
-                        building = Town()
+                        faction = building_info.get("faction")
+                        if faction is None:
+                            faction = pfid if owner == 0 else efid
+                        building = Town(faction_id=faction)
                     else:
                         key = bid
                         if key not in BUILDINGS:
@@ -3467,7 +3504,7 @@ class Game:
                         if key in BUILDINGS:
                             building = create_building(key)
                     if building:
-                        building.owner = building_info.get("owner")
+                        building.owner = owner
                         building.level = building_info.get("level", 1)
                         if getattr(building, "production_per_level", {}):
                             building.income = {
