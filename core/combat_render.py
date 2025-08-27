@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 from typing import Tuple
+import random
 
 import pygame
 import constants
 import theme
 from ui.widgets.icon_button import IconButton
 from .combat_screen import BUTTON_H, MARGIN as HUD_MARGIN
+from .entities import apply_defence
 
 
 def draw_hex(
@@ -250,6 +252,19 @@ def draw(combat, frame: int = 0) -> None:
     # frames for movement appear ahead of the final unit placement.
     combat.fx_queue.update_and_draw(combat.screen)
 
+    hover_target = None
+    if (
+        combat.selected_unit
+        and combat.selected_action in ("melee", "ranged")
+    ):
+        mx, my = pygame.mouse.get_pos()
+        cell = combat.pixel_to_cell(mx, my)
+        if cell:
+            cx, cy = cell
+            candidate = combat.grid[cy][cx]
+            if candidate and candidate.side != combat.selected_unit.side:
+                hover_target = candidate
+
     # Draw units
     status_buttons: dict[str, IconButton] = {}
     combat.units.sort(key=lambda u: (u.y, u.x))
@@ -325,6 +340,16 @@ def draw(combat, frame: int = 0) -> None:
         text = font.render(str(unit.count), True, theme.PALETTE["text"])
         text_rect = text.get_rect(center=stack_rect.center)
         combat.screen.blit(text, text_rect)
+
+        if unit is hover_target:
+            base = combat.selected_unit.damage_output(rng=random.Random(0))
+            dmg = apply_defence(base, unit, combat.selected_action)
+            losses = min(unit.count, dmg // max(1, unit.stats.max_hp))
+            if losses > 0:
+                dmg_font = pygame.font.SysFont(None, int(14 * combat.zoom))
+                loss_text = dmg_font.render(f"-{losses}", True, constants.RED)
+                loss_rect = loss_text.get_rect(midbottom=rect.midtop)
+                combat.screen.blit(loss_text, loss_rect)
 
         effects = [e for e in getattr(unit, "effects", []) if getattr(e, "duration", 0)]
         if effects:
