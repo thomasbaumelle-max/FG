@@ -2824,7 +2824,12 @@ class Game:
             return
         idx = (getattr(self, "_town_idx", -1) + 1) % len(towns)
         self._town_idx = idx
-        renderer.center_on(towns[idx])
+        pos = towns[idx]
+        renderer.center_on(pos)
+        x, y = pos
+        town = world.grid[y][x].building
+        self._focused_town = town
+        self._focused_town_pos = pos
 
     def move_enemies_randomly(self) -> None:
         """Update neutral creature groups using their AI behaviour."""

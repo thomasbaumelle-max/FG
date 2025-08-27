@@ -155,6 +155,13 @@ class MainScreen:
         cb = getattr(self.game, "next_town", None)
         if cb:
             cb()
+            mods = getattr(getattr(pygame, "key", None), "get_mods", lambda: 0)()
+            if mods & getattr(pygame, "KMOD_CTRL", 0):
+                town = getattr(self.game, "_focused_town", None)
+                pos = getattr(self.game, "_focused_town_pos", None)
+                open_cb = getattr(self.game, "open_town", None)
+                if town and open_cb:
+                    open_cb(town, town_pos=pos)
 
     def end_day(self) -> None:
         cb = getattr(self.game, "end_day", None)

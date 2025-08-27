@@ -82,3 +82,74 @@ def test_next_town_centers_camera(pygame_stub):
     game.world_renderer.center_on = lambda pos: called.append(pos)
     game.next_town()
     assert called and called[0] == (tx, ty)
+
+
+def test_nav_town_button_calls_game_next_town(monkeypatch, pygame_stub):
+    import types
+
+    pg = pygame_stub()
+    from core.game import Game
+    from ui.main_screen import MainScreen
+    from ui.widgets.icon_button import MOUSEBUTTONDOWN, MOUSEBUTTONUP
+
+    screen = pg.Surface((640, 480))
+    game = Game(screen)
+    called = []
+    game.next_town = lambda: called.append(True)
+    main = MainScreen(game)
+    btn = next(b for b in main.menu_buttons if b.icon_id == "nav_town")
+    monkeypatch.setattr(pg.Rect, "collidepoint", lambda self, pos: True)
+    down = types.SimpleNamespace(type=MOUSEBUTTONDOWN, pos=(0, 0), button=1)
+    up = types.SimpleNamespace(type=MOUSEBUTTONUP, pos=(0, 0), button=1)
+    btn.handle(down)
+    btn.handle(up)
+    assert called == [True]
+
+
+def test_next_town_no_town_notifies(pygame_stub):
+    from core.game import Game
+    from core.buildings import Town
+    from state.event_bus import EVENT_BUS, ON_INFO_MESSAGE
+
+    pg = pygame_stub()
+    screen = pg.Surface((640, 480))
+    game = Game(screen)
+    for row in game.world.grid:
+        for tile in row:
+            if isinstance(tile.building, Town):
+                tile.building.owner = 1
+    messages = []
+    EVENT_BUS.subscribe(ON_INFO_MESSAGE, lambda msg: messages.append(msg))
+    game.next_town()
+    assert messages and messages[-1] == "No town available"
+
+
+def test_ctrl_click_next_town_opens_town(monkeypatch, pygame_stub):
+    import types
+
+    pg = pygame_stub(KMOD_CTRL=1)
+    monkeypatch.setattr(
+        pg, "key", types.SimpleNamespace(get_mods=lambda: pg.KMOD_CTRL), raising=False
+    )
+
+    from core.game import Game
+    import importlib
+    import ui.main_screen as ms
+
+    importlib.reload(ms)
+
+    screen = pg.Surface((640, 480))
+    game = Game(screen)
+    opened = {}
+
+    def fake_open_town(town, army=None, town_pos=None):
+        opened["town"] = town
+        opened["pos"] = town_pos
+
+    game.open_town = fake_open_town
+    main = ms.MainScreen(game)
+    main.next_town()
+    tx, ty = game.world.hero_town
+    expected = game.world.grid[ty][tx].building
+    assert opened.get("town") is expected
+    assert opened.get("pos") == (tx, ty)
