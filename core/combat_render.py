@@ -7,8 +7,8 @@ from typing import Tuple
 import pygame
 import constants
 import theme
+from ui.widgets.icon_button import IconButton
 from .combat_screen import BUTTON_H, MARGIN as HUD_MARGIN
-from .status_utils import categorize_status
 
 
 def draw_hex(
@@ -251,6 +251,7 @@ def draw(combat, frame: int = 0) -> None:
     combat.fx_queue.update_and_draw(combat.screen)
 
     # Draw units
+    status_buttons: dict[str, IconButton] = {}
     combat.units.sort(key=lambda u: (u.y, u.x))
     for unit in combat.units:
         if not unit.is_alive:
@@ -324,20 +325,29 @@ def draw(combat, frame: int = 0) -> None:
         text = font.render(str(unit.count), True, theme.PALETTE["text"])
         text_rect = text.get_rect(center=stack_rect.center)
         combat.screen.blit(text, text_rect)
-        effects = getattr(unit, "effects", [])
-        has_buff = any(categorize_status(e.name) == "buff" for e in effects)
-        has_debuff = any(categorize_status(e.name) == "debuff" for e in effects)
-        ind = int(6 * combat.zoom)
-        if has_buff:
-            buff = pygame.Rect(0, 0, ind, ind)
-            buff.centery = stack_rect.centery
-            buff.right = stack_rect.left - int(2 * combat.zoom)
-            pygame.draw.rect(combat.screen, constants.BLUE, buff)
-        if has_debuff:
-            debuff = pygame.Rect(0, 0, ind, ind)
-            debuff.centery = stack_rect.centery
-            debuff.left = stack_rect.right + int(2 * combat.zoom)
-            pygame.draw.rect(combat.screen, constants.PURPLE, debuff)
+
+        effects = [e for e in getattr(unit, "effects", []) if getattr(e, "duration", 0)]
+        if effects:
+            icon_size = max(8, int(12 * combat.zoom))
+            spacing = max(1, int(2 * combat.zoom))
+            total_w = len(effects) * (icon_size + spacing) - spacing
+            x_start = stack_rect.centerx - total_w // 2
+            y_icon = stack_rect.bottom + spacing
+            for idx, eff in enumerate(effects):
+                icon_id = getattr(eff, "icon", None) or f"status_{eff.name}"
+                img = combat.assets.get(f"icons/{icon_id}.png")
+                if img is None:
+                    img = pygame.Surface((icon_size, icon_size), pygame.SRCALPHA)
+                elif img.get_size() != (icon_size, icon_size):
+                    img = pygame.transform.smoothscale(img, (icon_size, icon_size))
+                rect_icon = pygame.Rect(
+                    x_start + idx * (icon_size + spacing), y_icon, icon_size, icon_size
+                )
+                combat.screen.blit(img, rect_icon)
+                tooltip = f"{eff.name} ({eff.duration})" if getattr(eff, "duration", 0) else eff.name
+                status_buttons[f"{id(unit)}_{idx}"] = IconButton(
+                    rect_icon.copy(), icon_id, lambda: None, tooltip=tooltip, enabled=False
+                )
 
     # Highlight the unit whose turn it is with a visual overlay
     if combat.turn_order:
@@ -365,6 +375,7 @@ def draw(combat, frame: int = 0) -> None:
         combat.action_buttons, combat.auto_button = combat.hud.draw(
             combat.screen, combat
         )
+        combat.action_buttons.update(status_buttons)
 
 
 def handle_button_click(combat, current_unit, pos: Tuple[int, int]) -> bool:
