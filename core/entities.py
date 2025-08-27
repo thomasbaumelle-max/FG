@@ -396,6 +396,8 @@ class Hero:
         self.name = name
         self.colour = colour
         self.faction = faction
+        if faction is not None:
+            build_skill_catalog(faction.id)
         self.gold = 0
         # Collected strategic resources such as wood, stone and mana crystals
         self.resources = {name: 0 for name in constants.RESOURCES}
@@ -673,34 +675,50 @@ for entry in artifacts_manifest:
 
 STARTING_ARTIFACTS = ARTIFACT_CATALOG[:2]
 
-skills_manifest = load_skill_manifest(REPO_ROOT)
 SKILL_CATALOG: Dict[str, SkillNode] = {}
-for entry in skills_manifest:
-    effects: List[Modifier | str] = []
-    for eff in entry.get("effects", []):
-        if isinstance(eff, dict):
-            effects.append(
-                Modifier(
-                    stat=eff.get("stat", ""),
-                    value=eff.get("value", 0),
-                    mode=eff.get("mode", "flat"),
+
+
+def build_skill_catalog(faction_id: str | None = None) -> List[Dict[str, Any]]:
+    """(Re)build ``SKILL_CATALOG`` for ``faction_id``.
+
+    Returns the manifest used to populate the catalog so callers can reuse it
+    when constructing UI elements.
+    """
+
+    global SKILL_CATALOG
+    manifest = load_skill_manifest(REPO_ROOT, faction_id=faction_id)
+    SKILL_CATALOG = {}
+    for entry in manifest:
+        effects: List[Modifier | str] = []
+        for eff in entry.get("effects", []):
+            if isinstance(eff, dict):
+                effects.append(
+                    Modifier(
+                        stat=eff.get("stat", ""),
+                        value=eff.get("value", 0),
+                        mode=eff.get("mode", "flat"),
+                    )
                 )
-            )
-        else:
-            effects.append(eff)
-    node = SkillNode(
-        id=entry.get("id"),
-        name=entry.get("name", entry.get("id")),
-        desc=entry.get("desc", ""),
-        cost=int(entry.get("cost", 1)),
-        requires=entry.get("requires", []),
-        effects=effects,
-        icon=entry.get("icon", entry.get("image", "")),
-        branch=entry.get("branch", ""),
-        rank=entry.get("rank", ""),
-        coords=tuple(entry.get("coords", [])) if entry.get("coords") else None,
-    )
-    SKILL_CATALOG[node.id] = node
+            else:
+                effects.append(eff)
+        node = SkillNode(
+            id=entry.get("id"),
+            name=entry.get("name", entry.get("id")),
+            desc=entry.get("desc", ""),
+            cost=int(entry.get("cost", 1)),
+            requires=entry.get("requires", []),
+            effects=effects,
+            icon=entry.get("icon", entry.get("image", "")),
+            branch=entry.get("branch", ""),
+            rank=entry.get("rank", ""),
+            coords=tuple(entry.get("coords", [])) if entry.get("coords") else None,
+        )
+        SKILL_CATALOG[node.id] = node
+    return manifest
+
+
+# Build a default catalog so tests without a faction continue to function
+build_skill_catalog()
 
 ###########################################################################
 # Unit type definitions
