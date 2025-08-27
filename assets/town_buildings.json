@@ -1,33 +1,5 @@
 [
   {
-    "id": "barracks",
-    "cost": {
-      "wood": 5,
-      "stone": 5
-    },
-    "prereq": [],
-    "dwelling": {
-      "Swordsman": 5
-    },
-    "desc": "Train basic melee troops.",
-    "image": "buildings/barracks.png"
-  },
-  {
-    "id": "archery_range",
-    "cost": {
-      "wood": 3,
-      "stone": 2
-    },
-    "prereq": [
-      "barracks"
-    ],
-    "dwelling": {
-      "Archer": 5
-    },
-    "desc": "Recruit ranged units.",
-    "image": "buildings/archery_range.png"
-  },
-  {
     "id": "market",
     "cost": {},
     "prereq": [],
@@ -61,53 +33,5 @@
     "prereq": [],
     "desc": "Browse and study all known spells.",
     "image": "buildings/magic_school.png"
-  },
-  {
-    "id": "mage_guild",
-    "cost": {
-      "wood": 15,
-      "stone": 10,
-      "crystal": 5
-    },
-    "prereq": [
-      "archery_range"
-    ],
-    "dwelling": {
-      "Mage": 3,
-      "Priest": 2
-    },
-    "desc": "Initiates of arcane and divine arts.",
-    "image": "buildings/mage_guild.png"
-  },
-  {
-    "id": "stables",
-    "cost": {
-      "wood": 15,
-      "stone": 15
-    },
-    "prereq": [
-      "mage_guild"
-    ],
-    "dwelling": {
-      "Cavalry": 3
-    },
-    "desc": "Horses and cavalry training.",
-    "image": "buildings/cavalry.png"
-  },
-  {
-    "id": "dragon_lair",
-    "cost": {
-      "wood": 20,
-      "stone": 20,
-      "crystal": 15
-    },
-    "prereq": [
-      "mage_guild"
-    ],
-    "dwelling": {
-      "Dragon": 1
-    },
-    "desc": "A perilous lair to tame mighty dragons.",
-    "image": "buildings/dragon_lair.png"
   }
 ]
