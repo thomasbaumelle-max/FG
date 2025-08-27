@@ -2796,6 +2796,36 @@ class Game:
             EVENT_BUS.publish(ON_SELECT_HERO, self.hero)
         self._check_end_conditions()
 
+    def end_day(self) -> None:
+        """Force completion of the current day."""
+        state = getattr(self, "state", None)
+        if state:
+            self.hero_idx = max(0, len(state.heroes) - 1)
+        self.end_turn()
+
+    def toggle_pause(self) -> None:
+        """Toggle the game's paused state."""
+        self.paused = not getattr(self, "paused", False)
+        self._notify("Paused" if self.paused else "Resumed")
+
+    def next_town(self) -> None:
+        """Cycle camera focus through player-owned towns."""
+        world = getattr(self, "world", None)
+        renderer = getattr(self, "world_renderer", None)
+        if not world or not renderer:
+            return
+        towns: List[Tuple[int, int]] = []
+        for y, row in enumerate(world.grid):
+            for x, tile in enumerate(row):
+                if isinstance(tile.building, Town) and getattr(tile.building, "owner", None) == 0:
+                    towns.append((x, y))
+        if not towns:
+            self._notify("No town available")
+            return
+        idx = (getattr(self, "_town_idx", -1) + 1) % len(towns)
+        self._town_idx = idx
+        renderer.center_on(towns[idx])
+
     def move_enemies_randomly(self) -> None:
         """Update neutral creature groups using their AI behaviour."""
         hero_pos = (self.hero.x, self.hero.y)
@@ -3622,7 +3652,10 @@ class Game:
         if path is None:
             path = getattr(self, "default_save_path", None)
         if path is None:
-            raise ValueError("No save path specified")
+            msg = "No save path specified"
+            logger.warning(msg)
+            EVENT_BUS.publish(ON_INFO_MESSAGE, msg)
+            return msg
 
         data = self._serialize_state()
         hero = data["hero"]
@@ -3696,9 +3729,10 @@ class Game:
         if path is None:
             path = getattr(self, "default_save_path", None)
         if path is None or not os.path.exists(path):
+            msg = f"Save file not found: {path}"
             logger.warning("Save file %s not found", path)
-            EVENT_BUS.publish(ON_INFO_MESSAGE, f"Save file not found: {path}")
-            return
+            EVENT_BUS.publish(ON_INFO_MESSAGE, msg)
+            return msg
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
 

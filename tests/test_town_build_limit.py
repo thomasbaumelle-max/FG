@@ -10,7 +10,7 @@ from core import economy
 
 def test_one_structure_per_day():
     pygame.init()
-    town = Town()
+    town = Town(faction_id="red_knights")
     hero = Hero(0, 0, [])
     hero.resources["wood"] = 10
     hero.resources["stone"] = 10

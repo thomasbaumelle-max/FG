@@ -13,7 +13,7 @@ from state.game_state import GameState
 def test_weekly_growth_via_next_day():
     pygame.init()
     world = WorldMap(map_data=["G"])
-    town = Town()
+    town = Town(faction_id="red_knights")
     world.grid[0][0].building = town
     hero = Hero(0, 0, [])
     state = GameState(world=world, heroes=[hero])

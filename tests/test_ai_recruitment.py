@@ -13,7 +13,7 @@ from core import economy
 def test_ai_weekly_recruitment_consumes_resources():
     pygame.init()
     world = WorldMap(map_data=["G"])
-    town = Town()
+    town = Town(faction_id="red_knights")
     town.owner = 1
     world.grid[0][0].building = town
 

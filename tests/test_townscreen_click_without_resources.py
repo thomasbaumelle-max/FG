@@ -15,7 +15,7 @@ def test_townscreen_click_without_resources(monkeypatch, pygame_stub):
 
     pygame = pg
     pygame.init()
-    town = Town()
+    town = Town(faction_id="red_knights")
     hero = Hero(0, 0, [])
     hero.gold = 0
     hero.resources["wood"] = 0
