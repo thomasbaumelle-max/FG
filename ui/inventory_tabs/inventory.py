@@ -75,18 +75,18 @@ def draw(screen: "InventoryScreen") -> None:
     t = screen.font.render(screen.search_text or "Search...", True, COLOR_TEXT)
     screen.screen.blit(t, (screen.search_rect.x + 6, screen.search_rect.y + 6))
 
-    # Items grid 6x6
+    # Items grid 4x4 with pagination
     items = filtered_inventory(screen)
     start = screen.inventory_offset
     screen.item_rects = []
     gx = screen.center_rect.x + 12
     gy = screen.center_rect.y + 120
-    cell = (screen.center_rect.width - 24) // 6
+    cell = (screen.center_rect.width - 24) // 4
     screen.inventory_grid_origin = (gx, gy)
     screen.inventory_cell_size = cell
-    for row in range(6):
-        for col in range(6):
-            idx = start + row * 6 + col
+    for row in range(4):
+        for col in range(4):
+            idx = start + row * 4 + col
             rect = pygame.Rect(gx + col * cell, gy + row * cell, cell, cell)
             pygame.draw.rect(screen.screen, theme.PALETTE["panel"], rect)
             theme.draw_frame(screen.screen, rect)
@@ -109,6 +109,28 @@ def draw(screen: "InventoryScreen") -> None:
                 screen.item_rects.append((inv_idx, rect))
             else:
                 screen.item_rects.append((None, rect))
+
+    # Pagination buttons
+    btn_w, btn_h = 32, 24
+    btn_y = gy + 4 * cell + 10
+    prev_rect = pygame.Rect(gx, btn_y, btn_w, btn_h)
+    next_rect = pygame.Rect(gx + 4 * cell - btn_w, btn_y, btn_w, btn_h)
+    screen.prev_page_rect = prev_rect
+    screen.next_page_rect = next_rect
+    pygame.draw.rect(screen.screen, theme.PALETTE["panel"], prev_rect)
+    pygame.draw.rect(screen.screen, COLOR_SLOT_BD, prev_rect, 1)
+    pygame.draw.rect(screen.screen, theme.PALETTE["panel"], next_rect)
+    pygame.draw.rect(screen.screen, COLOR_SLOT_BD, next_rect, 1)
+    lt = screen.font.render("<", True, COLOR_TEXT)
+    rt = screen.font.render(">", True, COLOR_TEXT)
+    screen.screen.blit(
+        lt,
+        (prev_rect.centerx - lt.get_width() // 2, prev_rect.centery - lt.get_height() // 2),
+    )
+    screen.screen.blit(
+        rt,
+        (next_rect.centerx - rt.get_width() // 2, next_rect.centery - rt.get_height() // 2),
+    )
 
 
 def item_tooltip(

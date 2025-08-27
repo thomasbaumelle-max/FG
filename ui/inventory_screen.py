@@ -102,6 +102,8 @@ class InventoryScreen:
         self.item_rects: List[Tuple[Optional[int], pygame.Rect]] = []
         self.inventory_grid_origin: Tuple[int, int] = (0, 0)
         self.inventory_cell_size: int = 0
+        self.prev_page_rect: Optional[pygame.Rect] = None
+        self.next_page_rect: Optional[pygame.Rect] = None
         self.drag_item: Optional[Item] = None
         self.drag_origin: Optional[int] = None
         self.drag_icon_size: Optional[Tuple[int, int]] = None
@@ -594,11 +596,11 @@ class InventoryScreen:
                     elif e.button in (4, 5) and self.active_tab == "inventory":
                         items = self._filtered_inventory()
                         if e.button == 4:
-                            self.inventory_offset = max(0, self.inventory_offset - 6)
+                            self.inventory_offset = max(0, self.inventory_offset - 16)
                         else:
-                            max_off = max(0, len(items) - 36)
+                            max_off = max(0, len(items) - 16)
                             self.inventory_offset = min(
-                                max_off, self.inventory_offset + 6
+                                max_off, self.inventory_offset + 16
                             )
 
                 elif e.type == pygame.MOUSEBUTTONUP and e.button == 1:
@@ -684,13 +686,22 @@ class InventoryScreen:
                     self.sort_mode = name
                     self.inventory_offset = 0
                     return
+            # Pagination buttons
+            if self.prev_page_rect and self.prev_page_rect.collidepoint(pos):
+                self.inventory_offset = max(0, self.inventory_offset - 16)
+                return
+            if self.next_page_rect and self.next_page_rect.collidepoint(pos):
+                items = self._filtered_inventory()
+                max_off = max(0, len(items) - 16)
+                self.inventory_offset = min(max_off, self.inventory_offset + 16)
+                return
             # Start drag from bag grid
             gx, gy = self.inventory_grid_origin
             size = self.inventory_cell_size
-            if size and gx <= pos[0] < gx + size * 6 and gy <= pos[1] < gy + size * 6:
+            if size and gx <= pos[0] < gx + size * 4 and gy <= pos[1] < gy + size * 4:
                 col = (pos[0] - gx) // size
                 row = (pos[1] - gy) // size
-                slot = row * 6 + col
+                slot = row * 4 + col
                 items = self._filtered_inventory()
                 idx = self.inventory_offset + slot
                 if idx < len(items):
