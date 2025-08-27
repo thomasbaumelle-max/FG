@@ -1,4 +1,3 @@
-// factions.json
 {
   "id": "red_knights",
   "color": "#B4202A",
@@ -17,7 +16,7 @@
     "GrandMaster" : ["human","infantry","melee"],
     "Dragon": ["dragon"]
   },
-  "unique_buildings": ["buildings/banner_hall.json"],
+  "unique_buildings": ["buildings/banner_hall.json","barracks","archery_range","mage_guild","stables","dragon_lair"],
   "army_synergies": [
     {"tag": "human", "min": 3, "morale": 1},
     {"tag": "undead", "min": 1, "morale": -1}
