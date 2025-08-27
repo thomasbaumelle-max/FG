@@ -21,6 +21,7 @@ import constants
 from core.world import WorldMap, BIOME_IMAGES
 from render.world_renderer import WorldRenderer
 from core.buildings import Town
+from .icon_button import IconButton
 
 # Fallback event type constants for environments with a pygame stub
 MOUSEBUTTONDOWN = getattr(pygame, "MOUSEBUTTONDOWN", 1)
@@ -83,6 +84,17 @@ class Minimap:
             self._menu_font = pygame.font.Font(None, 14)
         except Exception:  # pragma: no cover - pygame stub without font
             self._menu_font = None
+
+        # Button to toggle the filter menu
+        btn_size = 16
+        btn_rect = pygame.Rect(0, 0, btn_size, btn_size)
+        self._menu_button = IconButton(
+            btn_rect,
+            "nav_settings",
+            self._toggle_menu,
+            tooltip="Filters",
+            size=(btn_size, btn_size),
+        )
 
         # icon manifest and cache
         self._icon_manifest: Dict[str, str] = {}
@@ -312,6 +324,11 @@ class Minimap:
                     self.fog_rects.append(rect)
 
     # ------------------------------------------------------------------
+    def _toggle_menu(self) -> None:
+        """Toggle the visibility of the filter dropdown menu."""
+        self.show_menu = not self.show_menu
+
+    # ------------------------------------------------------------------
     def _center_at(self, pos: Tuple[int, int], rect: pygame.Rect) -> None:
         """Center the renderer's camera on the map position ``pos``."""
         rel_x = (pos[0] - rect.x) / rect.width
@@ -324,19 +341,21 @@ class Minimap:
         """Handle mouse interaction for recentering the camera and filters."""
         etype = getattr(evt, "type", None)
         button = getattr(evt, "button", 0)
+        # Update filter button position and delegate events to it
+        size = self._menu_button.rect.width
+        self._menu_button.rect.x = rect.x + rect.width - size - 4
+        self._menu_button.rect.y = rect.y + 4
+        if self._menu_button.handle(evt):
+            return
+
         if etype == MOUSEBUTTONDOWN:
-            if button == 3:
-                if rect.collidepoint(evt.pos):
-                    self.show_menu = not self.show_menu
-                else:
-                    self.show_menu = False
-                return
-            if self.show_menu and button == 1:
+            if self.show_menu:
                 if self.menu_rect and self.menu_rect.collidepoint(evt.pos):
-                    for key, box in self.menu_checkboxes.items():
-                        if box.collidepoint(evt.pos):
-                            self.filters[key] = not self.filters[key]
-                            return
+                    if button == 1:
+                        for key, box in self.menu_checkboxes.items():
+                            if box.collidepoint(evt.pos):
+                                self.filters[key] = not self.filters[key]
+                                return
                 else:
                     self.show_menu = False
                     return
@@ -473,15 +492,27 @@ class Minimap:
             if o:
                 dest.blit(o, (rect.x + 2, rect.centery - o.get_height() // 2))
 
+        self._menu_button.rect.x = (
+            rect.x + rect.width - self._menu_button.rect.width - 4
+        )
+        self._menu_button.rect.y = rect.y + 4
+        self._menu_button.draw(dest)
+
         self._draw_menu(dest, rect)
 
     # ------------------------------------------------------------------
     def _draw_menu(self, dest: pygame.Surface, rect: pygame.Rect) -> None:
         if not self.show_menu:
             return
-        w = 120
-        h = 20 * len(FILTER_LABELS) + 8
-        menu = pygame.Rect(rect.x + 4, rect.y + 4, w, h)
+        w = min(120, rect.width - 8)
+        h = min(20 * len(FILTER_LABELS) + 8, rect.height - 8)
+        x = rect.x + rect.width - w - 4
+        y = rect.y + self._menu_button.rect.height + 4
+        if x < rect.x + 4:
+            x = rect.x + 4
+        if y + h > rect.y + rect.height - 4:
+            y = rect.y + rect.height - h - 4
+        menu = pygame.Rect(x, y, w, h)
         self.menu_rect = menu
         pygame.draw.rect(dest, constants.DARK_GREY, menu)
         inner = menu.inflate(-4, -4)
