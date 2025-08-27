@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import pygame
 import theme
+import settings
+from loaders.i18n import load_locale
 
 
 class SpellbookOverlay:
@@ -15,6 +17,7 @@ class SpellbookOverlay:
         self.screen = screen
         self.combat = combat
         self.font = theme.get_font(20) or pygame.font.SysFont(None, 20)
+        self.texts = load_locale(settings.LANGUAGE)
         # Pagination state
         self.page: int = 0
         self.spell_names = sorted(self.combat.hero_spells.keys())
@@ -34,13 +37,13 @@ class SpellbookOverlay:
         lines = [name.replace("_", " ").title()]
         lvl = self.combat.hero_spells.get(name)
         if lvl:
-            lines.append(f"Level: {lvl}")
+            lines.append(f"{self.texts.get('Level', 'Level')}: {lvl}")
         spec = getattr(self.combat, "spell_defs", {}).get(name)
         if spec:
-            lines.append(f"Mana: {spec.cost_mana}")
+            lines.append(f"{self.texts.get('Mana', 'Mana')}: {spec.cost_mana}")
             if spec.cooldown:
-                lines.append(f"Cooldown: {spec.cooldown}")
-            lines.append(f"Range: {spec.range}")
+                lines.append(f"{self.texts.get('Cooldown', 'Cooldown')}: {spec.cooldown}")
+            lines.append(f"{self.texts.get('Range', 'Range')}: {spec.range}")
         return lines
 
     def _draw_tooltip(self, surface: pygame.Surface, pos: tuple[int, int], lines: list[str]) -> None:
@@ -94,7 +97,7 @@ class SpellbookOverlay:
         overlay.fill((*self.BG, 230))
         theme.draw_frame(overlay, overlay.get_rect())
 
-        title = self.font.render("Spellbook", True, self.TEXT)
+        title = self.font.render(self.texts.get("Spellbook", "Spellbook"), True, self.TEXT)
         overlay.blit(title, ((w - title.get_width()) // 2, 10))
 
         self._label_rects.clear()

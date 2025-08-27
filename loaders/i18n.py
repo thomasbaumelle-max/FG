@@ -4,8 +4,8 @@ from __future__ import annotations
 
 The project keeps locale files in :mod:`assets/i18n` using a simple
 ``key -> value`` mapping per language.  This module exposes a small helper
-that merges the default (English) strings with the requested language so
-missing keys gracefully fall back to the English text.
+that merges the default (French) strings with the requested language so
+missing keys gracefully fall back to the French text.
 """
 
 from typing import Dict
@@ -14,7 +14,7 @@ import os
 from .core import Context, read_json
 
 
-def load_locale(language: str, default: str = "en") -> Dict[str, str]:
+def load_locale(language: str, default: str = "fr") -> Dict[str, str]:
     """Return a dictionary of translation strings for ``language``.
 
     ``default`` specifies the base language to fall back to when a key is not
