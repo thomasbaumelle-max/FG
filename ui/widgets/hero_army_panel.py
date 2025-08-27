@@ -15,6 +15,7 @@ import pygame
 import constants, theme
 from core.entities import Unit, UnitCarrier
 from state.event_bus import EVENT_BUS, ON_SELECT_HERO
+from .quantity_dialog import QuantityDialog
 
 MOUSEBUTTONDOWN = getattr(pygame, "MOUSEBUTTONDOWN", 1)
 MOUSEBUTTONUP = getattr(pygame, "MOUSEBUTTONUP", 2)
@@ -61,6 +62,8 @@ class HeroArmyPanel:
             self.set_hero(hero)
         self.font = theme.get_font(16)
         self.drag: Optional[_DragState] = None
+        # Currently selected stack index for operations like splitting
+        self.selected: Optional[int] = None
         # Update displayed hero when selection changes
         EVENT_BUS.subscribe(ON_SELECT_HERO, self.set_hero)
         self.selected_formation = "serree"
@@ -146,6 +149,11 @@ class HeroArmyPanel:
             )
         return rects
 
+    def _split_button_rect(self, rect: pygame.Rect) -> pygame.Rect:
+        """Rectangle of the split stack button below the portrait."""
+        p = self._portrait_rect(rect)
+        return pygame.Rect(p.x, p.bottom + self.PADDING, p.width, 20)
+
 
     def _cell_rect(self, index: int, rect: pygame.Rect) -> pygame.Rect:
         gx, gy = self._grid_origin(rect)
@@ -181,6 +189,9 @@ class HeroArmyPanel:
             button = getattr(evt, "button", 0)
             pos = getattr(evt, "pos", (0, 0))
             if button == 1:
+                if self._point_in_rect(pos, self._split_button_rect(rect)):
+                    self._split_selected()
+                    return
                 # Formation buttons
                 for (label, key), brect in zip(self.FORMATIONS, self._formation_rects(rect)):
                     if self._point_in_rect(pos, brect):
@@ -194,6 +205,7 @@ class HeroArmyPanel:
                 else:
                     idx = self._cell_at(pos, rect)
                     if idx is not None:
+                        self.selected = idx
                         unit = self.grid[idx]
                         if unit is not None:
                             self.drag = _DragState(idx, unit)
@@ -214,6 +226,32 @@ class HeroArmyPanel:
                     )
                     self._commit_grid()
                 self.drag = None
+
+    # ------------------------------------------------------------------
+    def _split_selected(self) -> None:
+        """Split the currently selected stack into an empty slot."""
+        if self.selected is None:
+            return
+        unit = self.grid[self.selected]
+        if unit is None or getattr(unit, "count", 0) <= 1:
+            return
+        try:
+            dest = self.grid.index(None)
+        except ValueError:
+            return
+        screen = pygame.display.get_surface()
+        if screen is None:
+            return
+        dlg = QuantityDialog(screen, unit.count)
+        qty = dlg.run()
+        if qty is None or qty <= 0 or qty >= unit.count:
+            return
+        unit.count -= qty
+        new_unit = Unit(unit.stats, qty, unit.side)
+        if hasattr(unit, "icon"):
+            setattr(new_unit, "icon", getattr(unit, "icon"))
+        self.grid[dest] = new_unit
+        self._commit_grid()
 
     # ------------------------------------------------------------------
     def draw(self, surface: pygame.Surface, rect: pygame.Rect) -> None:
@@ -238,17 +276,26 @@ class HeroArmyPanel:
         # grille centrée
         for idx, unit in enumerate(self.grid):
             cell = self._cell_rect(idx, rect)
-            surface.fill((36,38,44), cell)
-            pygame.draw.rect(surface, (74,76,86), cell, 1)
+            surface.fill((36, 38, 44), cell)
+            pygame.draw.rect(surface, (74, 76, 86), cell, 1)
+            if self.selected == idx:
+                pygame.draw.rect(surface, (200, 200, 80), cell, 2)
             if unit is None: continue
             # icon
             icon = getattr(unit, "icon", None)
+            if isinstance(icon, str):
+                try:
+                    icon = pygame.image.load(icon).convert_alpha()
+                except Exception:
+                    icon = None
             if icon:
                 try:
                     if icon.get_size() != cell.size:
                         icon = pygame.transform.smoothscale(icon, cell.size)
-                except Exception: icon = None
-            if icon: surface.blit(icon, cell.topleft)
+                except Exception:
+                    icon = None
+            if icon:
+                surface.blit(icon, cell.topleft)
             # count + barre HP
             if self.font:
                 count = self.font.render(
@@ -285,3 +332,17 @@ class HeroArmyPanel:
                         brect.y + (brect.height - text.get_height()) // 2,
                     ),
                 )
+
+        # split button
+        srect = self._split_button_rect(rect)
+        surface.fill((36, 38, 44), srect)
+        pygame.draw.rect(surface, (74, 76, 86), srect, 1)
+        if self.font:
+            txt = self.font.render("Split", True, theme.PALETTE["text"])
+            surface.blit(
+                txt,
+                (
+                    srect.x + (srect.width - txt.get_width()) // 2,
+                    srect.y + (srect.height - txt.get_height()) // 2,
+                ),
+            )
