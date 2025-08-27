@@ -1434,10 +1434,12 @@ class Game:
         if enemy_town is None:
             if hasattr(ms, "show_end_overlay"):
                 ms.show_end_overlay(True)
+            audio.play_sound('victory')
             self._victory_shown = True
         elif hero_town is None:
             if hasattr(ms, "show_end_overlay"):
                 ms.show_end_overlay(False)
+            audio.play_sound('defeat')
             self._game_over_shown = True
 
     def _check_starting_town_owner(self) -> None:
@@ -1456,6 +1458,7 @@ class Game:
 
     def _show_game_over(self) -> None:
         """Display a simple game over summary and return to the main menu."""
+        audio.play_sound('defeat')
         heading_font = theme.get_font(48) or pygame.font.SysFont(None, 48)
         font = theme.get_font(24) or pygame.font.SysFont(None, 24)
         ok_rect = pygame.Rect(
@@ -1501,6 +1504,7 @@ class Game:
 
     def _show_victory(self) -> None:
         """Display a simple victory summary and return to the main menu."""
+        audio.play_sound('victory')
         heading_font = theme.get_font(48) or pygame.font.SysFont(None, 48)
         font = theme.get_font(24) or pygame.font.SysFont(None, 24)
         ok_rect = pygame.Rect(
@@ -2089,6 +2093,7 @@ class Game:
                         self.hero.army = []
                 else:
                     self._notify("You have been defeated!")
+                    audio.play_sound('defeat')
                     self.hero.army = []
                     # Retreat to previous position
                     self.hero.x = prev_x
@@ -2155,6 +2160,7 @@ class Game:
                         self.hero.army = []
                 else:
                     self._notify("You have been defeated!")
+                    audio.play_sound('defeat')
                     self.hero.army = []
                     # Retreat to previous position
                     self.hero.x = prev_x
@@ -2917,6 +2923,7 @@ class Game:
                     EVENT_BUS.publish(ON_ENEMY_DEFEATED, ["EnemyHero"])
                 else:
                     self._notify("You have been defeated!")
+                    audio.play_sound('defeat')
                     self.hero.army = []
                 return True
         from core.combat import Combat, water_battlefield_template
@@ -2979,6 +2986,7 @@ class Game:
             EVENT_BUS.publish(ON_ENEMY_DEFEATED, ["EnemyHero"])
         else:
             self._notify("You have been defeated!")
+            audio.play_sound('defeat')
             self.hero.army = []
         self.refresh_army_list()
         return True
