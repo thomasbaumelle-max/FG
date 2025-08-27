@@ -42,10 +42,15 @@ def draw(screen: "InventoryScreen") -> None:
     y = screen.center_rect.y + 52
     x = screen.center_rect.x + 16
 
-    # Portrait
-    hero_img = screen.assets.get(constants.IMG_HERO_PORTRAIT)
+    # Portrait (use hero.portrait with fallback to default asset)
+    hero_img = getattr(screen.hero, "portrait", None)
+    if hero_img is None:
+        hero_img = screen.assets.get(constants.IMG_HERO_PORTRAIT)
     if hero_img:
-        hero_img = pygame.transform.scale(hero_img, (120, 120))
+        try:
+            hero_img = pygame.transform.scale(hero_img, (120, 120))
+        except (AttributeError, TypeError):
+            pass
         screen.screen.blit(hero_img, (x, y))
         x += 140
 
@@ -78,16 +83,19 @@ def draw(screen: "InventoryScreen") -> None:
         pairs.append((school, f"{value}%"))
     y2 = y + len(lines) * 26 + 8
     size = 24
+    screen.stat_rects = []
     for j, (key, val) in enumerate(pairs):
         icon_id = _STAT_ICON_IDS.get(key)
         icon = IconLoader.get(icon_id, size) if icon_id else None
+        rect = pygame.Rect(x, y2 + j * 24, size, size)
         if icon:
-            screen.screen.blit(icon, (x, y2 + j * 24))
+            screen.screen.blit(icon, rect.topleft)
         else:
             placeholder = screen.font.render(str(key)[:2], True, COLOR_TEXT)
-            screen.screen.blit(placeholder, (x, y2 + j * 24))
+            screen.screen.blit(placeholder, rect.topleft)
+        screen.stat_rects.append((key, rect))
         t2 = screen.font.render(str(val), True, COLOR_TEXT)
-        screen.screen.blit(t2, (x + size + 4, y2 + j * 24))
+        screen.screen.blit(t2, (rect.x + size + 4, rect.y))
 
     # Army 7x1
     font_big = screen.font_big or screen.font

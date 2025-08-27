@@ -132,6 +132,9 @@ class InventoryScreen:
         # Equipment
         self.slot_rects: Dict[EquipmentSlot, pygame.Rect] = {}
 
+        # Stat icons (Stats tab)
+        self.stat_rects: List[Tuple[str, pygame.Rect]] = []
+
         # Skills --------------------------------------------------------------
         self.skill_trees: Dict[str, List[SkillNode]] = {}
         self.skill_positions: Dict[str, Dict[str, Tuple[int, int]]] = {}
@@ -191,7 +194,7 @@ class InventoryScreen:
 
         self.resbar_rect = pygame.Rect(0, H - RESBAR_H, W, RESBAR_H)
         self.tabs_rect = pygame.Rect(0, 0, tab_w, body_h)
-        self.center_rect = pygame.Rect(tab_w, 0, W - tab_w - equip_w, body_h)
+        self.center_rect = pygame.Rect(tab_w, 0, W - tab_w - equip_w, H)
         self.centre_rect = self.center_rect  # alias for compatibility
         self.equip_rect = pygame.Rect(W - equip_w, 0, equip_w, body_h)
 
@@ -487,6 +490,20 @@ class InventoryScreen:
                         if node:
                             lines = self._skill_tooltip(node)
                         break
+            elif self.active_tab == "stats":
+                for name, rect in self.stat_rects:
+                    if rect.collidepoint(mouse):
+                        lines = [(name, COLOR_TEXT)]
+                        break
+                if not lines:
+                    for slot, rect in self.slot_rects.items():
+                        if rect.collidepoint(mouse):
+                            item = self.hero.equipment.get(slot)
+                            if item:
+                                lines = self._item_tooltip(item, equip=False)
+                            else:
+                                lines = [(slot.name.title(), COLOR_TEXT)]
+                            break
             else:
                 for slot, rect in self.slot_rects.items():
                     if rect.collidepoint(mouse):
