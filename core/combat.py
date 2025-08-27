@@ -1332,7 +1332,22 @@ class Combat:
                             break
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 3:
-                        self._dragging = True
+                        mx, my = event.pos
+                        cell = self.pixel_to_cell(mx, my)
+                        opened = False
+                        if cell is not None:
+                            cx, cy = cell
+                            unit = self.grid[cy][cx]
+                            if unit and getattr(unit, "is_alive", False):
+                                try:  # pragma: no cover - lazy import for tests
+                                    from ui.unit_info_overlay import UnitInfoOverlay
+                                except Exception:  # pragma: no cover
+                                    from .ui.unit_info_overlay import UnitInfoOverlay  # type: ignore
+                                overlay = UnitInfoOverlay(self.screen, unit)
+                                overlay.run()
+                                opened = True
+                        if not opened:
+                            self._dragging = True
                     elif event.button == 4:
                         self._adjust_zoom(0.25, event.pos)
                     elif event.button == 5:
