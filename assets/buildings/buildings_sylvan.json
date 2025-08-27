@@ -4,7 +4,7 @@
     "dwelling": {"moss_sprite": 1, "mist_nymph": 1},
     "cost": {},
     "desc": "",
-    "image": "buildings/grove_of_lirael.png",
+    "image": "buildings/sylvan/grove_of_lirael.png",
     "unlocks": ["moss_sprite", "mist_nymph"],
     "visit_bonus": {"mana_per_day": 1}
   },
@@ -13,7 +13,7 @@
     "dwelling": {"dew_phoenix": 1},
     "cost": {},
     "desc": "",
-    "image": "buildings/hanging_aeries.png",
+    "image": "buildings/sylvan/hanging_aeries.png",
     "unlocks": ["dew_phoenix"],
     "city_bonus": {"vision_radius": 1}
   },
@@ -22,7 +22,7 @@
     "dwelling": {"liana_panther": 1},
     "cost": {},
     "desc": "",
-    "image": "buildings/liana_pens.png",
+    "image": "buildings/sylvan/liana_pens.png",
     "unlocks": ["liana_panther"],
     "hero_depart_bonus": {"forest_road_move_pct": 10}
   },
@@ -31,7 +31,7 @@
     "dwelling": {"cascade_serpent": 1},
     "cost": {},
     "desc": "",
-    "image": "buildings/cascade_terraces.png",
+    "image": "buildings/sylvan/cascade_terraces.png",
     "unlocks": ["cascade_serpent"],
     "map_bonus": {"ford_move_cost_bonus": 1}
   },
@@ -40,7 +40,7 @@
     "dwelling": {"garden_warden": 1},
     "cost": {},
     "desc": "",
-    "image": "buildings/warden_hall.png",
+    "image": "buildings/sylvan/warden_hall.png",
     "unlocks": ["garden_warden"],
     "growth_bonus": {"tiers": ["T1", "T2", "T3"], "pct": 10}
   },
@@ -49,7 +49,7 @@
     "dwelling": {"mist_dragon": 1},
     "cost": {},
     "desc": "",
-    "image": "buildings/spire_of_mists.png",
+    "image": "buildings/sylvan/spire_of_mists.png",
     "unlocks": ["mist_dragon"],
     "requires": ["warden_hall", "hanging_aeries"]
   },
@@ -58,7 +58,7 @@
     "dwelling": {"harmonia": 1},
     "cost": {},
     "desc": "",
-    "image": "buildings/amphitheater_of_winds.png",
+    "image": "buildings/sylvan/amphitheater_of_winds.png",
     "unlocks": ["harmonia"],
     "grants_scroll": "song_inspire_once"
   }
