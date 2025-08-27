@@ -404,7 +404,10 @@ class Combat:
                 if 0 <= start < len(frames):
                     img = frames[start]
         if img and img.get_size() != size:
-            img = pygame.transform.scale(img, size)
+            if hasattr(pygame.transform, "smoothscale"):
+                img = pygame.transform.smoothscale(img, size)
+            else:
+                img = pygame.transform.scale(img, size)
         return img
 
     def add_log(self, msg: str) -> None:
@@ -481,7 +484,10 @@ class Combat:
             else:
                 hero_image = self.assets.get(portrait)
             if hero_image and hero_image.get_size() != img_size:
-                hero_image = pygame.transform.scale(hero_image, img_size)
+                if hasattr(pygame.transform, "smoothscale"):
+                    hero_image = pygame.transform.smoothscale(hero_image, img_size)
+                else:
+                    hero_image = pygame.transform.scale(hero_image, img_size)
         if hero_image is None:
             unit = strongest_unit(self.hero_units)
             if unit:
