@@ -1,0 +1,9 @@
+[
+  {"id":"grove_of_lirael","unlocks":["moss_sprite","mist_nymph"],"visit_bonus":{"mana_per_day":1}},
+  {"id":"hanging_aeries","unlocks":["dew_phoenix"],"city_bonus":{"vision_radius":1}},
+  {"id":"liana_pens","unlocks":["liana_panther"],"hero_depart_bonus":{"forest_road_move_pct":10}},
+  {"id":"cascade_terraces","unlocks":["cascade_serpent"],"map_bonus":{"ford_move_cost_bonus":1}},
+  {"id":"warden_hall","unlocks":["garden_warden"],"growth_bonus":{"tiers":["T1","T2","T3"],"pct":10}},
+  {"id":"spire_of_mists","unlocks":["mist_dragon"],"requires":["warden_hall","hanging_aeries"]},
+  {"id":"amphitheater_of_winds","unlocks":["harmonia"],"grants_scroll":"song_inspire_once"}
+]
