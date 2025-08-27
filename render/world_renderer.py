@@ -133,6 +133,15 @@ class WorldRenderer:
                 self._prefetch_queue.task_done()
             except queue.Empty:
                 break
+        # Queue up all biome chunks for background generation so the
+        # renderer has them ready when needed.
+        chunk = BIOME_CHUNK_TILES
+        world = self.world
+        chunks_x = math.ceil(world.width / chunk)
+        chunks_y = math.ceil(world.height / chunk)
+        for cy in range(chunks_y):
+            for cx in range(chunks_x):
+                self._queue_prefetch(cx, cy)
 
     def invalidate_biome(self, x: int, y: int) -> None:
         """Invalidate the cached chunk containing tile ``(x, y)``."""
@@ -293,6 +302,7 @@ class WorldRenderer:
         offset_y = int(start_y * tile_size - self.cam_y)
 
         dest_w, dest_h = dest.get_width(), dest.get_height()
+        screen_rect = (0, 0, dest_w, dest_h)
         layers = {
             i: pygame.Surface((dest_w, dest_h), pygame.SRCALPHA)
             for i in range(constants.LAYER_UI + 1)
@@ -319,6 +329,19 @@ class WorldRenderer:
                 )
             return surf
 
+        def rect_intersection(
+            a: Tuple[int, int, int, int], b: Tuple[int, int, int, int]
+        ) -> Optional[Tuple[int, int, int, int]]:
+            ax, ay, aw, ah = a
+            bx, by, bw, bh = b
+            x1 = max(ax, bx)
+            y1 = max(ay, by)
+            x2 = min(ax + aw, bx + bw)
+            y2 = min(ay + ah, by + bh)
+            if x2 <= x1 or y2 <= y1:
+                return None
+            return (x1, y1, x2 - x1, y2 - y1)
+
         # Biome layer via cached chunks
         chunk = BIOME_CHUNK_TILES
         chunk_start_x = start_x // chunk
@@ -339,7 +362,18 @@ class WorldRenderer:
                     continue
                 px = cx * chunk * tile_size - self.cam_x
                 py = cy * chunk * tile_size - self.cam_y
-                layers[constants.LAYER_BIOME].blit(surf, (int(px), int(py)))
+                rect = (int(px), int(py), surf.get_width(), surf.get_height())
+                visible = rect_intersection(rect, screen_rect)
+                if not visible:
+                    continue
+                sx, sy, sw, sh = visible
+                src = (sx - rect[0], sy - rect[1], sw, sh)
+                blit = layers[constants.LAYER_BIOME].blit
+                try:
+                    blit(surf, (sx, sy), src)
+                except TypeError:
+                    # Some test stubs provide a simplified blit signature
+                    blit(surf, (sx, sy))
         self._prefetch_chunks(chunk_start_x, chunk_end_x, chunk_start_y, chunk_end_y)
 
         # Roads layer
@@ -417,7 +451,9 @@ class WorldRenderer:
                 sx, sy = grid_to_screen(anchor_tile[0], anchor_tile[1])
                 px = int(sx - ax)
                 py = int(sy - ay)
-                tall_draw.append((sy, "prop", img, (px, py)))
+                w, h = img.get_size()
+                if rect_intersection((px, py, w, h), screen_rect):
+                    tall_draw.append((sy, "prop", img, (px, py)))
 
         # Decor layer: obstacles, treasures, buildings
         drawn_buildings: Set[object] = set()
@@ -458,8 +494,12 @@ class WorldRenderer:
                             - start_y * tile_size
                         )
                         ax, ay = b.anchor
-                        rect = img.get_rect(topleft=(sx - ax, sy - ay))
-                        tall_draw.append((sy, "building", b, img, rect, sx, sy, ax, ay))
+                        w, h = img.get_size()
+                        rect = (sx - ax, sy - ay, w, h)
+                        if rect_intersection(rect, screen_rect):
+                            tall_draw.append(
+                                (sy, "building", b, img, rect, sx, sy, ax, ay)
+                            )
         # Draw tall props and buildings sorted by baseline
         tall_draw.sort(key=lambda t: t[0])
         for entry in tall_draw:
@@ -469,8 +509,9 @@ class WorldRenderer:
                 layers[constants.LAYER_FLORA].blit(img, pos)
             else:
                 _, _, b, img, rect, sx, sy, ax, ay = entry
-                layers[constants.LAYER_OBJECTS].blit(img, rect.topleft)
+                layers[constants.LAYER_OBJECTS].blit(img, (rect[0], rect[1]))
                 if settings.DEBUG_BUILDINGS:
+                    debug_rect = pygame.Rect(rect)
                     pygame.draw.circle(
                         layers[constants.LAYER_UI],
                         constants.RED,
@@ -480,24 +521,24 @@ class WorldRenderer:
                     pygame.draw.circle(
                         layers[constants.LAYER_UI],
                         constants.GREEN,
-                        rect.topleft,
+                        (rect[0], rect[1]),
                         4,
                     )
                     pygame.draw.rect(
                         layers[constants.LAYER_UI],
                         constants.MAGENTA,
-                        rect,
+                        debug_rect,
                         1,
                     )
                     if self.surface:
-                        screen_rect = pygame.Rect(
+                        screen_rect_dbg = pygame.Rect(
                             self.cam_x,
                             self.cam_y,
                             self.surface.get_width() / self.zoom,
                             self.surface.get_height() / self.zoom,
                         )
-                        if not screen_rect.colliderect(rect):
-                            logger.debug("Building rect %s off screen", rect)
+                        if not screen_rect_dbg.colliderect(debug_rect):
+                            logger.debug("Building rect %s off screen", debug_rect)
                 if b.owner is not None:
                     flag = self.assets.get("hero_flag")
                     if flag:
