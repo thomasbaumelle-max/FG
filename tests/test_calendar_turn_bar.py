@@ -41,3 +41,21 @@ def test_turn_bar_animation_and_click():
     event = SimpleNamespace(type=MOUSEBUTTONDOWN, pos=(10, 10), button=1)
     assert bar.handle_event(event, rect)
     assert clicked and clicked[0] == cal.label()
+
+
+def test_turn_bar_flashes_on_week_change():
+    cal = GameCalendar()
+    bar = TurnBar(cal)
+
+    # Day progresses within the same week -> no flash
+    bar._on_turn_end(1)
+    assert bar._flash_time == 0
+
+    # Crossing into a new week should trigger the flash animation
+    bar._on_turn_end(7)
+    assert bar._flash_time == 0.5
+
+    # Finish the animation and ensure regular days don't retrigger it
+    bar.update(1.0)
+    bar._on_turn_end(8)
+    assert bar._flash_time == 0

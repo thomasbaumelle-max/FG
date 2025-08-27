@@ -70,8 +70,12 @@ class TurnBar:
     def _on_turn_end(self, turn_index: int) -> None:
         """Update calendar and start animation from event bus."""
 
+        # Remember the previous week so we can detect when a new one begins
+        prev_week = self.calendar.week
         self.set_turn(turn_index)
-        self.on_turn_end()
+        # Only trigger the flash animation when the week actually changes
+        if self.calendar.week != prev_week:
+            self.on_turn_end()
 
     # ------------------------------------------------------------------
     def draw(self, surface: pygame.Surface, rect: pygame.Rect) -> None:
