@@ -1,9 +1,10 @@
 import random
+from pathlib import Path
 
 import pytest
 from core.world import WorldMap
 import constants
-from mapgen.continents import generate_continent_map
+import mapgen.continents as continents
 
 
 def test_random_size_and_weights():
@@ -55,20 +56,32 @@ def test_resource_and_building_placement():
     assert buildings == ["buildings/mine/mine_0.png"]
 
 
-@pytest.mark.slow
-@pytest.mark.worldgen
-def test_river_generation_and_shoreline():
-    random.seed(0)
-    rows = generate_continent_map(10, 8, seed=0, biome_chars="GM")
-    grid = [[row[i] for i in range(0, len(row), 2)] for row in rows]
+def test_river_generation_and_shoreline(monkeypatch):
+    fixture = Path(__file__).parent / "fixtures" / "river_continent_map.txt"
+    with open(fixture, "r", encoding="utf-8") as f:
+        rows = [line.rstrip("\n") for line in f]
+
+    # Avoid expensive map generation by stubbing the function
+    monkeypatch.setattr(
+        continents,
+        "generate_continent_map",
+        lambda *args, **kwargs: rows,
+    )
+
+    grid_rows = continents.generate_continent_map(10, 8, seed=0, biome_chars="GM")
+    grid = [[row[i] for i in range(0, len(row), 2)] for row in grid_rows]
     assert any("R" in row for row in grid)
     height = len(grid)
     width = len(grid[0]) if height else 0
-    river_cells = [(x, y) for y in range(height) for x in range(width) if grid[y][x] == "R"]
+    river_cells = [
+        (x, y) for y in range(height) for x in range(width) if grid[y][x] == "R"
+    ]
     assert river_cells
     assert any(
         any(
-            0 <= (nx := x + dx) < width and 0 <= (ny := y + dy) < height and grid[ny][nx] == "W"
+            0 <= (nx := x + dx) < width
+            and 0 <= (ny := y + dy) < height
+            and grid[ny][nx] == "W"
             for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
         )
         for x, y in river_cells

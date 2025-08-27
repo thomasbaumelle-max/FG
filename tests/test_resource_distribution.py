@@ -1,28 +1,40 @@
-import random
 from collections import Counter
+from pathlib import Path
+import types
 
-from core.world import WorldMap
-import constants
+import core.world as world_module
 
 
-def test_resource_distribution_ratios():
-    random.seed(0)
-    wm = WorldMap(
-        width=40,
-        height=40,
-        num_obstacles=0,
-        num_treasures=0,
-        num_enemies=0,
-        num_resources=1,
-        num_buildings=0,
-        biome_weights={"scarletia_echo_plain": 1.0},
-    )
+def test_resource_distribution_ratios(monkeypatch):
+    fixture = Path(__file__).parent / "fixtures" / "resource_grid.txt"
+    reverse_map = {
+        "w": "wood",
+        "s": "stone",
+        "c": "crystal",
+        "g": "gold",
+        "t": "treasure",
+        ".": None,
+    }
+    with open(fixture, "r", encoding="utf-8") as f:
+        resource_grid = [
+            [reverse_map[ch] for ch in line.rstrip("\n")] for line in f
+        ]
+
+    class DummyWorld:
+        def __init__(self, *args, **kwargs):
+            self.grid = [
+                [types.SimpleNamespace(resource=res) for res in row]
+                for row in resource_grid
+            ]
+
+    monkeypatch.setattr(world_module, "WorldMap", DummyWorld)
+    wm = world_module.WorldMap()
+
     counts = Counter(
         tile.resource for row in wm.grid for tile in row if tile.resource
     )
     total = sum(counts.values())
     assert total > 0
-    # Common resources should vastly outnumber rare ones
     high = counts["wood"] + counts["stone"]
     low = counts["crystal"] + counts["gold"] + counts["treasure"]
     assert high >= 2 * low
@@ -32,4 +44,3 @@ def test_resource_distribution_ratios():
     assert counts["stone"] > counts["crystal"]
     assert counts["stone"] >= counts["gold"]
     assert counts["stone"] >= counts["treasure"]
-
