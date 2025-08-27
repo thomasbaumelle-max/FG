@@ -26,6 +26,10 @@ DIFFICULTY_PARAMS = {
     "Avancé": {"hero_weight": 12, "resource_weight": 4, "building_weight": 6, "avoid_enemies": False},
 }
 
+# Maximum straight-line distance for potential targets.
+# Objectives beyond this radius are ignored to avoid expensive pathfinding.
+MAX_TARGET_RADIUS: int = 20
+
 
 def compute_enemy_step(game, enemy, difficulty: str = "Intermédiaire") -> Optional[Tuple[int, int]]:
     """Return the next step for ``enemy`` based on the current game state.
@@ -64,6 +68,10 @@ def compute_enemy_step(game, enemy, difficulty: str = "Intermédiaire") -> Optio
 
     # Consider all objectives including the player's hero
     for target, weight in [hero_target, *targets]:
+        if MAX_TARGET_RADIUS is not None:
+            raw_dist = abs(target[0] - start[0]) + abs(target[1] - start[1])
+            if raw_dist > MAX_TARGET_RADIUS:
+                continue
         path = game.compute_path(start, target, avoid_enemies=params["avoid_enemies"])
         if path:
             score = len(path) / weight
