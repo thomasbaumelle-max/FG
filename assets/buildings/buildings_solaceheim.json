@@ -4,7 +4,7 @@
     "dwelling": {"disciple_initie": 1},
     "cost": {},
     "desc": "",
-    "image": "buildings/sanctuary_of_the_sun.png",
+    "image": "buildings/solaceheim/sanctuary_of_the_sun.png",
     "unlocks": ["disciple_initie"],
     "visit_bonus": {"mana_per_day": 1}
   },
@@ -13,7 +13,7 @@
     "dwelling": {"ascete_cloche": 1},
     "cost": {},
     "desc": "",
-    "image": "buildings/cloister_of_resonance.png",
+    "image": "buildings/solaceheim/cloister_of_resonance.png",
     "unlocks": ["ascete_cloche"],
     "grants_scroll": "sonic_bell_once",
     "requires": ["sanctuary_of_the_sun"]
@@ -23,7 +23,7 @@
     "dwelling": {"aigle_choeur": 1},
     "cost": {},
     "desc": "",
-    "image": "buildings/celestial_aeries.png",
+    "image": "buildings/solaceheim/celestial_aeries.png",
     "unlocks": ["aigle_choeur"],
     "city_bonus": {"vision_radius": 1},
     "requires": ["cloister_of_resonance"]
@@ -33,7 +33,7 @@
     "dwelling": {"gardien_sutras": 1},
     "cost": {},
     "desc": "",
-    "image": "buildings/sutra_guardhouse.png",
+    "image": "buildings/solaceheim/sutra_guardhouse.png",
     "unlocks": ["gardien_sutras"],
     "city_bonus": {"defence_magic_city": 1},
     "requires": ["celestial_aeries"]
@@ -43,7 +43,7 @@
     "dwelling": {"guerrier_ascete": 1},
     "cost": {},
     "desc": "",
-    "image": "buildings/hall_of_ascetics.png",
+    "image": "buildings/solaceheim/hall_of_ascetics.png",
     "unlocks": ["guerrier_ascete"],
     "hero_depart_bonus": {"desert_move_pct": 10},
     "requires": ["sutra_guardhouse"]
@@ -53,7 +53,7 @@
     "dwelling": {"chimere_ascese": 1},
     "cost": {},
     "desc": "",
-    "image": "buildings/sanctum_of_the_veil.png",
+    "image": "buildings/solaceheim/sanctum_of_the_veil.png",
     "unlocks": ["chimere_ascese"],
     "city_bonus": {"ambush_detection": 1},
     "requires": ["hall_of_ascetics"]
@@ -63,7 +63,7 @@
     "dwelling": {"serpent_cantique": 1},
     "cost": {},
     "desc": "",
-    "image": "buildings/choir_of_singing_dunes.png",
+    "image": "buildings/solaceheim/choir_of_singing_dunes.png",
     "unlocks": ["serpent_cantique"],
     "map_bonus": {"desert_move_cost_bonus": 1},
     "requires": ["sanctum_of_the_veil", "cloister_of_resonance"]
@@ -73,7 +73,7 @@
     "dwelling": {"avatar_soleil": 1},
     "cost": {},
     "desc": "",
-    "image": "buildings/spire_of_solar_apotheosis.png",
+    "image": "buildings/solaceheim/spire_of_solar_apotheosis.png",
     "unlocks": ["avatar_soleil"],
     "requires": ["sutra_guardhouse", "choir_of_singing_dunes"]
   },
@@ -82,7 +82,7 @@
     "dwelling": {},
     "cost": {},
     "desc": "",
-    "image": "buildings/terrace_of_discipline.png",
+    "image": "buildings/solaceheim/terrace_of_discipline.png",
     "growth_bonus": {"tiers": ["T1", "T2", "T3"], "pct": 10}
   },
   {
@@ -90,7 +90,7 @@
     "dwelling": {},
     "cost": {},
     "desc": "",
-    "image": "buildings/voice_of_the_dunes.png",
+    "image": "buildings/solaceheim/voice_of_the_dunes.png",
     "visit_bonus": {"mana_per_day": 1},
     "map_bonus": {"desert_hazard_res_pct": 15}
   },
@@ -99,7 +99,7 @@
     "dwelling": {},
     "cost": {},
     "desc": "",
-    "image": "buildings/colossus_of_sutras.png",
+    "image": "buildings/solaceheim/colossus_of_sutras.png",
     "city_bonus": {"global_defence_magic": 1}
   }
 ]
