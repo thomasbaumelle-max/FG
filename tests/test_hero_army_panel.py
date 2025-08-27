@@ -71,3 +71,21 @@ def test_callbacks_for_right_click_and_double_click():
     )
     panel.handle_event(evt_double, rect)
     assert opened == [hero]
+
+
+def test_cells_remain_inside_panel_after_resize():
+    hero = DummyHero([])
+    panel = HeroArmyPanel(hero)
+
+    rect_large = pygame.Rect(0, 0, 300, 200)
+    # compute initial layout
+    for idx in range(panel.GRID_CELLS):
+        panel._cell_rect(idx, rect_large)
+
+    rect_small = pygame.Rect(10, 5, 60, 80)
+    for idx in range(panel.GRID_CELLS):
+        cell = panel._cell_rect(idx, rect_small)
+        assert rect_small.x <= cell.x
+        assert rect_small.y <= cell.y
+        assert cell.x + cell.width <= rect_small.x + rect_small.width
+        assert cell.y + cell.height <= rect_small.y + rect_small.height
