@@ -100,10 +100,10 @@ def test_options_menu_shows_translated_difficulties(monkeypatch):
     def fake_menu(_screen, options, title=''):
         calls.append(options)
         if len(calls) == 1:  # Open difficulty selection
-            return 5, _screen
+            return 7, _screen
         if len(calls) == 2:  # Difficulty options displayed
             return None, _screen
-        return 9, _screen  # Exit options menu
+        return 11, _screen  # Exit options menu
 
     monkeypatch.setattr(options_menu, 'simple_menu', fake_menu)
 

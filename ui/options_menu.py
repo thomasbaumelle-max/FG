@@ -84,12 +84,11 @@ def _keymap_menu(screen: pygame.Surface) -> pygame.Surface:
         opts.append("Retour")
         choice, screen = simple_menu(screen, opts, title="Touches")
         if choice is None or choice == len(actions):
-            audio.save_settings(keymap=settings.KEYMAP)
             return screen
         action_key, action_label = actions[choice]
         code = _wait_for_key(screen, f"Touche pour {action_label}")
         name = _key_name(code)
-        settings.KEYMAP[action_key] = [name]
+        settings.remap_key(action_key, [name])
 
 
 def options_menu(screen: pygame.Surface) -> pygame.Surface:
@@ -106,9 +105,23 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
     current_track = audio.get_current_music() or audio.get_default_music()
     track_idx = tracks.index(current_track) if current_track in tracks else -1
     scroll_speed = settings.SCROLL_SPEED
+    anim_speed = settings.ANIMATION_SPEED
+    tooltip_read_mode = settings.TOOLTIP_READ_MODE
     languages = {"en": "English", "fr": "Français"}
     lang_codes = list(languages.keys())
     lang_idx = lang_codes.index(settings.LANGUAGE) if settings.LANGUAGE in lang_codes else 0
+
+    def _persist() -> None:
+        audio.save_settings(
+            fullscreen=fullscreen,
+            ai_difficulty=difficulties[difficulty_idx],
+            music_track=tracks[track_idx] if track_idx >= 0 else "",
+            scroll_speed=scroll_speed,
+            language=lang_codes[lang_idx],
+            volume=volume,
+            animation_speed=anim_speed,
+            tooltip_read_mode=tooltip_read_mode,
+        )
 
     def _update_texts() -> Tuple[str, ...]:
         track_name = tracks[track_idx] if track_idx >= 0 else "Aucun"
@@ -117,6 +130,8 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
             f"Musique : {int(music * 100)}%",
             f"Sons : {int(sfx * 100)}%",
             f"Vitesse scroll : {scroll_speed}",
+            f"Vitesse animations : {anim_speed}",
+            f"Mode lecture : {'Oui' if tooltip_read_mode else 'Non'}",
             f"Plein écran : {'Oui' if fullscreen else 'Non'}",
             f"Difficulté IA : {labels[difficulty_idx]}",
             f"Musique de fond : {track_name}",
@@ -130,6 +145,8 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
             opt_music,
             opt_sfx,
             opt_scroll,
+            opt_anim,
+            opt_read,
             opt_full,
             opt_ai,
             opt_track,
@@ -141,6 +158,8 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
             opt_music,
             opt_sfx,
             opt_scroll,
+            opt_anim,
+            opt_read,
             opt_full,
             opt_ai,
             opt_track,
@@ -151,15 +170,8 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
 
         choice, screen = simple_menu(screen, options, title="Options")
 
-        if choice is None or choice == 9:
-            audio.save_settings(
-                fullscreen=fullscreen,
-                ai_difficulty=difficulties[difficulty_idx],
-                music_track=tracks[track_idx] if track_idx >= 0 else "",
-                scroll_speed=scroll_speed,
-                language=lang_codes[lang_idx],
-                volume=volume,
-            )
+        if choice is None or choice == 11:
+            _persist()
             return screen
 
         if choice == 0:
@@ -173,14 +185,7 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
             audio.set_music_volume(volume, save=False)
             audio.set_sfx_volume(volume, save=False)
             settings.VOLUME = volume
-            audio.save_settings(
-                fullscreen=fullscreen,
-                ai_difficulty=difficulties[difficulty_idx],
-                music_track=tracks[track_idx] if track_idx >= 0 else "",
-                scroll_speed=scroll_speed,
-                language=lang_codes[lang_idx],
-                volume=volume,
-            )
+            _persist()
         elif choice == 1:
             sel, screen = simple_menu(
                 screen, ["Augmenter", "Diminuer", "Retour"], title="Volume Musique"
@@ -190,14 +195,7 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
             elif sel == 1:
                 music = max(0.0, music - 0.1)
             audio.set_music_volume(music, save=False)
-            audio.save_settings(
-                fullscreen=fullscreen,
-                ai_difficulty=difficulties[difficulty_idx],
-                music_track=tracks[track_idx] if track_idx >= 0 else "",
-                scroll_speed=scroll_speed,
-                language=lang_codes[lang_idx],
-                volume=volume,
-            )
+            _persist()
         elif choice == 2:
             sel, screen = simple_menu(
                 screen, ["Augmenter", "Diminuer", "Retour"], title="Volume Sons"
@@ -207,14 +205,7 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
             elif sel == 1:
                 sfx = max(0.0, sfx - 0.1)
             audio.set_sfx_volume(sfx, save=False)
-            audio.save_settings(
-                fullscreen=fullscreen,
-                ai_difficulty=difficulties[difficulty_idx],
-                music_track=tracks[track_idx] if track_idx >= 0 else "",
-                scroll_speed=scroll_speed,
-                language=lang_codes[lang_idx],
-                volume=volume,
-            )
+            _persist()
         elif choice == 3:
             sel, screen = simple_menu(
                 screen, ["Augmenter", "Diminuer", "Retour"], title="Vitesse scroll"
@@ -224,26 +215,26 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
             elif sel == 1:
                 scroll_speed = max(1, scroll_speed - 5)
             settings.SCROLL_SPEED = scroll_speed
-            audio.save_settings(
-                fullscreen=fullscreen,
-                ai_difficulty=difficulties[difficulty_idx],
-                music_track=tracks[track_idx] if track_idx >= 0 else "",
-                scroll_speed=scroll_speed,
-                language=lang_codes[lang_idx],
-                volume=volume,
-            )
+            _persist()
         elif choice == 4:
+            sel, screen = simple_menu(
+                screen, ["Augmenter", "Diminuer", "Retour"], title="Vitesse animations"
+            )
+            if sel == 0:
+                anim_speed = round(min(anim_speed + 0.1, 5.0), 1)
+            elif sel == 1:
+                anim_speed = round(max(0.1, anim_speed - 0.1), 1)
+            settings.ANIMATION_SPEED = anim_speed
+            _persist()
+        elif choice == 5:
+            tooltip_read_mode = not tooltip_read_mode
+            settings.TOOLTIP_READ_MODE = tooltip_read_mode
+            _persist()
+        elif choice == 6:
             fullscreen = not fullscreen
             pygame.display.toggle_fullscreen()
-            audio.save_settings(
-                fullscreen=fullscreen,
-                ai_difficulty=difficulties[difficulty_idx],
-                music_track=tracks[track_idx] if track_idx >= 0 else "",
-                scroll_speed=scroll_speed,
-                language=lang_codes[lang_idx],
-                volume=volume,
-            )
-        elif choice == 5:
+            _persist()
+        elif choice == 7:
             sel, screen = simple_menu(
                 screen,
                 [l.capitalize() for l in labels],
@@ -251,15 +242,8 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
             )
             if sel is not None:
                 difficulty_idx = sel
-                audio.save_settings(
-                    ai_difficulty=difficulties[difficulty_idx],
-                    fullscreen=fullscreen,
-                    music_track=tracks[track_idx] if track_idx >= 0 else "",
-                    scroll_speed=scroll_speed,
-                    language=lang_codes[lang_idx],
-                    volume=volume,
-                )
-        elif choice == 6:
+                _persist()
+        elif choice == 8:
             if tracks:
                 sel, screen = simple_menu(
                     screen,
@@ -273,36 +257,15 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
                     elif sel == len(tracks):
                         track_idx = -1
                         audio.stop_music()
-                audio.save_settings(
-                    fullscreen=fullscreen,
-                    ai_difficulty=difficulties[difficulty_idx],
-                    music_track=tracks[track_idx] if track_idx >= 0 else "",
-                    scroll_speed=scroll_speed,
-                    language=lang_codes[lang_idx],
-                    volume=volume,
-                )
-        elif choice == 7:
+                _persist()
+        elif choice == 9:
             screen = _keymap_menu(screen)
-            audio.save_settings(
-                fullscreen=fullscreen,
-                ai_difficulty=difficulties[difficulty_idx],
-                music_track=tracks[track_idx] if track_idx >= 0 else "",
-                scroll_speed=scroll_speed,
-                language=lang_codes[lang_idx],
-                volume=volume,
-            )
-        elif choice == 8:
+            _persist()
+        elif choice == 10:
             sel, screen = simple_menu(
                 screen, list(languages.values()), title="Langue"
             )
             if sel is not None:
                 lang_idx = sel
                 settings.LANGUAGE = lang_codes[lang_idx]
-                audio.save_settings(
-                    fullscreen=fullscreen,
-                    ai_difficulty=difficulties[difficulty_idx],
-                    music_track=tracks[track_idx] if track_idx >= 0 else "",
-                    scroll_speed=scroll_speed,
-                    language=lang_codes[lang_idx],
-                    volume=volume,
-                )
+                _persist()
