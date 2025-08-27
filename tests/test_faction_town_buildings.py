@@ -1,0 +1,24 @@
+import os
+
+from core.buildings import Town
+from loaders.core import Context
+from loaders.town_building_loader import (
+    FACTION_TOWN_BUILDING_MANIFESTS,
+    load_faction_town_buildings,
+)
+
+
+def _ctx():
+    repo = os.path.join(os.path.dirname(__file__), "..")
+    repo = os.path.abspath(repo)
+    search = [os.path.join(repo, "assets")]
+    return Context(repo_root=repo, search_paths=search, asset_loader=None)
+
+
+def test_faction_town_buildings_available():
+    ctx = _ctx()
+    for faction_id in FACTION_TOWN_BUILDING_MANIFESTS:
+        town = Town(faction_id=faction_id)
+        expected = load_faction_town_buildings(ctx, faction_id)
+        for bid in expected:
+            assert bid in town.structures
