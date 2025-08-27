@@ -1,0 +1,28 @@
+{
+  "solaceheim_tree": {
+    "solar_doctrine": {
+      "N": {"id":"sun_blessing_n","name":"Aurore Bienveillante","effect":"Bless 1 stack (1t) au début du combat."},
+      "A": {"id":"hymn_of_light_a","name":"Hymne Lumineux","type":"order","cd":3,"effect":"Cône court: alliés ATK +1~+1 (1t), ennemis defence_magic -1 (1t)."},
+      "E": {"id":"lumen_matrix_e","name":"Lumen Matrix","effect":"Lumière/Ordre +15% puissance; coût -1 mana (min 1)."},
+      "M": {"id":"solar_zenith_m","name":"Zénith du Soleil","effect":"Aura 2 hex: initiative +1, morale +1; 1x/comb. Sunburst gratuit."}
+    },
+    "desert_way": {
+      "N": {"id":"dune_march_n","name":"Marche des Dunes","effect":"PM +5% sur carte."},
+      "A": {"id":"sand_step_a","name":"Pas de Sable","effect":"PM +10%; ignore malus de sable/dunes."},
+      "E": {"id":"sirocco_e","name":"Brise du Sirocco","effect":"En désert: alliés +1 initiative au 1er round."},
+      "M": {"id":"sun_paths_m","name":"Chemins Solaires","effect":"PM +15%; vision +1 désert; immunité sandstorm."}
+    },
+    "resonant_tactics": {
+      "N": {"id":"ritual_beats_n","name":"Battements Rituels","effect":"+1 initiative aux T1–T3."},
+      "A": {"id":"maneuver_chorale_a","name":"Chorale de Manœuvre","type":"order","cd":3,"effect":"Repositionne 1 stack de 1 hex et lui donne morale +1 (1t)."},
+      "E": {"id":"harmony_formation_e","name":"Formation Harmonie","effect":"1er round: projectiles reçus -1 pour lignes adjacentes."},
+      "M": {"id":"ascetic_cadence_m","name":"Cadence Ascétique","effect":"Repositionne 2 stacks; flanking allié +10% dégâts ce round."}
+    },
+    "sutra_guard": {
+      "N": {"id":"mantra_ward_n","name":"Mantra de Protection","effect":"Alliés defence_magic +1."},
+      "A": {"id":"sutra_aegis_a","name":"Aegis des Sutras","type":"order","cd":2,"effect":"Cible: defence_melee +2, defence_magic +2, dissipe 1 malus (1t)."},
+      "E": {"id":"guardian_intercession_e","name":"Intercession du Gardien","effect":"1x/tour: si allié ≤30% HP dans 2 hex est frappé, -20% dégâts."},
+      "M": {"id":"solar_bulwark_m","name":"Rempart Solaire","type":"order","cd":3,"effect":"Cible: insensible aux sorts et -30% AoE (1t)."}
+    }
+  }
+}
