@@ -38,7 +38,7 @@ def test_faction_recruitment_buildings_present():
 def test_loader_returns_expected_dwellings():
     ctx = _ctx()
     rk = load_faction_town_buildings(ctx, "red_knights")
-    assert rk["crimson_watch"]["dwelling"] == {"red_squire": 5}
+    assert rk["barracks"]["dwelling"] == {"Swordsman": 5, "Spearman": 3}
 
     syl = load_faction_town_buildings(ctx, "sylvan")
     assert syl["grove_of_lirael"]["dwelling"] == {"moss_sprite": 1, "mist_nymph": 1}
