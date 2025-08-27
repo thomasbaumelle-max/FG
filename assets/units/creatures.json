@@ -31,7 +31,8 @@
       "biomes": ["scarletia_volcanic"],
       "behavior": "roamer",
       "guard_range": 3,
-      "battlefield_scale": 1.0
+      "battlefield_scale": 1.0,
+      "abilities": {}
     },
     {
       "id": "shadowleaf_wolf",
@@ -42,7 +43,8 @@
       "biomes": ["scarletia_crimson_forest"],
       "behavior": "roamer",
       "guard_range": 3,
-      "battlefield_scale": 1.0
+      "battlefield_scale": 1.0,
+      "abilities": {}
     },
     {
       "id": "boar_raven",
@@ -53,7 +55,8 @@
       "biomes": ["scarletia_echo_plain", "mountain"],
       "behavior": "roamer",
       "guard_range": 2,
-      "battlefield_scale": 1.0
+      "battlefield_scale": 1.0,
+      "abilities": {}
     },
     {
       "id": "hurlombe",
@@ -64,7 +67,8 @@
       "biomes": ["scarletia_crimson_forest", "mountain"],
       "behavior": "guardian",
       "guard_range": 2,
-      "battlefield_scale": 1.0
+      "battlefield_scale": 1.0,
+      "abilities": {}
     },
     {
       "id": "reef_serpent",
@@ -75,7 +79,8 @@
       "biomes": ["ocean"],
       "behavior": "roamer",
       "guard_range": 3,
-      "battlefield_scale": 1.75
+      "battlefield_scale": 1.75,
+      "abilities": {}
     }
   ]
 }

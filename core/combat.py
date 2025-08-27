@@ -20,6 +20,8 @@ import math
 from collections import deque
 from dataclasses import dataclass
 from typing import Callable, Deque, Dict, List, Optional, Tuple, Union
+import json
+from pathlib import Path
 
 import pygame
 import audio
@@ -66,15 +68,39 @@ UNIT_IMAGE_KEYS = {
 
 }
 
-# Mapping of unit types to their spells and mana costs
-UNIT_SPELLS: Dict[str, Dict[str, int]] = {
-    'Swordsman': {'Shield Block': 1},
-    'Archer': {'Focus': 1},
-    'Mage': {'Fireball': 1, 'Chain Lightning': 2, 'Ice Wall': 1},
-    'Priest': {'Heal': 1},
-    'Cavalry': {'Charge': 1},
-    'Dragon': {'Dragon Breath': 2},
-}
+def _load_unit_spells() -> Dict[str, Dict[str, int]]:
+    """Load unit spell definitions from JSON manifests.
+
+    Each entry in ``assets/units/units.json`` and ``assets/units/creatures.json``
+    may define an ``abilities`` mapping listing spells and their mana costs.  This
+    function aggregates those into a single mapping keyed by unit name.
+    """
+
+    spells: Dict[str, Dict[str, int]] = {}
+    base = Path(__file__).resolve().parent.parent / "assets" / "units"
+    manifests = [
+        (base / "units.json", "units", lambda n: n.replace("_", " ").title()),
+        (base / "creatures.json", "creatures", lambda n: n),
+    ]
+    for path, key, transform in manifests:
+        try:
+            with open(path, encoding="utf-8") as fh:
+                data = json.load(fh)
+        except Exception:
+            continue
+        for entry in data.get(key, []):
+            abilities = entry.get("abilities")
+            if not abilities:
+                continue
+            name = entry.get("name") or entry.get("id")
+            if not name:
+                continue
+            spells[transform(name)] = {k: int(v) for k, v in abilities.items()}
+    return spells
+
+
+# Mapping of unit types to their spells and mana costs loaded from manifests
+UNIT_SPELLS: Dict[str, Dict[str, int]] = _load_unit_spells()
 
 # Slot -> (x, y) coordinates for hero formations
 FORMATION_COORDS: Dict[str, List[Tuple[int, int]]] = {
