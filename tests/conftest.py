@@ -3,6 +3,7 @@ import os
 import sys
 import math
 import random
+import copy
 import pytest
 from types import SimpleNamespace
 
@@ -29,6 +30,7 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 import constants
+import settings
 from core.combat import Combat, water_battlefield_template
 from state.event_bus import EVENT_BUS
 from loaders.asset_manager import AssetManager
@@ -108,6 +110,15 @@ def _restore_ai_difficulty():
     saved = constants.AI_DIFFICULTY
     yield
     constants.AI_DIFFICULTY = saved
+
+
+@pytest.fixture(autouse=True)
+def _restore_keymap():
+    """Reset :data:`settings.KEYMAP` after each test."""
+
+    saved = copy.deepcopy(settings.KEYMAP)
+    yield
+    settings.KEYMAP = copy.deepcopy(saved)
 
 
 @pytest.fixture
