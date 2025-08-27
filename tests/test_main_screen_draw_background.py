@@ -90,7 +90,7 @@ def test_run_fills_background_before_world(monkeypatch):
 
     monkeypatch.setattr(pygame, "QUIT", 0, raising=False)
     monkeypatch.setattr(pygame.event, "get", lambda: [SimpleNamespace(type=0)])
-    monkeypatch.setattr(pygame.display, "update", lambda rects: None, raising=False)
+    monkeypatch.setattr(pygame.display, "flip", lambda: None, raising=False)
     monkeypatch.setattr(pygame, "quit", lambda: None, raising=False)
 
     game.run()

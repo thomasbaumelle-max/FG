@@ -1384,10 +1384,11 @@ class Game:
             # Advance queued movement then draw world
             self.update_movement()
             self.screen.fill(theme.PALETTE["background"])
-            dirty = [self.draw_world(self.anim_frame)]
-            # Overlay generic UI panels and collect their dirty rects
-            dirty.extend(self.main_screen.draw(self.screen))
-            pygame.display.update(dirty)
+            # Draw world and UI; update entire display to avoid residual
+            # artefacts from previous scenes (no dirty rect optimisation).
+            self.draw_world(self.anim_frame)
+            self.main_screen.draw(self.screen)
+            pygame.display.flip()
             dt = self.clock.tick(constants.FPS) / 1000.0
             self.main_screen.turn_bar.update(dt)
             self.anim_frame = (self.anim_frame + 1) % 60
@@ -3098,8 +3099,12 @@ class Game:
 
         overlay = TownOverlay(self.screen, self, towns)
         running = True
+        fast_tests = os.environ.get("FG_FAST_TESTS") == "1"
         while running:
-            for event in pygame.event.get():
+            events = pygame.event.get()
+            if not events and fast_tests:
+                break
+            for event in events:
                 result = overlay.handle_event(event)
                 if result is True:
                     running = False
