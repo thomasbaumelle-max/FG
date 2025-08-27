@@ -35,6 +35,8 @@ class HeroArmyPanel:
     GRID_ROWS = len(GRID_LAYOUT)
     GRID_COLS = max(cols + (offset + 1) // 2 for cols, offset in GRID_LAYOUT)
     GRID_CELLS = sum(cols for cols, _ in GRID_LAYOUT)
+    MAX_PORTRAIT = 96
+    MAX_CELL = 72
 
     FORMATION_BUTTON_HEIGHT = 20
     SPLIT_BUTTON_HEIGHT = 20
@@ -105,21 +107,45 @@ class HeroArmyPanel:
         """
 
         content_h = max(1, rect.height - self.FORMATION_BUTTON_HEIGHT - self.PADDING)
-        portrait_max_h = max(1, content_h - self.SPLIT_BUTTON_HEIGHT - self.PADDING)
+        portrait_max_h = min(
+            self.MAX_PORTRAIT, content_h - self.SPLIT_BUTTON_HEIGHT - self.PADDING
+        )
         grid_min_w = self.GRID_COLS * 1 + (self.GRID_COLS - 1) * self.PADDING
-        portrait_max_w = max(1, rect.width - grid_min_w - 2 * self.PADDING)
+        portrait_max_w = min(
+            self.MAX_PORTRAIT, rect.width - grid_min_w - 2 * self.PADDING
+        )
         portrait_size = max(1, min(portrait_max_h, portrait_max_w))
 
         avail_w = max(1, rect.width - portrait_size - 2 * self.PADDING)
         cell_w = max(
-            1, (avail_w - (self.GRID_COLS - 1) * self.PADDING) // self.GRID_COLS
+            1,
+            min(
+                (avail_w - (self.GRID_COLS - 1) * self.PADDING) // self.GRID_COLS,
+                self.MAX_CELL,
+            ),
         )
         cell_h = max(
-            1, (content_h - (self.GRID_ROWS - 1) * self.PADDING) // self.GRID_ROWS
+            1,
+            min(
+                (content_h - (self.GRID_ROWS - 1) * self.PADDING) // self.GRID_ROWS,
+                self.MAX_CELL,
+            ),
         )
         cell_size = max(1, min(cell_w, cell_h))
 
         grid_w = self.GRID_COLS * cell_size + (self.GRID_COLS - 1) * self.PADDING
+        if grid_w > avail_w:
+            portrait_size = max(1, rect.width - grid_w - 2 * self.PADDING)
+            avail_w = max(1, rect.width - portrait_size - 2 * self.PADDING)
+            cell_w = max(
+                1,
+                min(
+                    (avail_w - (self.GRID_COLS - 1) * self.PADDING) // self.GRID_COLS,
+                    self.MAX_CELL,
+                ),
+            )
+            cell_size = max(1, min(cell_w, cell_h))
+            grid_w = self.GRID_COLS * cell_size + (self.GRID_COLS - 1) * self.PADDING
         grid_h = self.GRID_ROWS * cell_size + (self.GRID_ROWS - 1) * self.PADDING
 
         gx = rect.x + portrait_size + self.PADDING + max(0, (avail_w - grid_w) // 2)
