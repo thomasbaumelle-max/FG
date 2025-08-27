@@ -9,7 +9,7 @@ from loaders.i18n import load_locale
 
 
 class SpellbookOverlay:
-    """Full-screen overlay displaying the hero's spell list."""
+    """Centered overlay displaying the hero's spell list."""
 
     BG = theme.PALETTE["background"]
     TEXT = theme.PALETTE["text"]
@@ -133,10 +133,14 @@ class SpellbookOverlay:
     # ------------------------------------------------------------------ drawing
     def draw(self) -> None:
         """Draw the overlay to the attached screen."""
-        w, h = self.screen.get_size()
+        screen_w, screen_h = self.screen.get_size()
+        w = int(screen_w * 0.6)
+        h = int(screen_h * 0.6)
         overlay = pygame.Surface((w, h), pygame.SRCALPHA)
         overlay.fill((*self.BG, 230))
         theme.draw_frame(overlay, overlay.get_rect())
+        offset_x = (screen_w - w) // 2
+        offset_y = (screen_h - h) // 2
 
         title = self.font.render(self.texts.get("Spellbook", "Spellbook"), True, self.TEXT)
         overlay.blit(title, ((w - title.get_width()) // 2, 10))
@@ -158,7 +162,7 @@ class SpellbookOverlay:
                 state = "highlight" if idx == self.current_cat else "normal"
                 theme.draw_frame(overlay, rect, state)
                 overlay.blit(label, (rect.x + 10, rect.y + 5))
-                self._tab_rects.append((rect, cat))
+                self._tab_rects.append((rect.move(offset_x, offset_y), cat))
                 x += rect.width + 5
 
         for name in self.spell_names[start:end]:
@@ -167,7 +171,7 @@ class SpellbookOverlay:
             overlay.blit(label, pos)
             lw, lh = label.get_size()
             rect = pygame.Rect(pos[0], pos[1], lw, lh)
-            self._label_rects.append((rect, name))
+            self._label_rects.append((rect.move(offset_x, offset_y), name))
             y += label.get_height() + 8
 
         if self.num_pages > 1:
@@ -178,7 +182,6 @@ class SpellbookOverlay:
             mx, my = pygame.mouse.get_pos()
             for rect, name in self._label_rects:
                 if rect.collidepoint((mx, my)):
-                    self._draw_tooltip(overlay, (mx, my), self._spell_tooltip(name))
+                    self._draw_tooltip(overlay, (mx - offset_x, my - offset_y), self._spell_tooltip(name))
                     break
-
-        self.screen.blit(overlay, (0, 0))
+        self.screen.blit(overlay, (offset_x, offset_y))
