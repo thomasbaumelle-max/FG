@@ -1,0 +1,10 @@
+{
+  "name": "medium battle",
+  "units": [
+    {"type": "Swordsman", "x": 1, "y": 1, "count": 10},
+    {"type": "Archer", "x": 3, "y": 3, "count": 8},
+    {"type": "Mage", "x": 4, "y": 4, "count": 2}
+  ],
+  "objectives": ["Defeat all enemies", "Secure the region"],
+  "scripts": []
+}

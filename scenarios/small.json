@@ -1,0 +1,9 @@
+{
+  "name": "small skirmish",
+  "units": [
+    {"type": "Swordsman", "x": 1, "y": 1, "count": 5},
+    {"type": "Archer", "x": 2, "y": 2, "count": 3}
+  ],
+  "objectives": ["Capture the outpost"],
+  "scripts": []
+}

@@ -3002,15 +3002,25 @@ class Game:
     # Journal & Hero screens
     # ------------------------------------------------------------------
 
-    def open_journal(self) -> None:
-        """Open the quest journal.
+    def open_journal(self, surface: "pygame.Surface" | None = None) -> None:
+        """Open the quest journal overlay.
 
-        The project does not yet provide a dedicated journal interface, so
-        the method simply notifies the user.  A full implementation can hook
-        into :class:`state.quests.QuestManager` to display active quests.
+        Parameters
+        ----------
+        surface:
+            Optional surface to render to.  When ``None`` the game's main
+            screen surface is used.  This allows the town screen to reuse the
+            same overlay implementation.
         """
 
-        self._notify("Journal not implemented")
+        try:  # pragma: no cover - allow running without package context
+            from .ui.quest_overlay import QuestOverlay
+        except ImportError:  # pragma: no cover
+            from ui.quest_overlay import QuestOverlay
+
+        surf = surface or self.screen
+        overlay = QuestOverlay(surf, self.quest_manager)
+        overlay.run()
 
     def open_skill_tree(self, tab: str = "skills") -> bool:
         """Convenience wrapper opening the hero screen on the skills tab."""

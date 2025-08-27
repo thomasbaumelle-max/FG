@@ -161,10 +161,6 @@ class TownScreen:
                 "army": [Unit(ARCHER_STATS, 10, "hero")],
             },
         ]
-        self.bounty_open = False
-        self.bounty_rect = pygame.Rect(0, 0, 420, 260)
-        self.bounty_cards: List[Tuple[str, pygame.Rect]] = []
-
         # Sélection des unités à envoyer en caravane
         self.send_queue: List[Unit] = []
 
@@ -268,8 +264,6 @@ class TownScreen:
             self._draw_castle_overlay()
         if self.tavern_open:
             self._draw_tavern_overlay()
-        if self.bounty_open:
-            self._draw_bounty_overlay()
 
         # tooltip detection for buildings when no overlay open
         if not self._overlay_active():
@@ -766,9 +760,6 @@ class TownScreen:
         if self.tavern_open:
             self._tavern_click(pos)
             return
-        if self.bounty_open:
-            self._bounty_click(pos)
-            return
 
     def _on_overlay_mouseup(self, pos: Tuple[int,int], button: int) -> None:
         pass
@@ -819,7 +810,6 @@ class TownScreen:
             or self.market_open
             or self.castle_open
             or self.tavern_open
-            or self.bounty_open
         )
 
     def _close_all_overlays(self) -> None:
@@ -827,7 +817,6 @@ class TownScreen:
         self.market_open = False
         self.castle_open = False
         self.tavern_open = False
-        self.bounty_open = False
 
     # ------------------------------------------------------------ Market overlay
     def _open_market_overlay(self) -> None:
@@ -956,37 +945,8 @@ class TownScreen:
 
     # ----------------------------------------------------------- Bounty overlay
     def _open_bounty_overlay(self) -> None:
-        self.bounty_open = True
-        W, H = self.screen.get_size()
-        self.bounty_rect.center = (W // 2, H // 2)
-
-    def _draw_bounty_overlay(self) -> None:
-        s = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
-        s.fill((0, 0, 0, 160))
-        self.screen.blit(s, (0, 0))
-        r = self.bounty_rect
-        pygame.draw.rect(self.screen, (40, 42, 50), r, border_radius=8)
-        pygame.draw.rect(self.screen, (110, 110, 120), r, 2, border_radius=8)
-        self.screen.blit(self.font_big.render("Quests", True, COLOR_TEXT), (r.x + 16, r.y + 12))
-        self.bounty_cards = []
-        y = r.y + 60
-        for q in self.game.quest_manager.get_available():
-            btn = pygame.Rect(r.x + 20, y, r.width - 40, 40)
-            pygame.draw.rect(self.screen, (60, 62, 72), btn, border_radius=4)
-            reward = q.reward.get("gold") or q.reward.get("artifact", "")
-            txt = f"{q.id} → {reward}"
-            self.screen.blit(self.font.render(txt, True, COLOR_TEXT), (btn.x + 8, btn.y + 8))
-            self.bounty_cards.append((q.id, btn))
-            y += 48
-
-    def _bounty_click(self, pos: Tuple[int,int]) -> None:
-        for qid, btn in self.bounty_cards:
-            if btn.collidepoint(pos):
-                self.game.quest_manager.accept(qid)
-                self.bounty_open = False
-                return
-        if not self.bounty_rect.collidepoint(pos):
-            self.bounty_open = False
+        # Reuse the game's quest overlay
+        self.game.open_journal(self.screen)
 
     # ----------------------------------------------------------- Castle overlay
     def _open_castle_overlay(self) -> None:

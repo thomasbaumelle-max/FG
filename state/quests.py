@@ -20,7 +20,13 @@ class Quest:
 class QuestManager:
     def __init__(self, game: "Game") -> None:
         self.game = game
-        path = os.path.join(os.path.dirname(__file__), "..", "events", "events.json")
+        path = os.path.join(
+            os.path.dirname(__file__),
+            "..",
+            "assets",
+            "quests",
+            "quests.json",
+        )
         try:
             with open(path, "r", encoding="utf-8") as fh:
                 data = json.load(fh)
@@ -37,12 +43,19 @@ class QuestManager:
             for entry in data
         ]
         self.active: List[Quest] = []
+        self.completed: List[Quest] = []
         EVENT_BUS.subscribe(ON_RESOURCES_CHANGED, self._on_resources_changed)
         EVENT_BUS.subscribe(ON_ENEMY_DEFEATED, self._on_enemy_defeated)
 
     # ------------------------------------------------------------------ helpers
     def get_available(self) -> List[Quest]:
         return list(self.available)
+
+    def get_active(self) -> List[Quest]:
+        return list(self.active)
+
+    def get_completed(self) -> List[Quest]:
+        return list(self.completed)
 
     def accept(self, quest_id: str) -> None:
         q = next((q for q in self.available if q.id == quest_id), None)
@@ -54,6 +67,14 @@ class QuestManager:
         # Immediately check in case conditions already met
         self._on_resources_changed(None)
 
+    def abandon(self, quest_id: str) -> None:
+        q = next((q for q in self.active if q.id == quest_id), None)
+        if not q:
+            return
+        self.active.remove(q)
+        self.available.append(q)
+        logger.info("Quest abandoned: %s", q.id)
+
     def _give_reward(self, quest: Quest) -> None:
         hero = self.game.hero
         reward = quest.reward
@@ -64,6 +85,7 @@ class QuestManager:
         if artifact:
             hero.inventory.append(artifact)
         logger.info("Quest completed: %s", quest.id)
+        self.completed.append(quest)
 
     # ------------------------------------------------------------------ events
     def _on_resources_changed(self, _res: Any) -> None:
