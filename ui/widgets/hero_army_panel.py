@@ -30,8 +30,7 @@ class _DragState:
 class HeroArmyPanel:
     """Display a portrait and a grid for the hero's army."""
 
-    PORTRAIT_SIZE = 72
-    CELL_SIZE = 48
+    PORTRAIT_SIZE = 72  # default size for placeholder surfaces
     PADDING = 4
     # (columns, half-cell offset)
     GRID_LAYOUT = [(4, 0), (3, 1)]
@@ -40,6 +39,7 @@ class HeroArmyPanel:
     GRID_CELLS = sum(cols for cols, _ in GRID_LAYOUT)
 
     FORMATION_BUTTON_HEIGHT = 20
+    SPLIT_BUTTON_HEIGHT = 20
     FORMATIONS = [
         ("relâchée", "relachee"),
         ("serrée", "serree"),
@@ -109,22 +109,41 @@ class HeroArmyPanel:
             pygame.draw.rect(surf, theme.FRAME_COLOURS["normal"], surf.get_rect(), theme.FRAME_WIDTH)
         return surf
 
+    # ------------------------------------------------------------------
+    def _layout(self, rect: pygame.Rect) -> Tuple[int, int, int, int]:
+        """Compute sizes and positions for dynamic layout.
+
+        Returns ``(cell_size, portrait_size, grid_x, grid_y)`` where
+        ``grid_x``/``grid_y`` is the top-left corner of the unit grid.
+        """
+
+        content_h = rect.height - self.FORMATION_BUTTON_HEIGHT - self.PADDING
+        portrait_size = max(32, content_h - self.SPLIT_BUTTON_HEIGHT - self.PADDING)
+
+        avail_w = rect.width - portrait_size - 2 * self.PADDING
+        cell_w = (
+            avail_w - (self.GRID_COLS - 1) * self.PADDING
+        ) // self.GRID_COLS
+        cell_h = (
+            content_h - (self.GRID_ROWS - 1) * self.PADDING
+        ) // self.GRID_ROWS
+        cell_size = max(1, min(cell_w, cell_h))
+
+        grid_w = self.GRID_COLS * cell_size + (self.GRID_COLS - 1) * self.PADDING
+        grid_h = self.GRID_ROWS * cell_size + (self.GRID_ROWS - 1) * self.PADDING
+
+        gx = rect.x + portrait_size + self.PADDING + (avail_w - grid_w) // 2
+        gy = rect.y + (content_h - grid_h) // 2
+        return cell_size, portrait_size, gx, gy
+
     def _portrait_rect(self, rect: pygame.Rect) -> pygame.Rect:
-        return pygame.Rect(rect.x, rect.y, self.PORTRAIT_SIZE, self.PORTRAIT_SIZE)
+        _, portrait, _, gy = self._layout(rect)
+        return pygame.Rect(rect.x, gy, portrait, portrait)
 
     def _grid_origin(self, rect: pygame.Rect) -> Tuple[int, int]:
         """Top-left corner of the army grid within ``rect``."""
-        max_cols = max(
-            cols + (offset + 1) // 2 for cols, offset in self.GRID_LAYOUT
-        )
-        rows = len(self.GRID_LAYOUT)
-        grid_w = max_cols * self.CELL_SIZE + (max_cols - 1) * self.PADDING
-        grid_h = rows * self.CELL_SIZE + (rows - 1) * self.PADDING
-        left = rect.x + self.PORTRAIT_SIZE + self.PADDING
-        avail_w = rect.x + rect.width - left
-        x = left + (avail_w - grid_w) // 2
-        y = rect.y + (rect.height - grid_h) // 2
-        return x, y
+        _, _, gx, gy = self._layout(rect)
+        return gx, gy
     
     def _point_in_rect(self, pos: Tuple[int, int], r: pygame.Rect) -> bool:
         x, y = pos
@@ -133,9 +152,10 @@ class HeroArmyPanel:
 
     def _formation_rects(self, rect: pygame.Rect) -> List[pygame.Rect]:
         """Return rectangles for the formation selection buttons."""
-        width = rect.width - self.PORTRAIT_SIZE - 2 * self.PADDING
+        _, portrait, _, _ = self._layout(rect)
+        width = rect.width - portrait - 2 * self.PADDING
         btn_w = (width - 2 * self.PADDING) // 3
-        x = rect.x + self.PORTRAIT_SIZE + self.PADDING
+        x = rect.x + portrait + self.PADDING
         y = rect.y + rect.height - self.FORMATION_BUTTON_HEIGHT - self.PADDING
         rects = []
         for i in range(3):
@@ -152,18 +172,18 @@ class HeroArmyPanel:
     def _split_button_rect(self, rect: pygame.Rect) -> pygame.Rect:
         """Rectangle of the split stack button below the portrait."""
         p = self._portrait_rect(rect)
-        return pygame.Rect(p.x, p.bottom + self.PADDING, p.width, 20)
+        return pygame.Rect(p.x, p.bottom + self.PADDING, p.width, self.SPLIT_BUTTON_HEIGHT)
 
 
     def _cell_rect(self, index: int, rect: pygame.Rect) -> pygame.Rect:
-        gx, gy = self._grid_origin(rect)
+        cell, _, gx, gy = self._layout(rect)
         idx = index
         for row, (cols, offset) in enumerate(self.GRID_LAYOUT):
             if idx < cols:
-                x = gx + offset * (self.CELL_SIZE + self.PADDING) // 2
-                x += idx * (self.CELL_SIZE + self.PADDING)
-                y = gy + row * (self.CELL_SIZE + self.PADDING)
-                return pygame.Rect(x, y, self.CELL_SIZE, self.CELL_SIZE)
+                x = gx + offset * (cell + self.PADDING) // 2
+                x += idx * (cell + self.PADDING)
+                y = gy + row * (cell + self.PADDING)
+                return pygame.Rect(x, y, cell, cell)
             idx -= cols
         raise IndexError("cell index out of range")
 
@@ -257,7 +277,13 @@ class HeroArmyPanel:
     def draw(self, surface: pygame.Surface, rect: pygame.Rect) -> None:
         # portrait + nom (nom à l'intérieur)
         p_rect = self._portrait_rect(rect)
-        surface.blit(self.portrait, p_rect)
+        portrait = self.portrait
+        try:
+            if portrait.get_size() != p_rect.size:
+                portrait = pygame.transform.smoothscale(portrait, p_rect.size)
+        except Exception:
+            pass
+        surface.blit(portrait, p_rect)
         if self.font and self.hero:
             name = getattr(self.hero, "name", "Hero")
             name_s = self.font.render(name, True, theme.PALETTE["text"])
