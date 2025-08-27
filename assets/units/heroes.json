@@ -49,8 +49,8 @@
         {"branch":"weaponsmithing","rank":"A","id":"weaponsmithing_A"}
       ],
     "known_spells": ["sand_screen"],
-    "PortraitSprite": "hero/red_knights/lady_aurianne.png",
-    "OverWorldSprite": "hero/red_knights/lady_aurianne.png",
+    "PortraitSprite": "hero/red_knights/draxen.png",
+    "OverWorldSprite": "hero/red_knights/draxen.png",
     "BattlefieldSprite": "hero/bf_default.png",
     "battlefield_scale": 1.0,
     "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
@@ -73,8 +73,8 @@
       {"branch":"Song of the Wind","rank":"N","id":"Zephyr Step"}
     ],
     "known_spells": ["sand_screen"],
-    "PortraitSprite": "hero/red_knights/lady_aurianne.png",
-    "OverWorldSprite": "hero/red_knights/lady_aurianne.png",
+    "PortraitSprite": "hero/sylvan_haven/lirael.png",
+    "OverWorldSprite": "hero/sylvan_haven/lirael.png",
     "BattlefieldSprite": "hero/bf_default.png",
     "battlefield_scale": 1.0,
     "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
@@ -97,8 +97,8 @@
       {"branch":"Verdant Grace","rank":"N","id":"Dew Mend"}
     ],
     "known_spells": ["sand_screen"],
-    "PortraitSprite": "hero/red_knights/lady_aurianne.png",
-    "OverWorldSprite": "hero/red_knights/lady_aurianne.png",
+    "PortraitSprite": "hero/sylvan_haven/thorne.png",
+    "OverWorldSprite": "hero/sylvan_haven/thorne.png",
     "BattlefieldSprite": "hero/bf_default.png",
     "battlefield_scale": 1.0,
     "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
@@ -121,8 +121,8 @@
       {"branch":"desert_way","rank":"N","id":"dune_march"}
     ],
     "known_spells": ["bless", "minor_heal", "cleanse", "sunburst"],
-    "PortraitSprite": "hero/red_knights/lady_aurianne.png",
-    "OverWorldSprite": "hero/red_knights/lady_aurianne.png",
+    "PortraitSprite": "hero/solaceheim/Aurelion.png",
+    "OverWorldSprite": "hero/solaceheim/Aurelion.png",
     "BattlefieldSprite": "hero/bf_default.png",
     "battlefield_scale": 1.0,
     "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
@@ -146,8 +146,8 @@
       {"branch":"sutra_guard","rank":"N","id":"mantra_ward"}
     ],
     "known_spells": ["sand_screen"],
-    "PortraitSprite": "hero/red_knights/lady_aurianne.png",
-    "OverWorldSprite": "hero/red_knights/lady_aurianne.png",
+    "PortraitSprite": "hero/solaceheim/Serk'Ath.png",
+    "OverWorldSprite": "hero/solaceheim/Serk'Ath.png",
     "BattlefieldSprite": "hero/bf_default.png",
     "battlefield_scale": 1.0,
     "icon": {"image": "units/hero.png", "anchor": [0, 0], "scale": 64}
