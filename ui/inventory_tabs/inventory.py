@@ -80,8 +80,17 @@ def draw(screen: "InventoryScreen") -> None:
     start = screen.inventory_offset
     screen.item_rects = []
     gx = screen.center_rect.x + 12
-    gy = screen.center_rect.y + 120
-    cell = (screen.center_rect.width - 24) // 4
+    top_offset = 120
+    # Each cell is bounded by both available width and height and capped at 64px
+    btn_w, btn_h = 32, 24
+    avail_w = screen.center_rect.width - 24
+    avail_h = screen.center_rect.height - top_offset
+    max_cell_w = avail_w // 4
+    max_cell_h = max((avail_h - btn_h - 10) // 4, 1)
+    cell = min(max_cell_w, max_cell_h, 64)
+    grid_h = cell * 4
+    # Center the grid vertically within the available space
+    gy = screen.center_rect.y + top_offset + (avail_h - (grid_h + btn_h + 10)) // 2
     screen.inventory_grid_origin = (gx, gy)
     screen.inventory_cell_size = cell
     for row in range(4):
@@ -111,7 +120,6 @@ def draw(screen: "InventoryScreen") -> None:
                 screen.item_rects.append((None, rect))
 
     # Pagination buttons
-    btn_w, btn_h = 32, 24
     btn_y = gy + 4 * cell + 10
     prev_rect = pygame.Rect(gx, btn_y, btn_w, btn_h)
     next_rect = pygame.Rect(gx + 4 * cell - btn_w, btn_y, btn_w, btn_h)
