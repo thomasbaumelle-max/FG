@@ -16,11 +16,15 @@ class FactionDef:
 
     id: str
     name: str
+    color: str = ""
+    description: str = ""
+    type: str = ""
     doctrine: Dict[str, int] = field(default_factory=dict)
     favored_spells: List[str] = field(default_factory=list)
     unit_tags: Dict[str, List[str]] = field(default_factory=dict)
     unique_buildings: List[str] = field(default_factory=list)
     army_synergies: List[Dict[str, object]] = field(default_factory=list)
+    heroes: List[Dict[str, str]] = field(default_factory=list)
 
 
 __all__ = ["FactionDef"]

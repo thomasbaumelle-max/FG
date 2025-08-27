@@ -1,127 +1,98 @@
-{
-  "id": "red_knights",
-  "color": "#B4202A",
-  "name": "Red Knights",
-  "description": "Faction Humaine et alliée des dragonsé. Ordre, soutien, protection.",
-  "type" : "Unirace",
-  "doctrine": {"morale": 1, "luck": -1},
-  "favored_spells": ["fire", "light"],
-  "unit_tags": {
-    "Spearman" : ["human","infantry","support"],
-    "Swordsman": ["human","infantry","melee"],
-    "Archer": ["human","ranged"],
-    "Mage": ["human","dps","magic"],
-    "Cavalry": ["human","dps","melee"],
-    "Priest": ["human","support"],
-    "GrandMaster" : ["human","infantry","melee"],
-    "Dragon": ["dragon"]
-  },
-  "unique_buildings": ["buildings/banner_hall.json","barracks","archery_range","mage_guild","stables","dragon_lair"],
-  "army_synergies": [
-    {"tag": "human", "min": 3, "morale": 1},
-    {"tag": "undead", "min": 1, "morale": -1}
-  ],
-  "heroes": [
+[
   {
-    "id": "scarletia_aurianne",
-    "name": "Lady Aurianne",
+    "id": "red_knights",
+    "color": "#B4202A",
+    "name": "Red Knights",
+    "description": "Faction Humaine et alliée des dragonsé. Ordre, soutien, protection.",
+    "type": "Unirace",
+    "doctrine": {"morale": 1, "luck": -1},
+    "favored_spells": ["fire", "light"],
+    "unit_tags": {
+      "Spearman": ["human", "infantry", "support"],
+      "Swordsman": ["human", "infantry", "melee"],
+      "Archer": ["human", "ranged"],
+      "Mage": ["human", "dps", "magic"],
+      "Cavalry": ["human", "dps", "melee"],
+      "Priest": ["human", "support"],
+      "GrandMaster": ["human", "infantry", "melee"],
+      "Dragon": ["dragon"]
+    },
+    "unique_buildings": ["buildings/banner_hall.json"],
+    "army_synergies": [
+      {"tag": "human", "min": 3, "morale": 1},
+      {"tag": "undead", "min": 1, "morale": -1}
+    ],
+    "heroes": [
+      {"id": "scarletia_aurianne", "name": "Lady Aurianne"},
+      {"id": "scarletia_draxen", "name": "Draxen the Cinderblade"}
+    ]
   },
-    {
-    "id": "scarletia_draxen",
-    "name": "Draxen the Cinderblade",
-    }
-  ]
-},
-
-{
-  "id": "sylvan",
-  "color": "#95c218",
-  "name": "The Sylvans",
-  "description": "Faction de Créature variées alliées pour protéger la Terre du Monde",
-  "type" : "Multirace",
-  "doctrine": {
-    "morale_bonus": 1,
-    "forest_move_pct": 10,
-    "harsh_terrain_penalty_pct": 10,
-    "fire_res_penalty_pct": 10,
-    "first_round_initiative_bonus_on_forest": 1
-  },
-  "favored_magic": ["life","water","air"],
-  "unit_tags": {
-    "Moss Sprite" : ["fae","infantry"],
-    "Liana Panther": ["beast"],
-    "Cascade Serpent": ["beast"],
-    "Dew Phoenix": ["spirit"],
-    "Garden Warden": ["plant"],
-    "Mist Nymph": ["spirit"],
-    "Harmonia" : ["human","infantry","melee"],
-    "Mist Dragon": ["dragon"]
-  },
-  "unique_buildings": ["grove_of_lirael", "hanging_aeries", "liana_pens", 
-"cascade_terraces", "warden_hall", "spire_of_mists", "amphitheater_of_winds"],
-  "army_synergies": [
-    {"tag": "human", "min": 3, "morale": 1},
-    {"tag": "undead", "min": 1, "morale": -1}
-  ],
-  "heroes": [
   {
-    "id": "sylvan_lirael",
-    "name": "Lirael"
+    "id": "sylvan",
+    "color": "#95c218",
+    "name": "The Sylvans",
+    "description": "Faction de Créature variées alliées pour protéger la Terre du Monde",
+    "type": "Multirace",
+    "doctrine": {
+      "morale_bonus": 1,
+      "forest_move_pct": 10,
+      "harsh_terrain_penalty_pct": 10,
+      "fire_res_penalty_pct": 10,
+      "first_round_initiative_bonus_on_forest": 1
+    },
+    "favored_spells": ["life", "water", "air"],
+    "unit_tags": {
+      "Moss Sprite": ["fae", "infantry"],
+      "Liana Panther": ["beast"],
+      "Cascade Serpent": ["beast"],
+      "Dew Phoenix": ["spirit"],
+      "Garden Warden": ["plant"],
+      "Mist Nymph": ["spirit"],
+      "Harmonia": ["human", "infantry", "melee"],
+      "Mist Dragon": ["dragon"]
+    },
+    "unique_buildings": ["buildings/buildings_sylvan.json"],
+    "army_synergies": [
+      {"tag": "human", "min": 3, "morale": 1},
+      {"tag": "undead", "min": 1, "morale": -1}
+    ],
+    "heroes": [
+      {"id": "sylvan_lirael", "name": "Lirael"},
+      {"id": "sylvan_thorne", "name": "Thorne of the Umbra Grove"}
+    ]
   },
-    {
-    "id": "sylvan_thorne",
-    "name": "Thorne of the Umbra Grove"
-    }
-  ]
-},
-
-{
-  "id": "solaceheim",
-  "color": "#efed0b",
-  "name": "Disciples du Soleil Doré",
-  "description": "Faction ascétique du désert doré. Discipline, chants sacrés, protection et lumière.",
-  "type" : "Doctrine/Geo",
-  "doctrine": {
-    "morale": 1,
-    "initiative_synergy": 1,
-    "desert_advantage": true
-  },
-  "favored_magic": ["light", "order"],
-  "unit_tags": {
-    "Disciple Initie": ["sacred","infantry","support","hybrid"],
-    "Ascete Cloche": ["sacred","infantry","support","magic"],
-    "Aigle Choeur": ["sacred","flying","beast"],
-    "Gardien Sutras": ["construct","tank","sacred"],
-    "Guerrier Ascete": ["sacred","infantry","melee"],
-    "Chimere Ascese": ["sacred","beast","hybrid"],
-    "Serpent Cantique": ["sacred","beast","magic"],
-    "Avatar Soleil": ["sacred","champion","magic"],
-  },
-  "unique_buildings": [    "sanctuary_of_the_sun",
-    "cloister_of_resonance",
-    "celestial_aeries",
-    "sutra_guardhouse",
-    "hall_of_ascetics",
-    "sanctum_of_the_veil",
-    "choir_of_singing_dunes",
-    "spire_of_solar_apotheosis",
-    "terrace_of_discipline",
-    "voice_of_the_dunes",
-    "colossus_of_sutras"],
-  "army_synergies": [
-    {"tag": "sacred", "min": 3, "morale": 1},
-    {"tag": "construct", "min": 1, "defence_magic": 1},
-    {"when": "desert_biome_combat", "initiative_round1": 1},
-    {"tag": "undead", "min": 1, "morale": -1}
-  ],
-  "heroes": [
   {
-    "id": "Aurelion",
-    "name": "Hiérophante Aurelion"
-  },
-    {
-    "id": "Serkath",
-    "name": "Ser’kath, le Parangon Scorpion",
-    }
-  ]
-}
+    "id": "solaceheim",
+    "color": "#efed0b",
+    "name": "Disciples du Soleil Doré",
+    "description": "Faction ascétique du désert doré. Discipline, chants sacrés, protection et lumière.",
+    "type": "Doctrine/Geo",
+    "doctrine": {
+      "morale": 1,
+      "initiative_synergy": 1,
+      "desert_advantage": true
+    },
+    "favored_spells": ["light", "order"],
+    "unit_tags": {
+      "Disciple Initie": ["sacred", "infantry", "support", "hybrid"],
+      "Ascete Cloche": ["sacred", "infantry", "support", "magic"],
+      "Aigle Choeur": ["sacred", "flying", "beast"],
+      "Gardien Sutras": ["construct", "tank", "sacred"],
+      "Guerrier Ascete": ["sacred", "infantry", "melee"],
+      "Chimere Ascese": ["sacred", "beast", "hybrid"],
+      "Serpent Cantique": ["sacred", "beast", "magic"],
+      "Avatar Soleil": ["sacred", "champion", "magic"]
+    },
+    "unique_buildings": ["buildings/buildings_solaceheim.json"],
+    "army_synergies": [
+      {"tag": "sacred", "min": 3, "morale": 1},
+      {"tag": "construct", "min": 1, "defence_magic": 1},
+      {"when": "desert_biome_combat", "initiative_round1": 1},
+      {"tag": "undead", "min": 1, "morale": -1}
+    ],
+    "heroes": [
+      {"id": "Aurelion", "name": "Hiérophante Aurelion"},
+      {"id": "Serkath", "name": "Ser’kath, le Parangon Scorpion"}
+    ]
+  }
+]

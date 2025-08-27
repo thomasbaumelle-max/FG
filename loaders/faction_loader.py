@@ -2,46 +2,47 @@
 
 from __future__ import annotations
 
-import os
-from typing import Dict
+from typing import Dict, List
 
 from .core import Context, read_json
 from core.faction import FactionDef
-from . import building_loader
+from core.buildings import register_faction_buildings
 
 
-def load_factions(ctx: Context, directory: str = "factions") -> Dict[str, FactionDef]:
-    """Load all faction definitions found in ``directory``.
+def load_factions(ctx: Context, manifest: str = "factions/factions.json") -> Dict[str, FactionDef]:
+    """Load faction definitions from ``manifest``.
 
-    Each JSON file in the directory represents a single :class:`FactionDef`.
-    Unique buildings declared by factions are registered with the global
-    building catalogue via :func:`building_loader.register_buildings`.
+    ``manifest`` should be a JSON array describing factions. ``unique_buildings``
+    entries are interpreted as building manifest paths and registered via
+    :func:`core.buildings.register_faction_buildings`.
     """
 
     factions: Dict[str, FactionDef] = {}
-    base = os.path.join(ctx.repo_root, "assets", directory)
-    if not os.path.isdir(base):
+    try:
+        entries: List[Dict[str, object]] = read_json(ctx, manifest)
+    except Exception:
         return factions
-    for fname in os.listdir(base):
-        if not fname.endswith(".json"):
-            continue
-        rel_path = os.path.join(directory, fname)
-        try:
-            data = read_json(ctx, rel_path)
-        except Exception:
-            continue
+
+    for data in entries:
         fdef = FactionDef(
             id=data["id"],
             name=data.get("name", data["id"].replace("_", " ").title()),
+            color=data.get("color", ""),
+            description=data.get("description", ""),
+            type=data.get("type", ""),
             doctrine=dict(data.get("doctrine", {})),
-            favored_spells=list(data.get("favored_spells", [])),
+            favored_spells=list(
+                data.get("favored_spells", data.get("favored_magic", []))
+            ),
             unit_tags={k: list(v) for k, v in data.get("unit_tags", {}).items()},
             unique_buildings=list(data.get("unique_buildings", [])),
             army_synergies=list(data.get("army_synergies", [])),
+            heroes=[dict(h) for h in data.get("heroes", [])],
         )
         factions[fdef.id] = fdef
-        for manifest in fdef.unique_buildings:
-            building_loader.register_buildings(ctx, manifest)
+        if fdef.unique_buildings:
+            register_faction_buildings(ctx, fdef.unique_buildings)
+
     return factions
 
 
