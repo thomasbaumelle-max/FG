@@ -28,11 +28,22 @@ def draw(screen: "InventoryScreen") -> None:
 
     cols = max(1, len(screen.SKILL_TABS))
     rows = 4
-    gy = screen.center_rect.y + 74
+    label_h = screen.font.render("X", True, COLOR_TEXT).get_height()
+    gy = screen.center_rect.y + 74 + label_h + 8
     available_h = screen.center_rect.bottom - 40 - gy
     cell = min(100, available_h // rows)
     grid_w = cols * cell
     gx = screen.center_rect.x + (screen.center_rect.width - grid_w) // 2
+
+    for i, name in enumerate(screen.SKILL_TABS):
+        label = screen.font.render(name, True, COLOR_TEXT)
+        screen.screen.blit(
+            label,
+            (
+                gx + i * cell + (cell - label.get_width()) // 2,
+                gy - label_h - 4,
+            ),
+        )
 
     def node_center(nid: str) -> Tuple[int, int]:
         branch = screen.skill_branch_of[nid]
@@ -95,14 +106,14 @@ def skill_tooltip(
     screen: "InventoryScreen", node: SkillNode
 ) -> List[Tuple[str, Tuple[int, int, int]]]:
     """Return tooltip lines for a skill node."""
+    tree = screen.skill_branch_of.get(node.id, "")
     lines: List[Tuple[str, Tuple[int, int, int]]] = [
-        (node.name, COLOR_TEXT),
+        (f"{node.name} ({tree})", COLOR_TEXT),
         (node.desc, COLOR_TEXT),
         (f"Cost: {node.cost}", COLOR_TEXT),
     ]
     if node.requires:
         lines.append((f"Requires: {', '.join(node.requires)}", COLOR_TEXT))
-    tree = screen.skill_branch_of.get(node.id, "")
     learned = screen.hero.learned_skills.get(tree, set())
     if node.id in learned:
         lines.append(("Learned", COLOR_OK))
