@@ -16,3 +16,13 @@ make lf
 ```
 
 Cela déclenche `pytest --lf`.
+
+Avant de valider vos modifications, exécutez également :
+
+```
+make precommit-test
+```
+
+Cette commande lance une suite de tests rapide
+(`pytest --maxfail=1 -q -m "not slow and not worldgen and not combat and not serial"`)
+utilisée par le hook pre-commit pour détecter les régressions.
