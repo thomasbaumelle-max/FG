@@ -1,53 +1,81 @@
-[
-  {
-    "id": "fumet_lizard",
-    "image": "units/scarletia/fumet_lizard_0.png",
-    "anchor_px": [384, 580],
-    "shadow_baked": false,
-    "biomes": ["scarletia_volcanic"],
-    "behavior": "roamer",
-    "guard_range": 3,
-    "battlefield_scale": 1.0
+{
+  "templates": {
+    "lizard": {
+      "stats": {"attack": 4, "defense": 3, "hp": 18, "speed": 5},
+      "palette": ["#556B2F", "#8FBC8F", "#2E8B57"]
+    },
+    "wolf": {
+      "stats": {"attack": 5, "defense": 3, "hp": 20, "speed": 6},
+      "palette": ["#696969", "#A9A9A9", "#000000"]
+    },
+    "boar": {
+      "stats": {"attack": 6, "defense": 4, "hp": 28, "speed": 5},
+      "palette": ["#8B4513", "#A0522D", "#3E2723"]
+    },
+    "hurlombe": {
+      "stats": {"attack": 7, "defense": 6, "hp": 35, "speed": 4},
+      "palette": ["#2F4F4F", "#708090", "#000000"]
+    },
+    "serpent": {
+      "stats": {"attack": 9, "defense": 8, "hp": 50, "speed": 7},
+      "palette": ["#1E90FF", "#00CED1", "#F0FFFF"]
+    }
   },
-  {
-    "id": "shadowleaf_wolf",
-    "image": "units/scarletia/shadowleaf_wolf_0.png",
-    "anchor_px": [384, 590],
-    "shadow_baked": false,
-    "biomes": ["scarletia_crimson_forest"],
-    "behavior": "roamer",
-    "guard_range": 3,
-    "battlefield_scale": 1.0
-  },
-  {
-    "id": "boar_raven",
-    "image": "units/scarletia/boar_raven_0.png",
-    "anchor_px": [384, 610],
-    "shadow_baked": false,
-    "biomes": ["scarletia_echo_plain", "mountain"],
-    "behavior": "roamer",
-    "guard_range": 2,
-    "battlefield_scale": 1.0
-  },
-  {
-    "id": "hurlombe",
-    "image": "units/scarletia/hurlombe_0.png",
-    "anchor_px": [384, 600],
-    "shadow_baked": false,
-    "biomes": ["scarletia_crimson_forest", "mountain"],
-    "behavior": "guardian",
-    "guard_range": 2,
-    "battlefield_scale": 1.0
-  },
-  {
-    "id": "reef_serpent",
-    "image": "units/scarletia/reef_serpent_0.png",
-    "anchor_px": [384, 600],
-    "shadow_baked": false,
-    "biomes": ["ocean"],
-    "behavior": "roamer",
-    "guard_range": 3,
-    "battlefield_scale": 1.75
-  }
-]
-
+  "creatures": [
+    {
+      "id": "fumet_lizard",
+      "template": "lizard",
+      "image": "units/scarletia/fumet_lizard_0.png",
+      "anchor_px": [384, 580],
+      "shadow_baked": false,
+      "biomes": ["scarletia_volcanic"],
+      "behavior": "roamer",
+      "guard_range": 3,
+      "battlefield_scale": 1.0
+    },
+    {
+      "id": "shadowleaf_wolf",
+      "template": "wolf",
+      "image": "units/scarletia/shadowleaf_wolf_0.png",
+      "anchor_px": [384, 590],
+      "shadow_baked": false,
+      "biomes": ["scarletia_crimson_forest"],
+      "behavior": "roamer",
+      "guard_range": 3,
+      "battlefield_scale": 1.0
+    },
+    {
+      "id": "boar_raven",
+      "template": "boar",
+      "image": "units/scarletia/boar_raven_0.png",
+      "anchor_px": [384, 610],
+      "shadow_baked": false,
+      "biomes": ["scarletia_echo_plain", "mountain"],
+      "behavior": "roamer",
+      "guard_range": 2,
+      "battlefield_scale": 1.0
+    },
+    {
+      "id": "hurlombe",
+      "template": "hurlombe",
+      "image": "units/scarletia/hurlombe_0.png",
+      "anchor_px": [384, 600],
+      "shadow_baked": false,
+      "biomes": ["scarletia_crimson_forest", "mountain"],
+      "behavior": "guardian",
+      "guard_range": 2,
+      "battlefield_scale": 1.0
+    },
+    {
+      "id": "reef_serpent",
+      "template": "serpent",
+      "image": "units/scarletia/reef_serpent_0.png",
+      "anchor_px": [384, 600],
+      "shadow_baked": false,
+      "biomes": ["ocean"],
+      "behavior": "roamer",
+      "guard_range": 3,
+      "battlefield_scale": 1.75
+    }
+  ]
+}

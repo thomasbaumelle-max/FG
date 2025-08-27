@@ -1,9 +1,78 @@
-[
-  {"id": "swordsman", "image": "units/swordsman.png", "anchor_px": [32, 64], "shadow_baked": true, "battlefield_scale": 1.0},
-  {"id": "archer", "image": "units/archer.png", "anchor_px": [32, 64], "shadow_baked": true, "battlefield_scale": 1.0},
-  {"id": "mage", "image": "units/mage.png", "anchor_px": [32, 64], "shadow_baked": true, "battlefield_scale": 1.0},
-  {"id": "dragon", "image": "units/dragon.png", "anchor_px": [32, 64], "shadow_baked": true, "battlefield_scale": 1.75},
-  {"id": "priest", "image": "units/priest.png", "anchor_px": [32, 64], "shadow_baked": true, "battlefield_scale": 1.0},
-  {"id": "cavalry", "image": "units/cavalry.png", "anchor_px": [32, 64], "shadow_baked": true, "battlefield_scale": 1.3}
-]
-
+{
+  "templates": {
+    "infantry": {
+      "stats": {"attack": 7, "defense": 5, "hp": 30, "speed": 5},
+      "palette": ["#C0C0C0", "#5A5A5A", "#FFFFFF"]
+    },
+    "ranged": {
+      "stats": {"attack": 6, "defense": 3, "hp": 20, "speed": 6},
+      "palette": ["#708090", "#228B22", "#FFFFFF"]
+    },
+    "mage": {
+      "stats": {"attack": 8, "defense": 2, "hp": 18, "speed": 5},
+      "palette": ["#4B0082", "#FFFFFF", "#FFD700"]
+    },
+    "dragon": {
+      "stats": {"attack": 20, "defense": 20, "hp": 200, "speed": 10},
+      "palette": ["#8B0000", "#FFA500", "#FFD700"]
+    },
+    "priest": {
+      "stats": {"attack": 5, "defense": 4, "hp": 25, "speed": 5},
+      "palette": ["#FFFFE0", "#FFD700", "#FFFFFF"]
+    },
+    "cavalry": {
+      "stats": {"attack": 9, "defense": 7, "hp": 40, "speed": 8},
+      "palette": ["#8B4513", "#C0C0C0", "#FFFFFF"]
+    }
+  },
+  "units": [
+    {
+      "id": "swordsman",
+      "template": "infantry",
+      "image": "units/swordsman.png",
+      "anchor_px": [32, 64],
+      "shadow_baked": true,
+      "battlefield_scale": 1.0
+    },
+    {
+      "id": "archer",
+      "template": "ranged",
+      "image": "units/archer.png",
+      "anchor_px": [32, 64],
+      "shadow_baked": true,
+      "battlefield_scale": 1.0
+    },
+    {
+      "id": "mage",
+      "template": "mage",
+      "image": "units/mage.png",
+      "anchor_px": [32, 64],
+      "shadow_baked": true,
+      "battlefield_scale": 1.0
+    },
+    {
+      "id": "dragon",
+      "template": "dragon",
+      "image": "units/dragon.png",
+      "anchor_px": [32, 64],
+      "shadow_baked": true,
+      "battlefield_scale": 1.75
+    },
+    {
+      "id": "priest",
+      "template": "priest",
+      "image": "units/priest.png",
+      "anchor_px": [32, 64],
+      "shadow_baked": true,
+      "battlefield_scale": 1.0
+    },
+    {
+      "id": "cavalry",
+      "template": "cavalry",
+      "image": "units/cavalry.png",
+      "anchor_px": [32, 64],
+      "shadow_baked": true,
+      "battlefield_scale": 1.3
+    }
+  ]
+}
