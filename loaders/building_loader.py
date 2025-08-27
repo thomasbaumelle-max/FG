@@ -109,6 +109,14 @@ def load_buildings(
         else:
             footprint = [tuple(p) for p in fp]
         files = expand_variants(entry)
+        # Skip entries that do not reference any image files.  ``expand_variants``
+        # returns an empty list when neither ``path`` nor ``files`` is provided,
+        # which means this definition cannot be rendered on the world map and
+        # would otherwise cause downstream code to crash when trying to access
+        # the first file in the list.
+        if not files:
+            continue
+
         a = BuildingAsset(
             id=entry["id"],
             provides=entry.get("provides"),
