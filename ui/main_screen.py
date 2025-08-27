@@ -137,7 +137,12 @@ class MainScreen:
         profile = getattr(self.game, "default_profile_path", None)
         if cb and path:
             if os.path.exists(path):
-                cb(path, profile)
+                try:
+                    cb(path, profile)
+                except Exception as exc:  # pragma: no cover - defensive
+                    EVENT_BUS.publish(
+                        ON_INFO_MESSAGE, f"Failed to load save: {exc}"
+                    )
             else:
                 EVENT_BUS.publish(ON_INFO_MESSAGE, f"Save file not found: {path}")
 
