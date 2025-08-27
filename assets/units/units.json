@@ -32,7 +32,8 @@
       "image": "units/swordsman.png",
       "anchor_px": [32, 64],
       "shadow_baked": true,
-      "battlefield_scale": 1.0
+      "battlefield_scale": 1.0,
+      "abilities": {"Shield Block": 1}
     },
     {
       "id": "archer",
@@ -40,7 +41,8 @@
       "image": "units/archer.png",
       "anchor_px": [32, 64],
       "shadow_baked": true,
-      "battlefield_scale": 1.0
+      "battlefield_scale": 1.0,
+      "abilities": {"Focus": 1}
     },
     {
       "id": "mage",
@@ -48,7 +50,8 @@
       "image": "units/mage.png",
       "anchor_px": [32, 64],
       "shadow_baked": true,
-      "battlefield_scale": 1.0
+      "battlefield_scale": 1.0,
+      "abilities": {"Fireball": 1, "Chain Lightning": 2, "Ice Wall": 1}
     },
     {
       "id": "dragon",
@@ -56,7 +59,8 @@
       "image": "units/dragon.png",
       "anchor_px": [32, 64],
       "shadow_baked": true,
-      "battlefield_scale": 1.75
+      "battlefield_scale": 1.75,
+      "abilities": {"Dragon Breath": 2}
     },
     {
       "id": "priest",
@@ -64,7 +68,8 @@
       "image": "units/priest.png",
       "anchor_px": [32, 64],
       "shadow_baked": true,
-      "battlefield_scale": 1.0
+      "battlefield_scale": 1.0,
+      "abilities": {"Heal": 1}
     },
     {
       "id": "cavalry",
@@ -72,7 +77,8 @@
       "image": "units/cavalry.png",
       "anchor_px": [32, 64],
       "shadow_baked": true,
-      "battlefield_scale": 1.3
+      "battlefield_scale": 1.3,
+      "abilities": {"Charge": 1}
     }
   ]
 }

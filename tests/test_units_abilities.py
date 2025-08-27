@@ -14,6 +14,7 @@ from core.entities import (
 )
 from core import combat_ai
 import constants
+from core import combat
 
 
 def test_unit_stats_have_abilities():
@@ -21,6 +22,10 @@ def test_unit_stats_have_abilities():
     assert 'flying' in DRAGON_STATS.abilities
     assert 'multi_shot' in DRAGON_STATS.abilities
     assert 'passive_heal' in PRIEST_STATS.abilities
+
+
+def test_unit_spells_loaded_from_manifest():
+    assert combat.UNIT_SPELLS.get(SWORDSMAN_STATS.name, {}).get('Shield Block') == 1
 
 
 def test_multi_shot_double_damage(simple_combat):
