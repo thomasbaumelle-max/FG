@@ -29,9 +29,19 @@ MOUSEMOTION = getattr(pygame, "MOUSEMOTION", 3)
 
 PARCHMENT = (245, 222, 179)
 
+FILTER_LABELS: Dict[str, str] = {
+    "resources": "Resources",
+    "boats": "Boats",
+    "towns": "Towns",
+    "buildings": "Buildings",
+    "treasures": "Treasures",
+}
+
 
 class Minimap:
     """Render and interact with a small overview map."""
+
+    _instances: List["Minimap"] = []
 
     def __init__(
         self,
@@ -52,11 +62,27 @@ class Minimap:
         # Coordinates of towns for faction colouring
         self.city_points: List[Tuple[int, int]] = []
         self.city_colours: List[Tuple[int, int, int]] = []
-        # Icons for points of interest: (surface, x, y)
-        self.poi_icons: List[Tuple[pygame.Surface, int, int]] = []
+        # Icons for points of interest: (surface, x, y, category)
+        self.poi_icons: List[Tuple[pygame.Surface, int, int, str]] = []
         self.fog_rects: List[pygame.Rect] = []
         self.fog: Optional[List[List[bool]]] = None
         self._dragging = False
+
+        # Filter menu state
+        self.filters: Dict[str, bool] = {
+            "towns": True,
+            "resources": True,
+            "boats": True,
+            "buildings": True,
+            "treasures": True,
+        }
+        self.show_menu = False
+        self.menu_rect: Optional[pygame.Rect] = None
+        self.menu_checkboxes: Dict[str, pygame.Rect] = {}
+        try:
+            self._menu_font = pygame.font.Font(None, 14)
+        except Exception:  # pragma: no cover - pygame stub without font
+            self._menu_font = None
 
         # icon manifest and cache
         self._icon_manifest: Dict[str, str] = {}
@@ -84,6 +110,7 @@ class Minimap:
             (bx, by) for bx in range(self._cols) for by in range(self._rows)
         }
         self.generate()
+        Minimap._instances.append(self)
 
     # ------------------------------------------------------------------
     def _load_icon_manifest(self) -> None:
@@ -163,25 +190,25 @@ class Minimap:
                     self.city_colours.append(colour)
                     icon = self._get_icon("poi_dwelling")
                     if icon:
-                        self.poi_icons.append((icon, cx, cy))
+                        self.poi_icons.append((icon, cx, cy, "towns"))
                 else:
                     if tile.building:
                         key = f"poi_{tile.building.id}"
                         icon = self._get_icon(key)
                         if icon:
-                            self.poi_icons.append((icon, cx, cy))
+                            self.poi_icons.append((icon, cx, cy, "buildings"))
                     if tile.treasure:
                         icon = self._get_icon("poi_treasure_chest")
                         if icon:
-                            self.poi_icons.append((icon, cx, cy))
+                            self.poi_icons.append((icon, cx, cy, "treasures"))
                     if tile.resource:
                         icon = self._get_icon(f"resource_{tile.resource}")
                         if icon:
-                            self.poi_icons.append((icon, cx, cy))
+                            self.poi_icons.append((icon, cx, cy, "resources"))
                     if tile.boat:
                         icon = self._get_icon("poi_boat")
                         if icon:
-                            self.poi_icons.append((icon, cx, cy))
+                            self.poi_icons.append((icon, cx, cy, "boats"))
 
         surf = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
         surf.fill(constants.BLACK)
@@ -236,6 +263,12 @@ class Minimap:
             (bx, by) for bx in range(self._cols) for by in range(self._rows)
         )
 
+    @classmethod
+    def invalidate_all(cls) -> None:
+        """Invalidate all existing minimap instances."""
+        for inst in cls._instances:
+            inst.invalidate()
+
     # ------------------------------------------------------------------
     def invalidate_region(self, x0: int, y0: int, x1: int, y1: int) -> None:
         """Invalidate a region of world tiles.
@@ -288,17 +321,35 @@ class Minimap:
         self.renderer.center_on((tx, ty))
 
     def handle_event(self, evt: object, rect: pygame.Rect) -> None:
-        """Handle mouse interaction for recentering the camera."""
-        if getattr(evt, "type", None) == MOUSEBUTTONDOWN and getattr(evt, "button", 0) == 1:
+        """Handle mouse interaction for recentering the camera and filters."""
+        etype = getattr(evt, "type", None)
+        button = getattr(evt, "button", 0)
+        if etype == MOUSEBUTTONDOWN:
+            if button == 3:
+                if rect.collidepoint(evt.pos):
+                    self.show_menu = not self.show_menu
+                else:
+                    self.show_menu = False
+                return
+            if self.show_menu and button == 1:
+                if self.menu_rect and self.menu_rect.collidepoint(evt.pos):
+                    for key, box in self.menu_checkboxes.items():
+                        if box.collidepoint(evt.pos):
+                            self.filters[key] = not self.filters[key]
+                            return
+                else:
+                    self.show_menu = False
+                    return
+            if button == 1 and not self.show_menu:
+                x, y = evt.pos
+                if rect.x <= x < rect.x + rect.width and rect.y <= y < rect.y + rect.height:
+                    self._dragging = True
+                    self._center_at(evt.pos, rect)
+        elif etype == MOUSEMOTION and self._dragging and not self.show_menu:
             x, y = evt.pos
             if rect.x <= x < rect.x + rect.width and rect.y <= y < rect.y + rect.height:
-                self._dragging = True
                 self._center_at(evt.pos, rect)
-        elif getattr(evt, "type", None) == MOUSEMOTION and self._dragging:
-            x, y = evt.pos
-            if rect.x <= x < rect.x + rect.width and rect.y <= y < rect.y + rect.height:
-                self._center_at(evt.pos, rect)
-        elif getattr(evt, "type", None) == MOUSEBUTTONUP and getattr(evt, "button", 0) == 1:
+        elif etype == MOUSEBUTTONUP and button == 1:
             self._dragging = False
 
     # ------------------------------------------------------------------
@@ -323,13 +374,20 @@ class Minimap:
                 scaled = pygame.transform.scale(self.surface, rect.size)
             except Exception:  # pragma: no cover
                 scaled = self.surface
-        dest.blit(scaled, rect)
+        try:
+            sub = dest.subsurface(rect)
+            blit_back = False
+        except Exception:
+            sub = pygame.Surface(rect.size, pygame.SRCALPHA)
+            blit_back = True
+        sub.blit(scaled, (0, 0))
 
         scale_x = rect.width / self.size
         scale_y = rect.height / self.size
-        # Scale POI icons so they remain proportional to the minimap
         icon_size = max(4, rect.width // 16)
-        for icon, cx, cy in self.poi_icons:
+        for icon, cx, cy, category in self.poi_icons:
+            if not self.filters.get(category, True):
+                continue
             try:
                 scaled_icon = pygame.transform.smoothscale(icon, (icon_size, icon_size))
             except Exception:  # pragma: no cover - pygame stub without transform
@@ -337,23 +395,27 @@ class Minimap:
                     scaled_icon = pygame.transform.scale(icon, (icon_size, icon_size))
                 except Exception:  # pragma: no cover
                     scaled_icon = icon
-            sx = rect.x + int(cx * scale_x) - icon_size // 2
-            sy = rect.y + int(cy * scale_y) - icon_size // 2
-            dest.blit(scaled_icon, (sx, sy))
+            sx = int(cx * scale_x) - icon_size // 2
+            sy = int(cy * scale_y) - icon_size // 2
+            sub.blit(scaled_icon, (sx, sy))
 
-        for (cx, cy), colour in zip(self.city_points, self.city_colours):
-            sx = rect.x + int(cx * scale_x)
-            sy = rect.y + int(cy * scale_y)
-            pygame.draw.circle(dest, colour, (sx, sy), 3)
+        if self.filters.get("towns", True):
+            for (cx, cy), colour in zip(self.city_points, self.city_colours):
+                sx = int(cx * scale_x)
+                sy = int(cy * scale_y)
+                pygame.draw.circle(sub, colour, (sx, sy), 3)
 
         for fog_rect in self.fog_rects:
             r = pygame.Rect(
-                rect.x + int(fog_rect.x * scale_x),
-                rect.y + int(fog_rect.y * scale_y),
+                int(fog_rect.x * scale_x),
+                int(fog_rect.y * scale_y),
                 int(fog_rect.width * scale_x),
                 int(fog_rect.height * scale_y),
             )
-            dest.fill(constants.BLACK, r)
+            sub.fill(constants.BLACK, r)
+
+        if blit_back:
+            dest.blit(sub, rect)
 
         view = self.get_viewport_rect(rect)
         if view.x < rect.x:
@@ -410,4 +472,36 @@ class Minimap:
                 )
             if o:
                 dest.blit(o, (rect.x + 2, rect.centery - o.get_height() // 2))
+
+        self._draw_menu(dest, rect)
+
+    # ------------------------------------------------------------------
+    def _draw_menu(self, dest: pygame.Surface, rect: pygame.Rect) -> None:
+        if not self.show_menu:
+            return
+        w = 120
+        h = 20 * len(FILTER_LABELS) + 8
+        menu = pygame.Rect(rect.x + 4, rect.y + 4, w, h)
+        self.menu_rect = menu
+        pygame.draw.rect(dest, constants.DARK_GREY, menu)
+        inner = menu.inflate(-4, -4)
+        dest.fill(PARCHMENT, inner)
+        self.menu_checkboxes.clear()
+        if not self._menu_font:
+            return
+        x = inner.x + 4
+        y = inner.y + 2
+        for key, label in FILTER_LABELS.items():
+            box = pygame.Rect(x, y, 12, 12)
+            pygame.draw.rect(dest, constants.DARK_GREY, box, 1)
+            if self.filters.get(key, True):
+                pygame.draw.line(dest, constants.DARK_GREY, box.topleft, box.bottomright, 2)
+                pygame.draw.line(dest, constants.DARK_GREY, box.topright, box.bottomleft, 2)
+            if self._menu_font:
+                dest.blit(
+                    self._menu_font.render(label, True, constants.DARK_GREY),
+                    (box.right + 4, y - 2),
+                )
+            self.menu_checkboxes[key] = box
+            y += 20
 
