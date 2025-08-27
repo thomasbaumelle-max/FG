@@ -3307,8 +3307,11 @@ class Game:
             "initiative_bonus": unit.initiative_bonus,
         }
 
-    def _unit_from_dict(self, data: Dict[str, Any]) -> Unit:
-        stats = STATS_BY_NAME[data["name"]]
+    def _unit_from_dict(self, data: Dict[str, Any]) -> Optional[Unit]:
+        stats = STATS_BY_NAME.get(data["name"])
+        if not stats:
+            logger.warning("Unknown unit '%s' in save, skipping", data.get("name"))
+            return None
         unit = Unit(stats, data["count"], data.get("side", "hero"))
         unit.current_hp = data.get("current_hp", stats.max_hp)
         unit.attack_bonus = data.get("attack_bonus", 0)
@@ -3475,7 +3478,11 @@ class Game:
         hero.mana = hero_info.get("mana", 3)
         hero.ap = hero_info.get("ap", hero.max_ap)
         hero.max_ap = hero_info.get("max_ap", hero.max_ap)
-        hero.army = [self._unit_from_dict(u) for u in hero_info.get("army", [])]
+        hero.army = [
+            unit
+            for unit in (self._unit_from_dict(u) for u in hero_info.get("army", []))
+            if unit
+        ]
         hero.inventory = [
             self._item_from_dict(u) for u in hero_info.get("inventory", [])
         ]
@@ -3516,7 +3523,15 @@ class Game:
                         treasure["exp"] = tuple(exp)
                 tile.treasure = treasure
                 enemies = tile_data.get("enemy_units")
-                tile.enemy_units = [self._unit_from_dict(u) for u in enemies] if enemies else None
+                tile.enemy_units = (
+                    [
+                        unit
+                        for unit in (self._unit_from_dict(u) for u in enemies)
+                        if unit
+                    ]
+                    if enemies
+                    else None
+                )
                 building_info = tile_data.get("building")
                 if building_info:
                     bid = building_info.get("id")
@@ -3544,7 +3559,9 @@ class Game:
                         garrison_info = building_info.get("garrison")
                         if garrison_info:
                             building.garrison = [
-                                self._unit_from_dict(u) for u in garrison_info
+                                unit
+                                for unit in (self._unit_from_dict(u) for u in garrison_info)
+                                if unit
                             ]
                         tile.building = building
         flora_infos = world_info.get("flora_props", [])
@@ -3588,12 +3605,26 @@ class Game:
         self.objectives = data.get("objectives", [])
         self.world.player_armies = []
         for info in data.get("player_armies", []):
-            units = [self._unit_from_dict(u) for u in info.get("units", [])]
-            army = Army(info["x"], info["y"], units, ap=info.get("ap", 0), max_ap=info.get("max_ap", 0))
+            units = [
+                unit
+                for unit in (self._unit_from_dict(u) for u in info.get("units", []))
+                if unit
+            ]
+            army = Army(
+                info["x"],
+                info["y"],
+                units,
+                ap=info.get("ap", 0),
+                max_ap=info.get("max_ap", 0),
+            )
             self.world.player_armies.append(army)
         self.enemy_heroes = []
         for info in data.get("enemy_heroes", []):
-            army = [self._unit_from_dict(u) for u in info.get("army", [])]
+            army = [
+                unit
+                for unit in (self._unit_from_dict(u) for u in info.get("army", []))
+                if unit
+            ]
             self.enemy_heroes.append(EnemyHero(info["x"], info["y"], army))
         self.event_queue = data.get("event_queue", [])
         st = data.get("starting_town")
