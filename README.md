@@ -53,6 +53,19 @@ formatting and test utilities:
 pip install -e .[dev]
 ```
 
+## Building with PyInstaller
+
+The repository includes a `fantaisie.spec` file that bundles the entire
+`assets/` directory. Install **PyInstaller** and run the spec to create a
+standalone build:
+
+```bash
+pip install pyinstaller
+pyinstaller fantaisie.spec
+```
+
+The resulting executable and bundled assets are placed in `dist/fantaisie/`.
+
 ## Getting Started
 
 1. Make sure the `assets` folder contains the expected manifest files and
