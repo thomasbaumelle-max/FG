@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Dict, Mapping, Any
 
 import pygame
+import constants
 
 from loaders.town_scene_loader import TownScene
 
@@ -39,7 +40,7 @@ class TownSceneRenderer:
                     states[state] = img
             self._building_imgs[building.id] = states
 
-    def draw(self, surface: pygame.Surface, states: Mapping[str, str]) -> None:
+    def draw(self, surface: pygame.Surface, states: Mapping[str, str], debug: bool = False) -> None:
         """Render the scene to ``surface``.
 
         Parameters
@@ -68,6 +69,12 @@ class TownSceneRenderer:
 
             if img is not None:
                 surface.blit(img, building.pos)
+                if debug and getattr(building, "hotspot", None):
+                    hs = building.hotspot
+                    if len(hs) >= 4:
+                        x1, y1, x2, y2 = hs[0], hs[1], hs[2], hs[3]
+                        rect = pygame.Rect(x1, y1, x2 - x1, y2 - y1)
+                        pygame.draw.rect(surface, constants.MAGENTA, rect, 1)
 
 
 __all__ = ["TownSceneRenderer"]

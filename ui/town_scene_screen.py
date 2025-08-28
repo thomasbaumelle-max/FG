@@ -42,7 +42,7 @@ class TownSceneScreen:
         # Placeholder action: override in subclass for real behaviour
         return False
 
-    def run(self) -> None:
+    def run(self, debug: bool = False) -> None:
         if not (self.renderer.scene.layers or self.renderer.scene.buildings):
             return
         running = True
@@ -65,7 +65,7 @@ class TownSceneScreen:
                             if self.on_building_click(building):
                                 running = False
                             break
-            self.renderer.draw(self.screen, {})
+            self.renderer.draw(self.screen, {}, debug=debug)
             pygame.display.flip()
             self.clock.tick(getattr(constants, "FPS", 60))
 
