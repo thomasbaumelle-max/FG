@@ -2,9 +2,20 @@
 
 from __future__ import annotations
 
-from typing import Tuple, Optional
+from collections import OrderedDict
+from typing import Optional, Tuple
+import weakref
 
 import pygame
+
+
+# Small LRU cache for scaled surfaces.  Keys are ``(id(surface), size, smooth)``
+# and values store a weak reference to the original surface along with the
+# scaled copy.  The weak references automatically remove stale entries when the
+# source surface is garbage-collected.  A tiny ``maxsize`` keeps memory usage
+# predictable while still caching common scaling operations.
+_SCALE_CACHE: OrderedDict[tuple, tuple] = OrderedDict()
+_SCALE_CACHE_MAX = 16
 
 
 def scale_surface(surface: pygame.Surface, size: Tuple[int, int], smooth: bool = False) -> pygame.Surface:
@@ -24,9 +35,31 @@ def scale_surface(surface: pygame.Surface, size: Tuple[int, int], smooth: bool =
     """
     if not hasattr(pygame, "transform"):
         return surface
+
+    key = (id(surface), size, smooth)
+    cached = _SCALE_CACHE.get(key)
+    if cached is not None:
+        surf_ref, scaled = cached
+        if surf_ref() is surface:
+            _SCALE_CACHE.move_to_end(key)
+            return scaled
+        # Surface was replaced or collected; drop stale entry
+        _SCALE_CACHE.pop(key, None)
+
     if smooth:
-        return pygame.transform.smoothscale(surface, size)
-    return pygame.transform.scale(surface, size)
+        scaled = pygame.transform.smoothscale(surface, size)
+    else:
+        scaled = pygame.transform.scale(surface, size)
+
+    def _remove(_ref, *, _key=key):
+        _SCALE_CACHE.pop(_key, None)
+
+    _SCALE_CACHE[key] = (weakref.ref(surface, _remove), scaled)
+    _SCALE_CACHE.move_to_end(key)
+    if len(_SCALE_CACHE) > _SCALE_CACHE_MAX:
+        _SCALE_CACHE.popitem(last=False)
+
+    return scaled
 
 
 def scale_with_anchor(
