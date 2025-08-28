@@ -232,7 +232,9 @@ file in the project root. Setting `FG_DEBUG_BUILDINGS=1` (or adding
 `"debug_buildings": true` to `settings.json`) draws debug markers for building
 positions in the world renderer. Additional entries such as
 `animation_speed`, `tooltip_read_mode` and `keymap` allow tuning animation
-speed, enabling a reader-friendly tooltip mode and remapping controls.
+speed, enabling a reader-friendly tooltip mode and remapping controls. The
+world renderer's biome caching can be tuned with `biome_chunk_tiles` (tiles per
+chunk) and `biome_cache_size` (maximum cached chunks).
 
 ## Roadmap and Ideas
 

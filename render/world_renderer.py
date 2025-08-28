@@ -21,9 +21,8 @@ from graphics.scale import scale_surface
 
 logger = logging.getLogger(__name__)
 
-# Number of tiles per cached biome chunk
-BIOME_CHUNK_TILES = 32
-BIOME_CACHE_SIZE = 64
+# Number of tiles per cached biome chunk and cache size are configurable
+# via :mod:`settings`.
 
 
 class WorldRenderer:
@@ -88,7 +87,7 @@ class WorldRenderer:
             self._pending_chunks.add((cx, cy))
         world = self.world
         tile_size = constants.TILE_SIZE
-        chunk = BIOME_CHUNK_TILES
+        chunk = settings.BIOME_CHUNK_TILES
         start_x = cx * chunk
         start_y = cy * chunk
         chunk_w = min(chunk, world.width - start_x)
@@ -116,7 +115,7 @@ class WorldRenderer:
             self._pending_chunks.discard((cx, cy))
             self._biome_chunks[(cx, cy)] = surf
             self._biome_chunks.move_to_end((cx, cy))
-            if len(self._biome_chunks) > BIOME_CACHE_SIZE:
+            if len(self._biome_chunks) > settings.BIOME_CACHE_SIZE:
                 self._biome_chunks.popitem(last=False)
 
     def _generate_biome_chunks(self) -> None:
@@ -135,7 +134,7 @@ class WorldRenderer:
                 break
         # Queue up all biome chunks for background generation so the
         # renderer has them ready when needed.
-        chunk = BIOME_CHUNK_TILES
+        chunk = settings.BIOME_CHUNK_TILES
         world = self.world
         chunks_x = math.ceil(world.width / chunk)
         chunks_y = math.ceil(world.height / chunk)
@@ -147,8 +146,8 @@ class WorldRenderer:
         """Invalidate the cached chunk containing tile ``(x, y)``."""
         if not self.world:
             return
-        cx = x // BIOME_CHUNK_TILES
-        cy = y // BIOME_CHUNK_TILES
+        cx = x // settings.BIOME_CHUNK_TILES
+        cy = y // settings.BIOME_CHUNK_TILES
         with self._biome_lock:
             self._biome_chunks.pop((cx, cy), None)
             self._prefetch_set.discard((cx, cy))
@@ -187,7 +186,7 @@ class WorldRenderer:
     ) -> None:
         if not self.world:
             return
-        chunk = BIOME_CHUNK_TILES
+        chunk = settings.BIOME_CHUNK_TILES
         world = self.world
         chunks_x = math.ceil(world.width / chunk)
         chunks_y = math.ceil(world.height / chunk)
@@ -345,7 +344,7 @@ class WorldRenderer:
             return (x1, y1, x2 - x1, y2 - y1)
 
         # Biome layer via cached chunks
-        chunk = BIOME_CHUNK_TILES
+        chunk = settings.BIOME_CHUNK_TILES
         chunk_start_x = start_x // chunk
         chunk_end_x = math.ceil(end_x / chunk)
         chunk_start_y = start_y // chunk
