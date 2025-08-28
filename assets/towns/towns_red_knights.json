@@ -1,0 +1,26 @@
+{
+  "size": [1920, 1080],
+  "layers": [
+    {"id": "background", "image": "towns/red_knights/background.png"},
+    {"id": "midground", "image": "towns/red_knights/midground.png"},
+    {"id": "foreground", "image": "towns/red_knights/foreground.png"}
+  ],
+  "buildings": [
+    {
+      "id": "town_hall",
+      "layer": "midground",
+      "pos": [640, 480],
+      "states": {"default": "towns/red_knights/buildings/town_hall.png"},
+      "hotspot": [630, 470, 680, 520],
+      "tooltip": "Town Hall"
+    },
+    {
+      "id": "blacksmith",
+      "layer": "midground",
+      "pos": [800, 500],
+      "states": {"default": "towns/red_knights/buildings/blacksmith.png"},
+      "hotspot": [790, 490, 840, 540],
+      "tooltip": "Blacksmith"
+    }
+  ]
+}
