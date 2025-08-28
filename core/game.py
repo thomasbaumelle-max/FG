@@ -812,15 +812,21 @@ class Game:
             self.load_additional_assets(list(images))
 
         self.unit_shadow_baked = {}
-        for extras in (self.unit_extra, self.creature_extra):
+        for extras, stats_map in (
+            (self.unit_extra, self.unit_defs),
+            (self.creature_extra, self.creature_defs),
+        ):
             for uid, info in extras.items():
                 image = info.get("image")
                 anchor = info.get("anchor_px")
                 if not image:
                     continue
+                stats = stats_map.get(uid)
+                scale = getattr(stats, "battlefield_scale", 1.0) if stats else 1.0
+                target = int(constants.COMBAT_HEX_SIZE * scale)
                 surf, anchor = scale_with_anchor(
                     self.assets.get(image),
-                    (constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE),
+                    (target, target),
                     anchor_px=anchor,
                     smooth=True,
                 )
