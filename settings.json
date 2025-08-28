@@ -10,6 +10,8 @@
   "animation_speed": 1.0,
   "tooltip_read_mode": false,
   "super_user_mode": false,
+  "biome_chunk_tiles": 32,
+  "biome_cache_size": 64,
   "keymap": {
     "pan_left": ["K_LEFT", "K_a"],
     "pan_right": ["K_RIGHT", "K_d"],

@@ -82,6 +82,16 @@ VOLUME: float = _get_float("FG_VOLUME", "volume", 1.0)
 # Map scroll speed in pixels per key press
 SCROLL_SPEED: int = _get_int("FG_SCROLL_SPEED", "scroll_speed", 20)
 
+# Number of tiles per cached biome chunk in the world renderer
+BIOME_CHUNK_TILES: int = _get_int(
+    "FG_BIOME_CHUNK_TILES", "biome_chunk_tiles", 32
+)
+
+# Maximum number of biome chunks stored in the cache
+BIOME_CACHE_SIZE: int = _get_int(
+    "FG_BIOME_CACHE_SIZE", "biome_cache_size", 64
+)
+
 # Animation speed multiplier for game visuals
 ANIMATION_SPEED: float = _get_float(
     "FG_ANIMATION_SPEED", "animation_speed", 1.0
@@ -133,6 +143,8 @@ __all__ = [
     "LANGUAGE",
     "VOLUME",
     "SCROLL_SPEED",
+    "BIOME_CHUNK_TILES",
+    "BIOME_CACHE_SIZE",
     "ANIMATION_SPEED",
     "TOOLTIP_READ_MODE",
     "SUPER_USER_MODE",
