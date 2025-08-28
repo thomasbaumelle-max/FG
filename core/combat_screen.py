@@ -73,6 +73,8 @@ class CombatHUD:
             "water": "status_slow",
         }
 
+        self.hovered_button: Optional[IconButton] = None
+
     def _load_action_labels(self, language: str) -> Dict[str, str]:
         """Load translated action labels from ``assets/i18n/action_labels.json``."""
         default = "fr"
@@ -114,6 +116,26 @@ class CombatHUD:
         )
         return right, bottom
 
+    def _draw_tooltip(self, surface: pygame.Surface, text: str) -> None:
+        """Draw a simple tooltip near the mouse cursor."""
+
+        if not text:
+            return
+        font = self.small
+        tip = font.render(text, True, theme.PALETTE["text"])
+        w, h = tip.get_size()
+        mx, my = pygame.mouse.get_pos()
+        pad = 4
+        rect = pygame.Rect(mx + 16, my + 16, w + pad * 2, h + pad * 2)
+        sw, sh = surface.get_size()
+        if rect.right > sw:
+            rect.x = mx - rect.width - 16
+        if rect.bottom > sh:
+            rect.y = my - rect.height - 16
+        surface.fill(theme.PALETTE.get("panel", (32, 34, 40)), rect)
+        pygame.draw.rect(surface, LINE, rect, 1)
+        surface.blit(tip, (rect.x + pad, rect.y + pad))
+
     def draw(
         self, screen: pygame.Surface, combat
     ) -> Tuple[Dict[str, IconButton], Optional[IconButton]]:
@@ -124,6 +146,7 @@ class CombatHUD:
         grid_rect = pygame.Rect(combat.offset_x, combat.offset_y, grid_w, grid_h)
 
         right, bottom = self._panel_rects(screen, grid_rect, combat)
+        mouse_pos = getattr(getattr(pygame, "mouse", None), "get_pos", lambda: (0, 0))()
 
         # Backgrounds
         screen.fill(theme.PALETTE.get("panel", (32, 34, 40)), right)
@@ -224,6 +247,7 @@ class CombatHUD:
                         tooltip=f"{eff.name} ({eff.duration})",
                         enabled=False,
                     )
+                    btn.hovered = btn.collidepoint(mouse_pos)
                     btn.draw(screen)
                     if eff.duration:
                         txt = self.small.render(str(eff.duration), True, theme.PALETTE["text"])
@@ -268,6 +292,7 @@ class CombatHUD:
                 hotkey=self.hotkeys.get("action_auto_resolve"),
                 tooltip=self.texts.get("Auto resolve", "Auto resolve"),
             )
+            auto_resolve_btn.hovered = auto_resolve_btn.collidepoint(mouse_pos)
             auto_resolve_btn.draw(screen)
             action_buttons["auto_resolve"] = auto_resolve_btn
             y = auto_rect.bottom + 6
@@ -280,6 +305,7 @@ class CombatHUD:
                 hotkey=self.hotkeys.get("action_auto_combat"),
                 tooltip=self.texts.get("Auto combat", "Auto combat"),
             )
+            auto_button.hovered = auto_button.collidepoint(mouse_pos)
             auto_button.draw(screen)
             y = auto_combat_rect.bottom + 6
 
@@ -292,15 +318,17 @@ class CombatHUD:
                 tooltip=self.texts.get("Spellbook", "Spellbook"),
                 enabled=bool(combat.hero_spells),
             )
+            spell_btn.hovered = spell_btn.collidepoint(mouse_pos)
             spell_btn.draw(screen)
             action_buttons["spellbook"] = spell_btn
         # ---- Action bar (bottom) ----
         x = bottom.x + 8
 
-        def add_btn(icon_id: str, callback: Callable[[], None]) -> None:
+        def add_btn(icon_id: str, callback: Callable[[], None], enabled: bool) -> None:
             nonlocal x
-            size = bottom.height - 8
-            rect = pygame.Rect(x, bottom.y + 4, size, size)
+            size = bottom.height - 4
+            margin = (bottom.height - size) // 2
+            rect = pygame.Rect(x, bottom.y + margin, size, size)
             label_key = icon_id.replace("action_", "")
             tooltip = self.action_labels.get(
                 label_key, label_key.replace("_", " ").title()
@@ -311,7 +339,9 @@ class CombatHUD:
                 callback,
                 hotkey=self.hotkeys.get(icon_id),
                 tooltip=tooltip,
+                enabled=enabled,
             )
+            btn.hovered = btn.collidepoint(mouse_pos)
             btn.draw(screen)
             action_buttons[icon_id] = btn
             x = rect.x + rect.width + 6
@@ -333,26 +363,38 @@ class CombatHUD:
             "action_use_ability": combat.use_ability,
             "action_flee": combat.flee,
             "action_surrender": combat.surrender,
-            "action_auto_resolve": combat.auto_resolve,
             "action_next_unit": combat.select_next_unit,
         }
 
-        actions = combat.get_available_actions(current)
-        # Stable ordering for readability
-        wanted = ["move", "melee", "ranged", "spell", "wait"]
-        for a in wanted:
-            if a in actions:
-                icon = self.action_icon_keys.get(a, f"action_{a}")
-                add_btn(icon, callbacks[icon])
-
-        extras = [
+        actions_set = set(combat.get_available_actions(current))
+        ability_enabled = any(
+            current.mana >= cost
+            for cost in combat.UNIT_SPELLS.get(current.stats.name, {}).values()
+        )
+        enabled_map = {
+            "action_move": "move" in actions_set,
+            "action_attack": "melee" in actions_set,
+            "action_shoot": "ranged" in actions_set,
+            "action_cast": "spell" in actions_set,
+            "action_wait": "wait" in actions_set,
+            "action_use_ability": ability_enabled,
+            "action_flee": True,
+            "action_surrender": True,
+            "action_next_unit": True,
+        }
+        order = [
+            "action_move",
+            "action_attack",
+            "action_shoot",
+            "action_cast",
+            "action_wait",
             "action_use_ability",
             "action_flee",
             "action_surrender",
             "action_next_unit",
         ]
-        for icon in extras:
-            add_btn(icon, callbacks[icon])
+        for icon in order:
+            add_btn(icon, callbacks[icon], enabled_map[icon])
 
         # Spell submenu when "spell" is selected
         if combat.selected_action == "spell":
@@ -364,26 +406,28 @@ class CombatHUD:
             # Fold-out menu
             x2 = x
             for s in spells:
-                rect = pygame.Rect(x2, bottom.y + 4, 140, bottom.height - 8)
+                rect = pygame.Rect(x2, bottom.y + 2, 140, bottom.height - 4)
                 btn = IconButton(
                     rect,
                     "action_cast",
                     lambda s=s: combat.start_spell(caster, s),
                     tooltip=s,
                 )
+                btn.hovered = btn.collidepoint(mouse_pos)
                 btn.draw(screen)
                 txt = self.small.render(s, True, theme.PALETTE["text"])
                 screen.blit(txt, txt.get_rect(center=rect.center))
                 action_buttons[s] = btn
                 x2 = rect.x + rect.width + 4
             # Back button
-            rect = pygame.Rect(x2, bottom.y + 4, 70, bottom.height - 8)
+            rect = pygame.Rect(x2, bottom.y + 2, 70, bottom.height - 4)
             back_btn = IconButton(
                 rect,
                 "action_move",
                 lambda: setattr(combat, "selected_action", None),
                 tooltip=self.texts.get("Back", "Back"),
             )
+            back_btn.hovered = back_btn.collidepoint(mouse_pos)
             back_btn.draw(screen)
             txt = self.small.render(
                 self.texts.get("Back", "Back"),
@@ -392,5 +436,16 @@ class CombatHUD:
             )
             screen.blit(txt, txt.get_rect(center=rect.center))
             action_buttons["back"] = back_btn
+
+        hovered = None
+        for btn in action_buttons.values():
+            if btn.hovered:
+                hovered = btn
+                break
+        if auto_button and auto_button.hovered:
+            hovered = auto_button
+        self.hovered_button = hovered
+        if hovered:
+            self._draw_tooltip(screen, hovered.get_tooltip())
 
         return action_buttons, auto_button
