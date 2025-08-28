@@ -34,15 +34,62 @@ class Rect:
         self.y = y
         self.width = w
         self.height = h
-        self.bottom = y + h
+
+    @property
+    def left(self):
+        return self.x
+
+    @left.setter
+    def left(self, value):
+        self.x = value
+
+    @property
+    def top(self):
+        return self.y
+
+    @top.setter
+    def top(self, value):
+        self.y = value
+
+    @property
+    def right(self):
+        return self.x + self.width
+
+    @right.setter
+    def right(self, value):
+        self.x = value - self.width
+
+    @property
+    def bottom(self):
+        return self.y + self.height
+
+    @bottom.setter
+    def bottom(self, value):
+        self.y = value - self.height
+
+    @property
+    def centerx(self):
+        return self.x + self.width // 2
+
+    @centerx.setter
+    def centerx(self, value):
+        self.x = value - self.width // 2
+
+    @property
+    def centery(self):
+        return self.y + self.height // 2
+
+    @centery.setter
+    def centery(self, value):
+        self.y = value - self.height // 2
 
     @property
     def topleft(self):
-        return (self.x, self.y)
+        return (self.left, self.top)
 
     @property
     def center(self):
-        return (self.x + self.width // 2, self.y + self.height // 2)
+        return (self.centerx, self.centery)
 
     @property
     def size(self):
@@ -51,32 +98,30 @@ class Rect:
     @size.setter
     def size(self, value):
         self.width, self.height = value
-        self.bottom = self.y + self.height
 
     @property
     def midtop(self):
-        return (self.x + self.width // 2, self.y)
+        return (self.centerx, self.top)
 
     @midtop.setter
     def midtop(self, pos):
         cx, cy = pos
-        self.x = cx - self.width // 2
-        self.y = cy
-        self.bottom = self.y + self.height
+        self.centerx = cx
+        self.top = cy
 
     @property
     def midbottom(self):
-        return (self.x + self.width // 2, self.y + self.height)
+        return (self.centerx, self.bottom)
 
     @midbottom.setter
     def midbottom(self, pos):
         cx, cy = pos
-        self.x = cx - self.width // 2
-        self.y = cy - self.height
-        self.bottom = self.y + self.height
+        self.centerx = cx
+        self.bottom = cy
 
     def collidepoint(self, pos):
-        return False
+        x, y = pos
+        return self.left <= x < self.right and self.top <= y < self.bottom
 
     def move(self, dx, dy):
         return Rect(self.x + dx, self.y + dy, self.width, self.height)
@@ -138,6 +183,24 @@ class draw:
     @staticmethod
     def ellipse(surface, colour, rect, width=0):
         pass
+
+
+class transform:
+    @staticmethod
+    def scale(img, size):
+        return img
+
+    @staticmethod
+    def smoothscale(img, size):
+        return img
+
+    @staticmethod
+    def flip(img, xbool, ybool):
+        return img
+
+    @staticmethod
+    def rotate(img, angle):
+        return img
 
 
 class display:

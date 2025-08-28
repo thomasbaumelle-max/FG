@@ -404,13 +404,26 @@ class TownScreen:
             self._blit_wrapped(self.font_small, desc, (card.x + 10, desc_y), card.width - 20, COLOR_TEXT)
 
         if built:
+            units = self.town.recruitable_units(sid)
+            line_h = self.font_small.get_linesize()
+            y = card.bottom - 28 - line_h * (2 * len(units))
+            for uid in units:
+                growth = self.town.growth_per_week.get(uid, 0)
+                stock = self.town.stock.get(uid, 0)
+                grow_txt = f"{uid}: +{growth}/semaine"
+                self.screen.blit(
+                    self.font_small.render(grow_txt, True, COLOR_TEXT),
+                    (card.x + 10, y),
+                )
+                y += line_h
+                stock_txt = f"En stock : {stock}"
+                self.screen.blit(
+                    self.font_small.render(stock_txt, True, COLOR_TEXT),
+                    (card.x + 10, y),
+                )
+                y += line_h
             lab = self.font.render("Built", True, COLOR_OK)
             self.screen.blit(lab, (card.x + 10, card.bottom - 28))
-            units = self.town.recruitable_units(sid)
-            counts = self.town.available_units(sid)
-            if counts:
-                stock_txt = " / ".join(f"{k}:{v}" for k, v in counts.items())
-                self.screen.blit(self.font_small.render(stock_txt, True, COLOR_TEXT), (card.x + 10, card.bottom - 44))
             hint_text = None
             if sid == "market":
                 hint_text = "Click to trade"

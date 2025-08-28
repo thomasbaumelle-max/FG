@@ -27,6 +27,8 @@ def test_click_spell_opens_info(pygame_stub):
     pygame = pygame_stub(MOUSEBUTTONDOWN=1, KEYDOWN=2)
     pygame.Rect.collidepoint = lambda self, pos: self.x <= pos[0] < self.x + self.width and self.y <= pos[1] < self.y + self.height
     import importlib
+    import theme
+    importlib.reload(theme)
     import ui.spell_info_overlay as sio
     import ui.spellbook_overlay as sb
     importlib.reload(sio)
