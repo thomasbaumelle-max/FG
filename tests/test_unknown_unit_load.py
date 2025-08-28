@@ -6,8 +6,11 @@ pygame_stub = types.SimpleNamespace()
 sys.modules.setdefault("pygame", pygame_stub)
 
 from core.game import Game
-from core.entities import Hero, Unit, SWORDSMAN_STATS
+from core.entities import Hero, Unit
+from tests.unit_stats import get_unit_stats
 from core.world import WorldMap
+
+SWORDSMAN_STATS = get_unit_stats("Swordsman")
 
 
 def test_load_game_with_unknown_unit(tmp_path):

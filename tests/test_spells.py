@@ -5,16 +5,15 @@ os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
 import random
 from dataclasses import replace
 
-from core.entities import (
-    ARCHER_STATS,
-    CAVALRY_STATS,
-    DRAGON_STATS,
-    MAGE_STATS,
-    PRIEST_STATS,
-    SWORDSMAN_STATS,
-    Unit,
-    apply_defence,
-)
+from core.entities import Unit, apply_defence
+from tests.unit_stats import get_unit_stats
+
+ARCHER_STATS = get_unit_stats("Archer")
+CAVALRY_STATS = get_unit_stats("Cavalry")
+DRAGON_STATS = get_unit_stats("Dragon")
+MAGE_STATS = get_unit_stats("Mage")
+PRIEST_STATS = get_unit_stats("Priest")
+SWORDSMAN_STATS = get_unit_stats("Swordsman")
 
 
 def test_mage_action_panel_has_spell_not_ranged(simple_combat):

@@ -7,9 +7,12 @@ pygame_stub = types.SimpleNamespace()
 sys.modules.setdefault("pygame", pygame_stub)
 
 from core.world import WorldMap
-from core.entities import Hero, Unit, SWORDSMAN_STATS
+from core.entities import Hero, Unit
+from tests.unit_stats import get_unit_stats
 from core.buildings import create_building
 from core.game import Game
+
+SWORDSMAN_STATS = get_unit_stats("Swordsman")
 
 def test_place_resources_and_collect(rng, monkeypatch):
     monkeypatch.setattr("random.shuffle", rng.shuffle)

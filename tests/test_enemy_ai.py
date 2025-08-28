@@ -7,7 +7,10 @@ import pytest
 from core.world import WorldMap
 from core.game import Game
 from core.ai.faction_ai import FactionAI
-from core.entities import Hero, EnemyHero, Unit, SWORDSMAN_STATS
+from core.entities import Hero, EnemyHero, Unit
+from tests.unit_stats import get_unit_stats
+
+SWORDSMAN_STATS = get_unit_stats("Swordsman")
 from core.buildings import Town
 from state.game_state import GameState
 from core import economy

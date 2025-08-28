@@ -2,8 +2,11 @@ import pytest
 
 from core.world import WorldMap
 from core.ai.faction_ai import FactionAI
-from core.entities import EnemyHero, Unit, SWORDSMAN_STATS, Hero
+from core.entities import EnemyHero, Unit, Hero
+from tests.unit_stats import get_unit_stats
 from core.buildings import Town, Building
+
+SWORDSMAN_STATS = get_unit_stats("Swordsman")
 
 
 def _basic_world():
