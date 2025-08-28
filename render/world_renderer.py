@@ -309,8 +309,10 @@ class WorldRenderer:
         }
         vis_grid = world.visible.get(0)
         exp_grid = world.explored.get(0)
-        use_fog = bool(vis_grid and exp_grid)
-        fog_surface = pygame.Surface((dest_w, dest_h), pygame.SRCALPHA) if use_fog else None
+        use_fog = bool(vis_grid and exp_grid) and not settings.SUPER_USER_MODE
+        fog_surface = (
+            pygame.Surface((dest_w, dest_h), pygame.SRCALPHA) if use_fog else None
+        )
         tall_draw: List[Tuple[int, ...]] = []
 
         def grid_to_screen(x: int, y: int) -> Tuple[int, int]:

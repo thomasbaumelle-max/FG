@@ -22,6 +22,7 @@ import pygame
 import audio
 import constants
 import theme
+import settings
 from graphics.scale import scale_surface, scale_with_anchor
 from ui.inventory_screen import InventoryScreen
 from loaders.asset_manager import AssetManager
@@ -468,6 +469,17 @@ class Game:
             self._load_sea_chain()
         # Initialise vision for the starting player
         self._update_player_visibility()
+        if settings.SUPER_USER_MODE:
+            self.hero.gold = 1000
+            for name in constants.RESOURCES:
+                self.hero.resources[name] = 1000
+            self.hero.max_ap = self.hero.ap = 9999
+            self.world.reveal(
+                0,
+                self.hero.x,
+                self.hero.y,
+                radius=max(self.world.width, self.world.height),
+            )
         # Remember the player's starting town to detect loss later
         self.starting_town: Optional[Tuple[int, int]] = self.world.hero_town
         # Flag to avoid showing the game over screen multiple times
@@ -1449,6 +1461,24 @@ class Game:
                         self.hero.choose_skill('tactics')
                     elif event.key == pygame.K_4:
                         self.hero.choose_skill('logistics')
+                    elif (
+                        event.key == pygame.K_F12
+                        and event.mod & pygame.KMOD_CTRL
+                        and event.mod & pygame.KMOD_SHIFT
+                    ):
+                        settings.SUPER_USER_MODE = not settings.SUPER_USER_MODE
+                        if settings.SUPER_USER_MODE:
+                            self.hero.gold = 1000
+                            for name in constants.RESOURCES:
+                                self.hero.resources[name] = 1000
+                            self.hero.max_ap = self.hero.ap = 9999
+                            self.world.reveal(
+                                0,
+                                self.hero.x,
+                                self.hero.y,
+                                radius=max(self.world.width, self.world.height),
+                            )
+                        continue
                     elif event.key == pygame.K_F11:
                         pygame.display.toggle_fullscreen()
                         self.screen = pygame.display.get_surface()
