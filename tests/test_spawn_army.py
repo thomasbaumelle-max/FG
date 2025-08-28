@@ -24,7 +24,7 @@ def test_drag_from_garrison_creates_army(monkeypatch, pygame_stub):
     from core.world import WorldMap
     from core.entities import Hero, Unit
     from tests.unit_stats import get_unit_stats
-    SWORDSMAN_STATS = get_unit_stats("Swordsman")
+    SWORDSMAN_STATS = get_unit_stats("swordsman")
     from core.buildings import Town
     from ui.town_screen import TownScreen
 
@@ -77,8 +77,8 @@ def test_hero_army_exchange_merge_delete(monkeypatch, pygame_stub):
     from core.world import WorldMap
     from core.entities import Hero, Army, Unit
     from tests.unit_stats import get_unit_stats
-    SWORDSMAN_STATS = get_unit_stats("Swordsman")
-    ARCHER_STATS = get_unit_stats("Archer")
+    SWORDSMAN_STATS = get_unit_stats("swordsman")
+    ARCHER_STATS = get_unit_stats("archer")
     from core.game import Game
     from ui.hero_exchange_screen import HeroExchangeScreen
 
@@ -152,9 +152,11 @@ def test_army_reintegrated_removes_ghost(monkeypatch, pygame_stub):
     monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
     monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
     from core.world import WorldMap
-    from core.entities import Hero, Unit, SWORDSMAN_STATS
+    from core.entities import Hero, Unit, RECRUITABLE_UNITS
     from core.buildings import Town
     from ui.town_screen import TownScreen
+
+    SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
     game = types.SimpleNamespace()
     wm = WorldMap(

@@ -6,7 +6,7 @@ from core.entities import EnemyHero, Unit, Hero
 from tests.unit_stats import get_unit_stats
 from core.buildings import Town, Building
 
-SWORDSMAN_STATS = get_unit_stats("Swordsman")
+SWORDSMAN_STATS = get_unit_stats("swordsman")
 
 
 def _basic_world():

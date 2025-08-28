@@ -10,7 +10,7 @@ from core.ai.faction_ai import FactionAI
 from core.entities import Hero, EnemyHero, Unit
 from tests.unit_stats import get_unit_stats
 
-SWORDSMAN_STATS = get_unit_stats("Swordsman")
+SWORDSMAN_STATS = get_unit_stats("swordsman")
 from core.buildings import Town
 from state.game_state import GameState
 from core import economy

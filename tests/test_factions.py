@@ -4,7 +4,9 @@ import pygame
 
 from loaders.core import Context
 from loaders.faction_loader import load_factions
-from core.entities import Unit, SWORDSMAN_STATS
+from core.entities import Unit, RECRUITABLE_UNITS
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
 
 def _ctx():

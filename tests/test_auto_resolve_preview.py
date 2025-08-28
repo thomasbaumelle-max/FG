@@ -5,7 +5,8 @@ import copy
 
 
 def test_preview_returns_losses(monkeypatch):
-    from core.entities import Unit, SWORDSMAN_STATS
+    from core.entities import Unit, RECRUITABLE_UNITS
+    SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
     import core.auto_resolve as ar
 
     def fake_sim(hero_units, enemy_units):
@@ -134,7 +135,8 @@ def test_prompt_displays_losses(monkeypatch, pygame_stub):
     import core.game as game_mod
     monkeypatch.setattr(theme, "pygame", pg)
     monkeypatch.setattr(game_mod, "pygame", pg)
-    from core.entities import Unit, SWORDSMAN_STATS, Hero
+    from core.entities import Unit, RECRUITABLE_UNITS, Hero
+    SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
     Game = game_mod.Game
     import core.auto_resolve as ar
     from ui import dialogs

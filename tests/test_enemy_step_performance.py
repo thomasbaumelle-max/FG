@@ -2,9 +2,11 @@ import time
 import pytest
 
 from core.world import WorldMap
-from core.entities import Hero, EnemyHero, Unit, SWORDSMAN_STATS
+from core.entities import Hero, EnemyHero, Unit, RECRUITABLE_UNITS
 from core.game import Game
 import core.exploration_ai as exploration_ai
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
 
 def _make_world(width, height):

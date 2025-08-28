@@ -6,7 +6,9 @@ import importlib, sys
 
 from core.buildings import create_building
 from core.world import WorldMap
-from core.entities import Hero, Unit, SWORDSMAN_STATS
+from core.entities import Hero, Unit, RECRUITABLE_UNITS
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
 
 def _create_game_with_mine():

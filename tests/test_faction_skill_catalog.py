@@ -4,7 +4,7 @@ import core.entities as entities
 from core.entities import Hero, Unit
 from tests.unit_stats import get_unit_stats
 
-SWORDSMAN_STATS = get_unit_stats("Swordsman")
+SWORDSMAN_STATS = get_unit_stats("swordsman")
 from core.faction import FactionDef
 from ui.inventory_screen import InventoryScreen
 

@@ -7,10 +7,10 @@ os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
 from core.entities import Unit
 from tests.unit_stats import get_unit_stats
 
-SWORDSMAN_STATS = get_unit_stats("Swordsman")
-DRAGON_STATS = get_unit_stats("Dragon")
-MAGE_STATS = get_unit_stats("Mage")
-ARCHER_STATS = get_unit_stats("Archer")
+SWORDSMAN_STATS = get_unit_stats("swordsman")
+DRAGON_STATS = get_unit_stats("dragon")
+MAGE_STATS = get_unit_stats("mage")
+ARCHER_STATS = get_unit_stats("archer")
 from core.combat_ai import ai_take_turn, allied_ai_turn, select_spell, _a_star
 import constants
 

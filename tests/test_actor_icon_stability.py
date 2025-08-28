@@ -2,7 +2,9 @@ import pygame
 import constants
 from render.world_renderer import WorldRenderer
 from core.world import WorldMap
-from core.entities import Army, Unit, SWORDSMAN_STATS
+from core.entities import Army, Unit, RECRUITABLE_UNITS
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 class DummyCarrier:
     def __init__(self, x, y, colour):
         self.x = x

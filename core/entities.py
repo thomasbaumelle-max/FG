@@ -736,7 +736,7 @@ def _load_stats(manifest: str, section: str) -> Dict[str, UnitStats]:
     stats_map, _ = load_units(ctx, manifest, section=section)
 
     out = {uid: st for uid, st in stats_map.items()}
-    out.update({st.name: st for st in stats_map.values()})
+    out.update({st.name: st for uid, st in stats_map.items()})
     return out
 
 

@@ -4,7 +4,9 @@ import pygame
 
 os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
 
-from core.entities import Unit, SWORDSMAN_STATS
+from core.entities import Unit, RECRUITABLE_UNITS
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
 pygame.init()
 

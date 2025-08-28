@@ -1,8 +1,10 @@
 from core.world import WorldMap
-from core.entities import Hero, Unit, SWORDSMAN_STATS
+from core.entities import Hero, Unit, RECRUITABLE_UNITS
 from core.game import Game
 import constants
 import types
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
 
 def _make_world(width, height):

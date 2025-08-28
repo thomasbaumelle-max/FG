@@ -6,8 +6,10 @@ pygame_stub = types.SimpleNamespace()
 sys.modules.setdefault("pygame", pygame_stub)
 
 from core.game import Game, SAVE_FORMAT_VERSION
-from core.entities import Unit, SWORDSMAN_STATS, Hero
+from core.entities import Unit, RECRUITABLE_UNITS, Hero
 from core.world import WorldMap
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
 
 def test_load_legacy_save(tmp_path):

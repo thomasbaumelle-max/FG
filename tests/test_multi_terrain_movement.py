@@ -1,6 +1,9 @@
 import sys
 import types
 import pytest
+from core.entities import RECRUITABLE_UNITS
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
 
 def setup_game(monkeypatch, pygame_stub):
@@ -18,7 +21,7 @@ def setup_game(monkeypatch, pygame_stub):
     monkeypatch.setitem(sys.modules, "pygame.image", pg.image)
     monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
     from core.world import WorldMap
-    from core.entities import Hero, Unit, SWORDSMAN_STATS
+    from core.entities import Hero, Unit
     from core.game import Game
     from loaders.biomes import BiomeCatalog, Biome
     from loaders.core import Context
