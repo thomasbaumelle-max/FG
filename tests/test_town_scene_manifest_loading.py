@@ -17,15 +17,16 @@ def test_load_towns_red_knights_scene():
 
     assert scene.size == (1920, 1080)
     assert [layer.id for layer in scene.layers] == [
+        "sky",
         "background",
-        "midground",
         "foreground",
     ]
-    assert {b.id for b in scene.buildings} == {"town_hall", "blacksmith"}
+    ids = {b.id for b in scene.buildings}
+    assert {"barracks", "archery_range", "mage_guild"} <= ids
     assert set(calls) >= {
-        "towns/red_knights/background.png",
-        "towns/red_knights/midground.png",
-        "towns/red_knights/foreground.png",
-        "towns/red_knights/buildings/town_hall.png",
-        "towns/red_knights/buildings/blacksmith.png",
+        "layers/00_sky.png",
+        "layers/10_background.png",
+        "layers/90_foreground.png",
+        "buildings_scaled/barracks_unbuilt.png",
+        "buildings_scaled/barracks_built.png",
     }

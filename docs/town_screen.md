@@ -15,7 +15,8 @@ Le manifeste d'une scène de ville est un objet JSON contenant les champs suivan
   * `layer` – identifiant du calque sur lequel dessiner le bâtiment.
   * `pos` – coordonnées `[x, y]` du coin supérieur gauche.
   * `states` – dictionnaire associant un nom d'état (`"built"`, `"unbuilt"`, etc.) à l'image correspondante.
-  * `hotspot` – **optionnel** rectangle cliquable `[x, y, largeur, hauteur]`.
+  * `hotspot` – **optionnel** polygone cliquable sous forme de liste de points
+    `[[x1, y1], [x2, y2], ...]`.
   * `tooltip` – **optionnel** texte d'aide affiché au survol.
 
 Les chemins d'image sont relatifs au répertoire `assets/` et seront pré‑chargés si un gestionnaire d'assets est fourni.
@@ -38,7 +39,7 @@ Les chemins d'image sont relatifs au répertoire `assets/` et seront pré‑char
         "unbuilt": "towns/grassland/tavern_unbuilt.png",
         "built": "towns/grassland/tavern_built.png"
       },
-      "hotspot": [80, 96, 64, 64],
+      "hotspot": [[80, 96], [144, 96], [144, 160], [80, 160]],
       "tooltip": "Taverne"
     }
   ]

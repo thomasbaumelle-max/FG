@@ -20,13 +20,19 @@ def test_towns_red_knights_manifest_schema() -> None:
     buildings = data["buildings"]
     assert isinstance(buildings, list)
     for b in buildings:
-        for key in ["id", "layer", "pos", "states", "hotspot", "tooltip"]:
+        for key in ["id", "layer", "pos", "states", "hotspot"]:
             assert key in b
+        if "tooltip" in b:
+            assert isinstance(b["tooltip"], str)
         assert b["layer"] in layer_ids
         assert isinstance(b["pos"], list) and len(b["pos"]) == 2
         assert all(isinstance(v, int) for v in b["pos"])
         assert isinstance(b["states"], dict) and b["states"]
         assert all(isinstance(v, str) for v in b["states"].values())
-        assert isinstance(b["hotspot"], list) and len(b["hotspot"]) == 4
-        assert all(isinstance(v, int) for v in b["hotspot"])
-        assert isinstance(b["tooltip"], str)
+        assert isinstance(b["hotspot"], list) and b["hotspot"]
+        assert all(
+            isinstance(pt, list)
+            and len(pt) == 2
+            and all(isinstance(v, int) for v in pt)
+            for pt in b["hotspot"]
+        )

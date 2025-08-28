@@ -12,6 +12,21 @@ from loaders.town_scene_loader import TownScene, TownBuilding
 from render.town_scene_renderer import TownSceneRenderer
 
 
+def _point_in_poly(pt: tuple[int, int], poly: list[tuple[int, int]]) -> bool:
+    x, y = pt
+    inside = False
+    j = len(poly) - 1
+    for i in range(len(poly)):
+        xi, yi = poly[i]
+        xj, yj = poly[j]
+        if ((yi > y) != (yj > y)) and (
+            x < (xj - xi) * (y - yi) / (yj - yi) + xi
+        ):
+            inside = not inside
+        j = i
+    return inside
+
+
 class TownSceneScreen:
     """Display a static town scene.
 
@@ -64,12 +79,8 @@ class TownSceneScreen:
                     running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     for building in self.renderer.scene.buildings:
-                        hotspot = getattr(building, "hotspot", None)
-                        if not hotspot or len(hotspot) < 4:
-                            continue
-                        x1, y1, x2, y2 = hotspot[0], hotspot[1], hotspot[2], hotspot[3]
-                        x, y = event.pos
-                        if x1 <= x <= x2 and y1 <= y <= y2:
+                        hotspot = getattr(building, "hotspot", [])
+                        if hotspot and _point_in_poly(event.pos, hotspot):
                             if self.on_building_click(building):
                                 running = False
                             break
