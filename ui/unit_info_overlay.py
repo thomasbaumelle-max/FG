@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import pygame
@@ -180,18 +179,3 @@ class UnitInfoOverlay:
 
         self.screen.set_clip(prev_clip)
 
-    # ------------------------------------------------------------------ public API
-    def run(self) -> None:
-        clock = pygame.time.Clock()
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                if self.handle_event(event):
-                    running = False
-                    break
-            self.draw()
-            pygame.display.flip()
-            clock.tick(constants.FPS)

@@ -251,6 +251,8 @@ class Combat:
 
         # --- HUD ---
         self.hud = CombatHUD()
+        # Stack of active overlays (topmost drawn last)
+        self.overlays: list = []
         # Grid representation; None or Unit
         self.grid: List[List[Optional[Unit]]] = [
             [None for _ in range(constants.COMBAT_GRID_WIDTH)]
@@ -453,18 +455,8 @@ class Combat:
             from ui.spellbook_overlay import SpellbookOverlay
         except ImportError:  # pragma: no cover
             from .ui.spellbook_overlay import SpellbookOverlay  # type: ignore
-
-        overlay = SpellbookOverlay(self.screen, self)
-        clock = pygame.time.Clock()
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if overlay.handle_event(event):
-                    running = False
-                    break
-            overlay.draw()
-            pygame.display.flip()
-            clock.tick(constants.FPS)
+        # Defer drawing and event handling to the main loop via overlay stack
+        self.overlays.append(SpellbookOverlay(self.screen, self))
 
     def show_stats(self) -> None:
         """Display a summary of combat damage for all units."""
@@ -1285,6 +1277,13 @@ class Combat:
                 continue
             if self.auto_mode:
                 for event in pygame.event.get():
+                    if self.overlays:
+                        if event.type == pygame.QUIT:
+                            pygame.quit()
+                            sys.exit()
+                        elif self.overlays[-1].handle_event(event):
+                            self.overlays.pop()
+                        continue
                     if event.type == pygame.QUIT:
                         pygame.quit()
                         sys.exit()
@@ -1303,11 +1302,21 @@ class Combat:
                             and self.auto_button.collidepoint(event.pos)
                         ):
                             self.auto_mode = False
+                if self.overlays:
+                    combat_render.draw(self, frame)
+                    for overlay in self.overlays:
+                        overlay.draw()
+                    pygame.display.flip()
+                    clock.tick(constants.FPS)
+                    frame = (frame + 1) % 60
+                    continue
                 if self.auto_mode and current_unit.side == 'hero':
                     combat_ai.allied_ai_turn(self, current_unit)
                     current_unit.acted = True
                     self.advance_turn()
                     combat_render.draw(self, frame)
+                    for overlay in self.overlays:
+                        overlay.draw()
                     pygame.display.flip()
                     pygame.time.wait(200)
                     clock.tick(constants.FPS)
@@ -1321,6 +1330,13 @@ class Combat:
                 self.selected_spell = None
                 self.teleport_unit = None
             for event in pygame.event.get():
+                if self.overlays:
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    elif self.overlays[-1].handle_event(event):
+                        self.overlays.pop()
+                    continue
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
@@ -1369,8 +1385,7 @@ class Combat:
                                     from ui.unit_info_overlay import UnitInfoOverlay
                                 except Exception:  # pragma: no cover
                                     from .ui.unit_info_overlay import UnitInfoOverlay  # type: ignore
-                                overlay = UnitInfoOverlay(self.screen, unit)
-                                overlay.run()
+                                self.overlays.append(UnitInfoOverlay(self.screen, unit))
                                 opened = True
                         if not opened:
                             self._dragging = True
@@ -1505,12 +1520,22 @@ class Combat:
                         self.offset_y += dy
                 elif event.type == pygame.MOUSEWHEEL:
                     self._adjust_zoom(event.y * 0.25, pygame.mouse.get_pos())
+            if self.overlays:
+                combat_render.draw(self, frame)
+                for overlay in self.overlays:
+                    overlay.draw()
+                pygame.display.flip()
+                clock.tick(constants.FPS)
+                frame = (frame + 1) % 60
+                continue
             if current_unit.side != 'hero':
                 combat_ai.enemy_ai_turn(self, current_unit)
                 current_unit.acted = True
                 self.advance_turn()
             # draw battle each iteration
             combat_render.draw(self, frame)
+            for overlay in self.overlays:
+                overlay.draw()
             pygame.display.flip()
             clock.tick(constants.FPS)
             frame = (frame + 1) % 60
