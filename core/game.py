@@ -3152,7 +3152,7 @@ class Game:
     # Journal & Hero screens
     # ------------------------------------------------------------------
 
-    def open_journal(self, surface: "pygame.Surface" | None = None) -> None:
+    def open_quest_journal(self, surface: "pygame.Surface" | None = None) -> None:
         """Open the quest journal overlay.
 
         Parameters
@@ -3170,7 +3170,24 @@ class Game:
 
         surf = surface or self.screen
         overlay = QuestOverlay(surf, self.quest_manager)
-        overlay.run()
+        clock = pygame.time.Clock()
+        running = True
+        fast_tests = os.environ.get("FG_FAST_TESTS") == "1"
+        while running:
+            events = pygame.event.get()
+            if not events and fast_tests:
+                break
+            for event in events:
+                if overlay.handle_event(event):
+                    running = False
+                    break
+            overlay.draw(surf)
+            pygame.display.flip()
+            clock.tick(constants.FPS)
+
+    # Backwards compatibility
+    def open_journal(self, surface: "pygame.Surface" | None = None) -> None:
+        self.open_quest_journal(surface)
 
     def open_skill_tree(self, tab: str = "skills") -> bool:
         """Convenience wrapper opening the hero screen on the skills tab."""
