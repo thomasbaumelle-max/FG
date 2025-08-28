@@ -1,0 +1,5 @@
+{
+  "Novice": {"hero_weight": 4, "resource_weight": 3, "building_weight": 3, "avoid_enemies": true},
+  "Intermédiaire": {"hero_weight": 8, "resource_weight": 4, "building_weight": 5, "avoid_enemies": true},
+  "Avancé": {"hero_weight": 12, "resource_weight": 4, "building_weight": 6, "avoid_enemies": false}
+}

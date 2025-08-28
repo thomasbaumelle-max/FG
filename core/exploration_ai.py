@@ -11,20 +11,51 @@ from __future__ import annotations
 from typing import Optional, Tuple, List
 
 import random
+import json
+from pathlib import Path
 
 
-# Difficulty presets used by :func:`compute_enemy_step`.
-# ``hero_weight`` controls how attractive the player's hero is as a target,
-# ``resource_weight`` and ``building_weight`` do the same for other objectives
-# and ``avoid_enemies`` toggles whether paths should avoid enemy stacks.
-#
-# The labels mirror the difficulty names exposed to players.  ``Novice`` keeps
-# the AI fairly passive while ``Avancé`` pursues the player more aggressively.
-DIFFICULTY_PARAMS = {
-    "Novice": {"hero_weight": 4, "resource_weight": 3, "building_weight": 3, "avoid_enemies": True},
-    "Intermédiaire": {"hero_weight": 8, "resource_weight": 4, "building_weight": 5, "avoid_enemies": True},
-    "Avancé": {"hero_weight": 12, "resource_weight": 4, "building_weight": 6, "avoid_enemies": False},
-}
+# Difficulty presets used by :func:`compute_enemy_step` are defined in a JSON
+# file under ``assets/`` so that tweaking the AI does not require touching the
+# source code.  The file maps difficulty labels to parameter dictionaries with
+# keys ``hero_weight``, ``resource_weight``, ``building_weight`` and
+# ``avoid_enemies``.
+
+
+def _load_difficulty_params(path: Path = Path(__file__).resolve().parents[1] / "assets" / "ai_difficulty.json"):
+    """Load and validate AI difficulty parameters from ``path``.
+
+    The configuration must be a mapping of difficulty labels to parameter
+    dictionaries.  Each parameter set must define integer weights for
+    ``hero_weight``, ``resource_weight`` and ``building_weight`` as well as a
+    boolean ``avoid_enemies`` flag.
+    """
+
+    with path.open(encoding="utf-8") as fh:
+        data = json.load(fh)
+
+    if not isinstance(data, dict):
+        raise ValueError("Difficulty config must be a mapping")
+
+    required = {"hero_weight", "resource_weight", "building_weight", "avoid_enemies"}
+    for name, params in data.items():
+        if not isinstance(params, dict):
+            raise ValueError(f"Parameters for '{name}' must be a mapping")
+        missing = required - params.keys()
+        if missing:
+            missing_list = ", ".join(sorted(missing))
+            raise ValueError(f"Missing keys for difficulty '{name}': {missing_list}")
+        if not all(isinstance(params[k], (int, float)) for k in ("hero_weight", "resource_weight", "building_weight")):
+            raise ValueError(f"Weights for difficulty '{name}' must be numbers")
+        if not isinstance(params["avoid_enemies"], bool):
+            raise ValueError(f"'avoid_enemies' for '{name}' must be a boolean")
+
+    return data
+
+
+# Load parameters at module import so that ``compute_enemy_step`` can simply
+# look up the selected difficulty.
+DIFFICULTY_PARAMS = _load_difficulty_params()
 
 # Maximum straight-line distance for potential targets.
 # Objectives beyond this radius are ignored to avoid expensive pathfinding.
