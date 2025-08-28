@@ -3272,8 +3272,19 @@ class Game:
                 from loaders.town_scene_loader import load_town_scene
                 from ui.town_scene_screen import TownSceneScreen
                 scene = load_town_scene(scene_path, self.assets)
+                states = {}
+                if town is not None and scene is not None:
+                    try:
+                        states = {
+                            b.id: (
+                                "built" if town.is_structure_built(b.id) else "unbuilt"
+                            )
+                            for b in scene.buildings
+                        }
+                    except Exception:
+                        states = {}
                 scn_screen = TownSceneScreen(
-                    self.screen, scene, self.assets, self.clock
+                    self.screen, scene, self.assets, self.clock, states
                 )
                 run = getattr(scn_screen, "run", None)
                 if callable(run):

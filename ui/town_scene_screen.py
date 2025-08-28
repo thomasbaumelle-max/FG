@@ -3,7 +3,7 @@ from __future__ import annotations
 """Minimal screen to render a town scene using :class:`TownSceneRenderer`."""
 
 import os
-from typing import Any
+from typing import Any, Mapping
 
 import pygame
 import constants
@@ -27,10 +27,18 @@ class TownSceneScreen:
         Optional pygame clock for regulating the loop.
     """
 
-    def __init__(self, screen: pygame.Surface, scene: TownScene, assets: Any, clock: pygame.time.Clock | None = None) -> None:
+    def __init__(
+        self,
+        screen: pygame.Surface,
+        scene: TownScene,
+        assets: Any,
+        clock: pygame.time.Clock | None = None,
+        building_states: Mapping[str, str] | None = None,
+    ) -> None:
         self.screen = screen
         self.clock = clock or pygame.time.Clock()
         self.renderer = TownSceneRenderer(scene, assets)
+        self.building_states = dict(building_states) if building_states else {}
 
     def on_building_click(self, building: TownBuilding) -> bool:
         """Hook executed when a building hotspot is clicked.
@@ -65,7 +73,7 @@ class TownSceneScreen:
                             if self.on_building_click(building):
                                 running = False
                             break
-            self.renderer.draw(self.screen, {}, debug=debug)
+            self.renderer.draw(self.screen, self.building_states, debug=debug)
             pygame.display.flip()
             self.clock.tick(getattr(constants, "FPS", 60))
 
