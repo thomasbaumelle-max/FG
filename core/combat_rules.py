@@ -15,17 +15,32 @@ class UnitView:
     facing: Tuple[int,int] = (0, 1)  # optionnel: orientation (dx,dy)
 
 # ---- Morale & Chance ----
-def roll_morale(morale: int) -> str:
-    """retourne 'extra', 'penalty' ou 'normal'."""
-    table = {0: 0.0, 1: 1 / 24, 2: 2 / 24, 3: 3 / 24}
+def roll_morale(morale: int) -> int:
+    """Return -1, 0 or +1 depending on morale.
+
+    The probabilities are capped to the ``[-3..3]`` range with the following
+    chances of triggering an effect:
+
+    ``[-3..3] -> [12.5%, 8.3%, 4.2%, 0, 4.2%, 8.3%, 12.5%]``
+    """
+
+    table = {
+        -3: 0.125,
+        -2: 0.083,
+        -1: 0.042,
+        0: 0.0,
+        1: 0.042,
+        2: 0.083,
+        3: 0.125,
+    }
     m = max(-3, min(3, morale))
-    p = table[abs(m)]
+    p = table[m]
     r = random.random()
     if m > 0 and r < p:
-        return "extra"
+        return 1
     if m < 0 and r < p:
-        return "penalty"
-    return "normal"
+        return -1
+    return 0
 
 def roll_luck(luck: int) -> float:
     """retourne multiplicateur de dégâts (0.5, 1.0, 1.5)."""

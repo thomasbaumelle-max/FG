@@ -899,8 +899,10 @@ class Combat:
         luck_mul = result.get("luck", 1.0)
         if luck_mul > 1.0:
             self.add_log(f"Lucky strike by {attacker.stats.name}!")
+            self.show_effect("luck_fx", (attacker.x, attacker.y))
         elif luck_mul < 1.0:
             self.add_log(f"Unlucky hit by {attacker.stats.name}.")
+            self.show_effect("luck_fx", (attacker.x, attacker.y))
         if flank > 1.0:
             print("Flanking attack!")
 
@@ -1105,12 +1107,14 @@ class Combat:
     def check_morale(self, unit: Unit) -> None:
         """Apply morale effects to a unit at the start of its turn."""
         outcome = combat_rules.roll_morale(unit.stats.morale)
-        if outcome == "extra":
+        if outcome > 0:
             unit.extra_turns = 1
             self.add_log(f"{unit.stats.name} is inspired and gains an extra action!")
-        elif outcome == "penalty":
+            self.show_effect("morale_fx", (unit.x, unit.y))
+        elif outcome < 0:
             unit.skip_turn = True
             self.add_log(f"{unit.stats.name} falters and loses its action!")
+            self.show_effect("morale_fx", (unit.x, unit.y))
 
     def get_available_actions(self, unit: Unit) -> List[str]:
         """Return the list of action identifiers available to ``unit``."""

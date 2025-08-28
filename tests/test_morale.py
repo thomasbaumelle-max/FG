@@ -5,21 +5,26 @@ from dataclasses import replace
 os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
 
 from core.entities import Unit, SWORDSMAN_STATS
+import pygame
 
 
 def test_positive_morale_grants_extra_turn(monkeypatch, simple_combat):
     hero_stats = replace(SWORDSMAN_STATS, morale=1)
     hero = Unit(hero_stats, 1, 'hero')
     enemy = Unit(SWORDSMAN_STATS, 1, 'enemy')
-    combat = simple_combat([hero], [enemy])
+    pygame.init()
+    assets = {"morale_fx": pygame.Surface((1, 1))}
+    combat = simple_combat([hero], [enemy], assets=assets)
     hero_unit = combat.hero_units[0]
     enemy_unit = combat.enemy_units[0]
     combat.turn_order = [hero_unit, enemy_unit]
     combat.current_index = 0
     monkeypatch.setattr(random, 'random', lambda: 0.0)
+    before = len(combat.fx_queue._events)
     combat.check_morale(hero_unit)
     assert hero_unit.extra_turns == 1
     assert combat.log[-1] == "Swordsman is inspired and gains an extra action!"
+    assert len(combat.fx_queue._events) == before + 1
     hero_unit.acted = True
     combat.advance_turn()
     assert hero_unit.extra_turns == 0
@@ -31,15 +36,19 @@ def test_negative_morale_skips_turn(monkeypatch, simple_combat):
     hero_stats = replace(SWORDSMAN_STATS, morale=-1)
     hero = Unit(hero_stats, 1, 'hero')
     enemy = Unit(SWORDSMAN_STATS, 1, 'enemy')
-    combat = simple_combat([hero], [enemy])
+    pygame.init()
+    assets = {"morale_fx": pygame.Surface((1, 1))}
+    combat = simple_combat([hero], [enemy], assets=assets)
     hero_unit = combat.hero_units[0]
     enemy_unit = combat.enemy_units[0]
     combat.turn_order = [hero_unit, enemy_unit]
     combat.current_index = 0
     monkeypatch.setattr(random, 'random', lambda: 0.0)
+    before = len(combat.fx_queue._events)
     combat.check_morale(hero_unit)
     assert hero_unit.skip_turn
     assert combat.log[-1] == "Swordsman falters and loses its action!"
+    assert len(combat.fx_queue._events) == before + 1
     combat.advance_turn()
     assert hero_unit.skip_turn is False
     assert hero_unit.acted

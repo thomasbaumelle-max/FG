@@ -5,16 +5,16 @@ from core.combat_rules import roll_morale, roll_luck
 
 def test_roll_morale_table(monkeypatch):
     monkeypatch.setattr(random, 'random', lambda: 0.03)
-    assert roll_morale(1) == 'extra'
+    assert roll_morale(1) == 1
     monkeypatch.setattr(random, 'random', lambda: 0.05)
-    assert roll_morale(1) == 'normal'
+    assert roll_morale(1) == 0
     monkeypatch.setattr(random, 'random', lambda: 0.12)
-    assert roll_morale(3) == 'extra'
+    assert roll_morale(3) == 1
     monkeypatch.setattr(random, 'random', lambda: 0.13)
-    assert roll_morale(3) == 'normal'
+    assert roll_morale(3) == 0
     monkeypatch.setattr(random, 'random', lambda: 0.0)
-    assert roll_morale(5) == 'extra'
-    assert roll_morale(-5) == 'penalty'
+    assert roll_morale(5) == 1
+    assert roll_morale(-5) == -1
 
 
 def test_roll_luck_table(monkeypatch):
