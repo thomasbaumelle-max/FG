@@ -1,6 +1,8 @@
 import sys
 import types
-from core.entities import Unit, SWORDSMAN_STATS
+from core.entities import Unit, RECRUITABLE_UNITS
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
 
 def setup_game_with_building(monkeypatch, pygame_stub):
@@ -18,7 +20,7 @@ def setup_game_with_building(monkeypatch, pygame_stub):
     monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
     monkeypatch.setitem(sys.modules, "pygame", pg)
     from core.world import WorldMap
-    from core.entities import Hero, Unit, SWORDSMAN_STATS
+    from core.entities import Hero, Unit
     from core.buildings import create_building
     from core.game import Game
     import constants
@@ -69,7 +71,7 @@ def setup_game_with_town(monkeypatch, pygame_stub):
     monkeypatch.setitem(sys.modules, "pygame.image", pg.image)
     monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
     from core.world import WorldMap
-    from core.entities import Hero, Unit, SWORDSMAN_STATS
+    from core.entities import Hero, Unit
     from core.buildings import Town
     from core.game import Game
     import constants

@@ -9,12 +9,14 @@ from core.game import Game
 from core import auto_resolve
 from core.entities import (
     Unit,
-    SWORDSMAN_STATS,
+    RECRUITABLE_UNITS,
     Hero,
     Item,
     EquipmentSlot,
     HeroStats,
 )
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 from core.world import WorldMap
 from core.buildings import create_building
 

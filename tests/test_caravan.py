@@ -1,11 +1,14 @@
 import types
 import sys
+from core.entities import RECRUITABLE_UNITS
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
 
 def test_caravan_travel_and_arrival():
     from core.world import WorldMap
     from core.buildings import Town
-    from core.entities import Unit, SWORDSMAN_STATS
+    from core.entities import Unit
     from state.game_state import GameState
 
     world = WorldMap(width=5, height=1, biome_weights={"scarletia_echo_plain": 1.0}, num_obstacles=0, num_treasures=0, num_enemies=0)
@@ -40,7 +43,7 @@ def test_townscreen_launches_caravan(monkeypatch, pygame_stub):
     monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
 
     from core.world import WorldMap
-    from core.entities import Hero, Unit, SWORDSMAN_STATS
+    from core.entities import Hero, Unit
     from core.buildings import Town
     from ui.town_screen import TownScreen
 
@@ -78,7 +81,7 @@ def test_townscreen_selects_and_sends_queue(monkeypatch, pygame_stub):
     monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
 
     from core.world import WorldMap
-    from core.entities import Hero, Unit, SWORDSMAN_STATS
+    from core.entities import Hero, Unit
     from core.buildings import Town
     from ui.town_screen import TownScreen
 
@@ -107,7 +110,7 @@ def test_townscreen_selects_and_sends_queue(monkeypatch, pygame_stub):
 def test_world_map_advances_caravans():
     from core.world import WorldMap
     from core.buildings import Town
-    from core.entities import Unit, SWORDSMAN_STATS
+    from core.entities import Unit
 
     world = WorldMap(width=3, height=1, biome_weights={"scarletia_echo_plain": 1.0}, num_obstacles=0, num_treasures=0, num_enemies=0)
     t1, t2 = Town("A"), Town("B")
@@ -124,7 +127,7 @@ def test_world_map_advances_caravans():
 def test_auto_caravan_to_nearest_ally():
     from core.world import WorldMap
     from core.buildings import Town
-    from core.entities import Unit, SWORDSMAN_STATS, Hero
+    from core.entities import Unit, Hero
 
     world = WorldMap(width=5, height=1, biome_weights={"scarletia_echo_plain": 1.0}, num_obstacles=0, num_treasures=0, num_enemies=0)
     t1, t2 = Town("A"), Town("B")
@@ -160,7 +163,7 @@ def test_townscreen_cancel_and_intercept(monkeypatch, pygame_stub):
     monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
 
     from core.world import WorldMap
-    from core.entities import Hero, Unit, SWORDSMAN_STATS
+    from core.entities import Hero, Unit
     from core.buildings import Town
     from ui.town_screen import TownScreen
 

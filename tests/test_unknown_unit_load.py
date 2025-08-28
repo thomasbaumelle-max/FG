@@ -10,7 +10,7 @@ from core.entities import Hero, Unit
 from tests.unit_stats import get_unit_stats
 from core.world import WorldMap
 
-SWORDSMAN_STATS = get_unit_stats("Swordsman")
+SWORDSMAN_STATS = get_unit_stats("swordsman")
 
 
 def test_load_game_with_unknown_unit(tmp_path):

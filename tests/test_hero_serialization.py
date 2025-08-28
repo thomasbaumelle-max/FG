@@ -8,11 +8,13 @@ from core.game import Game
 from core.entities import (
     Hero,
     Unit,
-    SWORDSMAN_STATS,
+    RECRUITABLE_UNITS,
     Item,
     EquipmentSlot,
     HeroStats,
 )
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 from core.world import WorldMap
 
 

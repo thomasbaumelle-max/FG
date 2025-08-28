@@ -5,8 +5,10 @@ pygame_stub = types.SimpleNamespace()
 sys.modules.setdefault("pygame", pygame_stub)
 
 from core.game import Game
-from core.entities import Hero, Army, Unit, SWORDSMAN_STATS
+from core.entities import Hero, Army, Unit, RECRUITABLE_UNITS
 from core.world import WorldMap
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
 
 def test_armies_persist_across_save_load(tmp_path):

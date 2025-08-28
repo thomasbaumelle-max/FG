@@ -1,7 +1,9 @@
 import pygame
 import pytest
 
-from core.entities import Unit, SWORDSMAN_STATS
+from core.entities import Unit, RECRUITABLE_UNITS
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 import audio
 import core.combat_render as combat_render
 pytestmark = pytest.mark.combat

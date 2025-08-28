@@ -1,8 +1,10 @@
 import types
 import pygame
 
-from core.entities import Hero, Unit, SWORDSMAN_STATS, Item, EquipmentSlot, HeroStats
+from core.entities import Hero, Unit, RECRUITABLE_UNITS, Item, EquipmentSlot, HeroStats
 from ui.inventory_screen import InventoryScreen
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
 
 class DummySurface:

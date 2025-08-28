@@ -2,7 +2,7 @@ from core.buildings import create_building
 from core.entities import Hero, Unit
 from tests.unit_stats import get_unit_stats
 
-SWORDSMAN_STATS = get_unit_stats("Swordsman")
+SWORDSMAN_STATS = get_unit_stats("swordsman")
 from core.vision import compute_vision
 from core.world import WorldMap
 import constants

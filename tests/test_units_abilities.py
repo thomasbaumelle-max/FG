@@ -6,7 +6,7 @@ os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
 from dataclasses import replace
 from core.entities import (
     Unit,
-    SWORDSMAN_STATS,
+    RECRUITABLE_UNITS,
     CAVALRY_STATS,
     DRAGON_STATS,
     PRIEST_STATS,
@@ -15,6 +15,8 @@ from core.entities import (
 from core import combat_ai
 import constants
 from core import combat
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
 
 def test_unit_stats_have_abilities():
