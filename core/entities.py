@@ -733,8 +733,8 @@ def _load_stats(manifest: str, section: str) -> Dict[str, UnitStats]:
 
     base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "assets"))
     ctx = Context(base, [""])
-    data = load_units(ctx, manifest, section=section)
-    return {entry["stats"].name: entry["stats"] for entry in data.values()}
+    stats_map, _ = load_units(ctx, manifest, section=section)
+    return {st.name: st for st in stats_map.values()}
 
 
 # Units that can be recruited in towns

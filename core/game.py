@@ -231,11 +231,11 @@ class Game:
             )
 
             try:
-                self.unit_defs = units_loader.load_units(
+                self.unit_defs, self.unit_extra = units_loader.load_units(
                     self.ctx, "units/units.json"
                 )
             except Exception:
-                self.unit_defs = {}
+                self.unit_defs, self.unit_extra = {}, {}
             try:
                 self.hero_defs = load_heroes(self.ctx, "units/heroes.json")
             except Exception:
