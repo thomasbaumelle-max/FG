@@ -323,20 +323,26 @@ def draw(combat, frame: int = 0) -> None:
         bar_h = max(2, round(1.5 * combat.zoom))
         hp_rect = pygame.Rect(0, 0, stack_rect.width, bar_h)
         hp_rect.midbottom = stack_rect.midtop
-        pygame.draw.rect(combat.screen, constants.BLACK, hp_rect)
+        colour = constants.BLUE if unit.side == "hero" else constants.RED
+        pygame.draw.rect(combat.screen, colour, stack_rect)
+        hp_surface = pygame.Surface(hp_rect.size, pygame.SRCALPHA)
+        pygame.draw.rect(
+            hp_surface, (*constants.BLACK, 255), hp_surface.get_rect()
+        )
         max_hp = getattr(unit.stats, "max_hp", 0) or 0
         if max_hp > 0:
             ratio = unit.current_hp / max_hp
             ratio = max(0.0, min(1.0, ratio))
             green_w = int(hp_rect.width * ratio)
             if green_w > 0:
-                green_rect = pygame.Rect(
-                    hp_rect.left, hp_rect.top, green_w, hp_rect.height
+                green_rect = pygame.Rect(0, 0, green_w, hp_rect.height)
+                pygame.draw.rect(
+                    hp_surface, (*constants.GREEN, 255), green_rect
                 )
-                pygame.draw.rect(combat.screen, constants.GREEN, green_rect)
-        pygame.draw.rect(combat.screen, theme.PALETTE["panel"], hp_rect, 1)
-        colour = constants.BLUE if unit.side == "hero" else constants.RED
-        pygame.draw.rect(combat.screen, colour, stack_rect)
+        pygame.draw.rect(
+            hp_surface, (*theme.PALETTE["panel"], 255), hp_surface.get_rect(), 1
+        )
+        combat.screen.blit(hp_surface, hp_rect.topleft)
         font = pygame.font.SysFont(None, int(14 * combat.zoom))
         text = font.render(str(unit.count), True, theme.PALETTE["text"])
         text_rect = text.get_rect(center=stack_rect.center)
