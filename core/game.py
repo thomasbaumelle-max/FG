@@ -3275,7 +3275,8 @@ class Game:
                 run = getattr(scn_screen, "run", None)
                 if callable(run):
                     run()
-            except Exception:
+            except Exception as exc:
+                logger.warning("Failed to load town scene %s: %s", scene_path, exc)
                 scene = None
             if town is None:
                 return
