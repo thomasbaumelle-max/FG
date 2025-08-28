@@ -802,32 +802,30 @@ class Game:
         self.artifacts_manifest = load_artifact_manifest(repo_root, self.assets)
 
         # Load unit and creature sprites using metadata from the loaders
-        image_files: Set[str] = set()
-        for extras in (self.unit_extra, self.creature_extra):
-            for info in extras.values():
-                img = info.get("image")
-                if img:
-                    image_files.add(img)
+        image_files: Set[str] = {
+            info.get("image")
+            for extras in (self.unit_extra, self.creature_extra)
+            for info in extras.values()
+            if info.get("image")
+        }
         if image_files:
             self.load_additional_assets(list(image_files))
 
         self.unit_shadow_baked = {}
         for extras in (self.unit_extra, self.creature_extra):
             for uid, info in extras.items():
-                try:
-                    self.unit_shadow_baked[uid] = bool(info.get("shadow_baked", False))
-                    image = info.get("image")
-                    if not image:
-                        continue
-                    surf = self.assets.get(image)
-                    surf = scale_surface(
-                        surf,
-                        (constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE),
-                        smooth=True,
-                    )
-                    self.assets[uid] = surf
-                except Exception:
+                image = info.get("image")
+                anchor = info.get("anchor_px")
+                if not image:
                     continue
+                surf, anchor = scale_with_anchor(
+                    self.assets.get(image),
+                    (constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE),
+                    anchor_px=anchor,
+                    smooth=True,
+                )
+                self.assets[uid] = surf
+                self.unit_shadow_baked[uid] = bool(info.get("shadow_baked", False))
 
         # Load hero portraits and map icons declared in assets/units/heroes.json
         heroes_path = os.path.join(repo_root, "assets", "units", "heroes.json")
