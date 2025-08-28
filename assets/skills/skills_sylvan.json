@@ -4,7 +4,7 @@
       "id": "dew_mend_n",
       "name": "Dew Mend",
       "desc": "Cleanse (retire Poison/Brûlure/Lenteur)",
-      "icon": "icons/dew_mend_n.png"
+      "icon": "icons/sylvan_skills/dew_mend_n.png"
     },
     "A": {
       "id": "ripple_shield_a",
@@ -12,19 +12,19 @@
       "type": "order",
       "cd": 3,
       "desc": "(+armure magique mono, courte durée).",
-      "icon": "icons/ripple_shield_a.png"
+      "icon": "icons/sylvan_skills/ripple_shield_a.png"
     },
     "E": {
       "id": "rebirth_chance_e",
       "name": "Rebirth Chance",
       "desc": "+10 % chance de relever 1 unité T1–T3 à la fin du combat",
-      "icon": "icons/rebirth_chance_e.png"
+      "icon": "icons/sylvan_skills/rebirth_chance_e.png"
     },
     "M": {
       "id": "sanctuary_m",
       "name": "Sanctuary",
       "desc": "zone sacrée : alliés reçoivent +defense & regen légère dans l’aire",
-      "icon": "icons/sanctuary_m.png"
+      "icon": "icons/sylvan_skills/sanctuary_m.png"
     }
   },
   "Mists_Streams": {
@@ -32,25 +32,25 @@
       "id": "mist_veil_n",
       "name": "Mist Veil",
       "desc": "nuage de brume, −LoS & −def_ranged ennemie dans l’aire",
-      "icon": "icons/mist_veil_n.png"
+      "icon": "icons/sylvan_skills/mist_veil_n.png"
     },
     "A": {
       "id": "Slick_Ground_a",
       "name": "Slick Ground",
       "desc": "terrain glissant, −init & malus de déplacement sur quelques cases",
-      "icon": "icons/Slick_Ground_a.png"
+      "icon": "icons/sylvan_skills/Slick_Ground_a.png"
     },
     "E": {
       "id": "Whirlpool_Pull_e",
       "name": "Whirlpool Pull",
       "desc": "attire légèrement les cibles au centre, petite zone",
-      "icon": "icons/Whirlpool_Pull_e.png"
+      "icon": "icons/sylvan_skills/Whirlpool_Pull_e.png"
     },
     "M": {
       "id": "Mist_Portal_m",
       "name": "Mist Portal",
       "desc": "téléport court mono-cible alliée, ligne de vue non requise mais portée limitée",
-      "icon": "icons/Mist_Portal_m.png"
+      "icon": "icons/sylvan_skills/Mist_Portal_m.png"
     }
   },
   "Song_Wind": {
@@ -58,7 +58,7 @@
       "id": "Zephyr_Step_n",
       "name": "Zephyr Step",
       "desc": "+AP ou +1 case de déplacement au tour en cours",
-      "icon": "icons/Zephyr_Step_n.png"
+      "icon": "icons/sylvan_skills/Zephyr_Step_n.png"
     },
     "A": {
       "id": "Gust_a",
@@ -66,19 +66,19 @@
       "type": "order",
       "cd": 3,
       "desc": "cône, repousse de 1 case, −1 initiative",
-      "icon": "icons/Gust_a.png"
+      "icon": "icons/sylvan_skills/Gust_a.png"
     },
     "E": {
       "id": "Lullaby_e",
       "name": "Lullaby",
       "desc": "sommeil 1 tour sur cible unique, test de résistance",
-      "icon": "icons/Lullaby_e.png"
+      "icon": "icons/sylvan_skills/Lullaby_e.png"
     },
     "M": {
       "id": "Wind_Chorus_m",
       "name": "Wind Chorus",
       "desc": "Mass Haste : +init/+speed de l’armée 1 tour",
-      "icon": "icons/Wind_Chorus_m.png"
+      "icon": "icons/sylvan_skills/Wind_Chorus_m.png"
     }
   },
   "Sylvan_Heart": {
@@ -86,7 +86,7 @@
       "id": "Entangling_Vines_n",
       "name": "Entangling Vines",
       "desc": "Entravé 1 tour, −init",
-      "icon": "icons/Entangling_Vines_n.png"
+      "icon": "icons/sylvan_skills/Entangling_Vines_n.png"
     },
     "A": {
       "id": "Bramble_Field_a",
@@ -94,13 +94,13 @@
       "type": "order",
       "cd": 2,
       "desc": "pièges d’épines, dégâts & lenteur à l’entrée",
-      "icon": "icons/Bramble_Field_a.png"
+      "icon": "icons/sylvan_skills/Bramble_Field_a.png"
     },
     "E": {
       "id": "Summon_Sprite_e",
       "name": "Summon Sprite",
       "desc": "petite unité faë éphémère T1",
-      "icon": "icons/Summon_Sprite_e.png"
+      "icon": "icons/sylvan_skills/Summon_Sprite_e.png"
     },
     "M": {
       "id": "Forest_Heart_m",
@@ -108,7 +108,7 @@
       "type": "order",
       "cd": 3,
       "desc": "totem/semis : petite zone qui soigne alliés et inflige épines aux ennemis",
-      "icon": "icons/Forest_Heart_m.png"
+      "icon": "icons/sylvan_skills/Forest_Heart_m.png"
     }
   }
 }
