@@ -33,6 +33,8 @@ class TownSceneScreen:
         self.renderer = TownSceneRenderer(scene, assets)
 
     def run(self) -> None:
+        if not (self.renderer.scene.layers or self.renderer.scene.buildings):
+            return
         running = True
         fast_tests = os.environ.get("FG_FAST_TESTS") == "1"
         while running:
@@ -41,6 +43,8 @@ class TownSceneScreen:
                 break
             for event in events:
                 if event.type == pygame.KEYDOWN and getattr(event, "key", None) == pygame.K_ESCAPE:
+                    running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
                     running = False
             self.renderer.draw(self.screen, {})
             pygame.display.flip()
