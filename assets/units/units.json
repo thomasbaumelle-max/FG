@@ -29,7 +29,7 @@
     {
       "id": "swordsman",
       "template": "infantry",
-      "image": "units/swordsman.png",
+      "image": "units/red_knights/swordsman.png",
       "anchor_px": [32, 64],
       "shadow_baked": true,
       "battlefield_scale": 1.0,
@@ -38,7 +38,7 @@
     {
       "id": "archer",
       "template": "ranged",
-      "image": "units/archer.png",
+      "image": "units/red_knights/archer.png",
       "anchor_px": [32, 64],
       "shadow_baked": true,
       "battlefield_scale": 1.0,
@@ -47,7 +47,7 @@
     {
       "id": "mage",
       "template": "mage",
-      "image": "units/mage.png",
+      "image": "units/red_knights/mage.png",
       "anchor_px": [32, 64],
       "shadow_baked": true,
       "battlefield_scale": 1.0,
@@ -56,7 +56,7 @@
     {
       "id": "dragon",
       "template": "dragon",
-      "image": "units/dragon.png",
+      "image": "units/red_knights/dragon.png",
       "anchor_px": [32, 64],
       "shadow_baked": true,
       "battlefield_scale": 1.75,
@@ -65,7 +65,7 @@
     {
       "id": "priest",
       "template": "priest",
-      "image": "units/priest.png",
+      "image": "units/red_knights/priest.png",
       "anchor_px": [32, 64],
       "shadow_baked": true,
       "battlefield_scale": 1.0,
@@ -74,11 +74,29 @@
     {
       "id": "cavalry",
       "template": "cavalry",
-      "image": "units/cavalry.png",
+      "image": "units/red_knights/cavalry.png",
       "anchor_px": [32, 64],
       "shadow_baked": true,
       "battlefield_scale": 1.3,
       "abilities": {"Charge": 1}
-    }
+    },
+    {
+  "id": "spearman",
+  "template": "infantry",
+  "image": "units/red_knights/spearman.png",
+  "anchor_px": [32, 64],
+  "shadow_baked": true,
+  "battlefield_scale": 1.0,
+  "abilities": {"Shield Wall": 1}
+},
+{
+  "id": "grandmaster_warrior",
+  "template": "infantry",
+  "image": "units/red_knights/grandmaster_warrior.png",
+  "anchor_px": [32, 64],
+  "shadow_baked": true,
+  "battlefield_scale": 1.2,
+  "abilities": {"Battle Command": 1, "Retaliate+": 1}
+}
   ]
 }
