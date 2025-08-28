@@ -3239,14 +3239,34 @@ class Game:
         town: Optional[Town] = None,
         army: Optional[Army] = None,
         town_pos: Optional[Tuple[int, int]] = None,
+        scene_path: Optional[str] = None,
     ) -> None:
         """Open a town management screen or selection overlay.
 
-        If ``town`` is provided, the detailed :class:`TownScreen` is opened
-        directly for that town, optionally using ``army`` as the visiting
-        army.  Otherwise a :class:`TownOverlay` listing all player-owned towns
-        is displayed.
+        If ``scene_path`` is provided a scenic view defined by the JSON
+        manifest is rendered using :class:`TownSceneRenderer` before displaying
+        the normal town interface.  Supplying ``town`` keeps the previous
+        behaviour of opening the full :class:`TownScreen`.  When no ``town`` is
+        given a :class:`TownOverlay` listing all player-owned towns is shown.
         """
+
+        scene = None
+        if scene_path:
+            try:  # pragma: no cover - allow running without package context
+                from loaders.town_scene_loader import load_town_scene
+                from ui.town_scene_screen import TownSceneScreen
+                assets = getattr(self, "assets", None)
+                scene = load_town_scene(scene_path, assets)
+                scn_screen = TownSceneScreen(self.screen, scene, assets, self.clock)
+                run = getattr(scn_screen, "run", None)
+                if callable(run):
+                    run()
+            except Exception:
+                scene = None
+            if town is None:
+                return
+            if scene is not None and getattr(town, "scene", None) is None:
+                town.scene = scene
 
         if town is not None:
             if army is None and town_pos is not None and getattr(self, "hero", None):

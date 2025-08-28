@@ -157,11 +157,21 @@ class MainScreen:
             cb()
             mods = getattr(getattr(pygame, "key", None), "get_mods", lambda: 0)()
             if mods & getattr(pygame, "KMOD_CTRL", 0):
-                town = getattr(self.game, "_focused_town", None)
-                pos = getattr(self.game, "_focused_town_pos", None)
                 open_cb = getattr(self.game, "open_town", None)
-                if town and open_cb:
-                    open_cb(town, town_pos=pos)
+                if open_cb:
+                    path = os.path.join("assets", "towns", "towns_red_knights.json")
+                    town = getattr(self.game, "_focused_town", None)
+                    pos = getattr(self.game, "_focused_town_pos", None)
+                    try:
+                        if town:
+                            open_cb(town, town_pos=pos, scene_path=path)
+                        else:
+                            open_cb(scene_path=path)
+                    except TypeError:
+                        if town:
+                            open_cb(town, town_pos=pos)
+                        else:
+                            open_cb()
 
     def end_day(self) -> None:
         cb = getattr(self.game, "end_day", None)
