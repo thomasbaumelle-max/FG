@@ -21,11 +21,11 @@ def test_load_towns_red_knights_scene():
         "midground",
         "foreground",
     ]
-    assert {b.id for b in scene.buildings} == {"town_hall", "blacksmith"}
+    assert {b.id for b in scene.buildings} == {"barracks", "stables"}
     assert set(calls) >= {
         "towns/red_knights/background.png",
         "towns/red_knights/midground.png",
         "towns/red_knights/foreground.png",
-        "towns/red_knights/buildings/town_hall.png",
-        "towns/red_knights/buildings/blacksmith.png",
+        "towns/red_knights/buildings/barracks.png",
+        "towns/red_knights/buildings/stables.png",
     }

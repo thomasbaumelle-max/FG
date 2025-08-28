@@ -59,7 +59,7 @@ class TownSceneRenderer:
                 surface.blit(img, (0, 0))
 
         # Draw buildings according to their current state
-        for building in self.scene.buildings:
+        for building in sorted(self.scene.buildings, key=lambda b: b.z_index):
             state = states.get(building.id, "unbuilt")
             building_states = self._building_imgs.get(building.id, {})
             img = building_states.get(state)
