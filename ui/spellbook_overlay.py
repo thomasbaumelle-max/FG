@@ -7,6 +7,7 @@ import theme
 import settings
 from loaders.i18n import load_locale
 from loaders import icon_loader as IconLoader
+from .spell_info_overlay import SpellInfoOverlay
 
 
 class SpellbookOverlay:
@@ -32,6 +33,8 @@ class SpellbookOverlay:
         # label rects for tooltip lookup populated during draw
         self._label_rects: list[tuple[pygame.Rect, str]] = []
         self._tab_rects: list[tuple[pygame.Rect, str]] = []
+        self.info_overlay: SpellInfoOverlay | None = None
+        self._rect = pygame.Rect(0, 0, 0, 0)
 
         # mapping for non-combat spell details (cost, level and icon)
         self.spell_info: dict[str, dict[str, int | None | str | None]] = {}
@@ -162,6 +165,12 @@ class SpellbookOverlay:
                 if self.page > 0:
                     self.page -= 1
         elif event.type == pygame.MOUSEBUTTONDOWN:
+            if self.info_overlay is not None:
+                inside = self.info_overlay.rect.collidepoint(event.pos)
+                if self.info_overlay.handle_event(event):
+                    self.info_overlay = None
+                if inside:
+                    return False
             if event.button == 1:
                 if self.town:
                     for idx, (rect, cat) in enumerate(self._tab_rects):
@@ -170,7 +179,14 @@ class SpellbookOverlay:
                             self.spell_names = self.school_spells.get(cat, [])
                             self.page = 0
                             return False
-                return True
+                for rect, name in self._label_rects:
+                    if rect.collidepoint(event.pos):
+                        self.info_overlay = SpellInfoOverlay(
+                            self.screen, self._spell_tooltip(name)
+                        )
+                        return False
+                if self._rect and not self._rect.collidepoint(event.pos):
+                    return True
             if event.button in (5,):
                 if self.page + 1 < self.num_pages:
                     self.page += 1
@@ -190,6 +206,7 @@ class SpellbookOverlay:
         theme.draw_frame(overlay, overlay.get_rect())
         offset_x = (screen_w - w) // 2
         offset_y = (screen_h - h) // 2
+        self._rect = pygame.Rect(offset_x, offset_y, w, h)
 
         title = self.font.render(self.texts.get("Spellbook", "Spellbook"), True, self.TEXT)
         overlay.blit(title, ((w - title.get_width()) // 2, 10))
@@ -265,6 +282,12 @@ class SpellbookOverlay:
             mx, my = pygame.mouse.get_pos()
             for rect, name in self._label_rects:
                 if rect.collidepoint((mx, my)):
-                    self._draw_tooltip(overlay, (mx - offset_x, my - offset_y), self._spell_tooltip(name))
+                    self._draw_tooltip(
+                        overlay,
+                        (mx - offset_x, my - offset_y),
+                        self._spell_tooltip(name),
+                    )
                     break
         self.screen.blit(overlay, (offset_x, offset_y))
+        if self.info_overlay is not None:
+            self.info_overlay.draw()
