@@ -61,7 +61,7 @@
     "image": "buildings/red_knights/cavalry.png"
   },
   {
-    "id": "Hall of Grandmasters",
+    "id": "hall_of_grandmasters",
     "cost": {
       "wood": 30,
       "stone": 20,
@@ -71,10 +71,10 @@
       "stables"
     ],
     "dwelling": {
-      "Grandmaster Warrior": 2
+      "Grandmaster_Warrior": 2
     },
-    "desc": "GrandMaster Warrrior training.",
-    "image": "buildings/red_knights/Hall of Grandmasters.png"
+    "desc": "Grandmaster Warrrior training.",
+    "image": "buildings/red_knights/hall_of_grandmasters.png"
   },
   {
     "id": "dragon_lair",
