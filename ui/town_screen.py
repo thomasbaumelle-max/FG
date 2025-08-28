@@ -115,6 +115,23 @@ class TownScreen:
             except Exception:
                 self.scene_renderer = None
 
+        # Pre-compute building hotspots for scenic renderer
+        self._scene_hotspots: List[Tuple[str, List[Tuple[int, int]], str]] = []
+        if self.scene_renderer:
+            for b in self.scene_renderer.scene.buildings:
+                hs = getattr(b, "hotspot", None)
+                if not hs:
+                    continue
+                pts: List[Tuple[int, int]]
+                vals = list(hs)
+                if len(vals) == 4:
+                    x1, y1, x2, y2 = vals
+                    pts = [(x1, y1), (x2, y1), (x2, y2), (x1, y2)]
+                else:
+                    pts = [(vals[i], vals[i + 1]) for i in range(0, len(vals), 2)]
+                self._scene_hotspots.append((b.id, pts, getattr(b, "tooltip", "")))
+        self.hovered_building: Optional[str] = None
+
         # zones interactives
         self.hero_slots: List[pygame.Rect] = []
         self.garrison_slots: List[pygame.Rect] = []
@@ -283,6 +300,11 @@ class TownScreen:
                 pass
         R = self._compute_layout()
         self.tooltip = None
+        if self.hovered_building and not self._overlay_active():
+            for bid, _, tip in self._scene_hotspots:
+                if bid == self.hovered_building:
+                    self.tooltip = tip or bid
+                    break
         pygame.draw.rect(self.screen, COLOR_PANEL, R["top_bar"])
         pygame.draw.rect(self.screen, COLOR_PANEL, R["garrison_row"])
         pygame.draw.rect(self.screen, COLOR_PANEL, R["hero_row"])
@@ -307,8 +329,8 @@ class TownScreen:
         if self.tavern_open:
             self._draw_tavern_overlay()
 
-        # tooltip detection for buildings when no overlay open
-        if not self._overlay_active():
+        # tooltip detection for building cards when no overlay and no scene tooltip
+        if not self._overlay_active() and not self.tooltip:
             for sid, rc in self.building_cards:
                 if (
                     rc.collidepoint(self.mouse_pos)
@@ -524,6 +546,7 @@ class TownScreen:
                         self._invalidate()
                 elif t == pygame.MOUSEMOTION:
                     self.mouse_pos = evt.pos
+                    self.hovered_building = self._find_building_at(evt.pos)
                     self._invalidate()
                 elif t == pygame.MOUSEWHEEL:
                     if not self._overlay_active():
@@ -550,6 +573,15 @@ class TownScreen:
     def _on_mousedown(self, pos: Tuple[int,int], button: int) -> None:
         if self._overlay_active():
             self._on_overlay_mousedown(pos, button)
+            return
+
+        bid = self._find_building_at(pos)
+        if bid:
+            if self.town.is_structure_built(bid):
+                self.town.built_structures.discard(bid)
+            else:
+                self.town.built_structures.add(bid)
+            self.hovered_building = bid
             return
 
         # DRAG start?
@@ -839,6 +871,28 @@ class TownScreen:
 
     def _on_overlay_mouseup(self, pos: Tuple[int,int], button: int) -> None:
         pass
+
+    def _find_building_at(self, pos: Tuple[int, int]) -> Optional[str]:
+        if not self._scene_hotspots:
+            return None
+        for sid, pts, _ in self._scene_hotspots:
+            if self._point_in_poly(pos, pts):
+                return sid
+        return None
+
+    @staticmethod
+    def _point_in_poly(pt: Tuple[int, int], poly: List[Tuple[int, int]]) -> bool:
+        x, y = pt
+        inside = False
+        n = len(poly)
+        for i in range(n):
+            x1, y1 = poly[i]
+            x2, y2 = poly[(i + 1) % n]
+            if (y1 > y) != (y2 > y) and (
+                x < (x2 - x1) * (y - y1) / (y2 - y1) + x1
+            ):
+                inside = not inside
+        return inside
 
     def _unit_cost(self, unit_id: str, count: int) -> Dict[str, int]:
         try:
