@@ -156,6 +156,9 @@ class MainScreen:
         if cb:
             cb()
             mods = getattr(getattr(pygame, "key", None), "get_mods", lambda: 0)()
+            # ``pygame.key.get_mods`` reports the currently held modifier keys.
+            # Use it to allow Ctrl-clicking the next-town button to open the town
+            # immediately.
             if mods & getattr(pygame, "KMOD_CTRL", 0):
                 open_cb = getattr(self.game, "open_town", None)
                 if open_cb:
