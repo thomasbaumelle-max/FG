@@ -123,12 +123,13 @@ class GameState:
 
         economy.advance_day(self.economy)
         if self.world is not None:
+            hero = self.heroes[0] if self.heroes else None
             if hasattr(self.world, "advance_day"):
-                self.world.advance_day()
+                self.world.advance_day(hero)
             else:
                 for town in self.world.towns:
                     if hasattr(town, "advance_day"):
-                        town.advance_day()
+                        town.advance_day(hero, self.world)
         self.turn.turn_index += 1
         if self.economy.calendar.day == 1:
             self._advance_towns_week()

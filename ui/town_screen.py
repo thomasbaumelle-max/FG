@@ -211,6 +211,19 @@ class TownScreen:
             return True
         return False
 
+    def cancel_caravan(self, index: int) -> bool:
+        """Annuler une caravane existante et rapatrier les unités."""
+
+        return self.town.cancel_caravan(index)
+
+    def intercept_caravan(self, index: int) -> bool:
+        """Intercepter une caravane en cours et ajouter les unités au héros."""
+
+        hero = getattr(self.game, "hero", None)
+        if hero is None:
+            return False
+        return self.town.intercept_caravan(index, hero)
+
     def _invalidate(self, rect: Optional[pygame.Rect] = None) -> None:
         """Mark a region of the town screen as needing redraw."""
         if rect is None:

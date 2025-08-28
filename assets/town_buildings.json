@@ -21,6 +21,13 @@
     "image": "buildings/tavern.png"
   },
   {
+    "id": "caravansary",
+    "cost": {},
+    "prereq": [],
+    "desc": "Organize caravans between towns.",
+    "image": "buildings/market.png"
+  },
+  {
     "id": "bounty_board",
     "cost": {},
     "prereq": [],

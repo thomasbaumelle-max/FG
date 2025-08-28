@@ -2,7 +2,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Dict, Optional, Set, List, Tuple
+from typing import TYPE_CHECKING, Dict, Optional, Set, List, Tuple, Union
 
 import constants
 from core.economy import DEFAULT_MARKET_RATES
@@ -19,9 +19,9 @@ if TYPE_CHECKING:  # pragma: no cover
 
 @dataclass
 class Caravan:
-    """Représente un convoi de troupes se dirigeant vers une autre ville."""
+    """Représente un convoi de troupes se dirigeant vers une autre ville ou un héros."""
 
-    dest: "Town"
+    dest: Union["Town", "Hero"]
     units: List["Unit"]
     remaining: int
 
@@ -316,14 +316,15 @@ class Town(Building):
     # --------------------------- Caravan management ------------------------
     def send_caravan(
         self,
-        dest: "Town",
+        dest: Union["Town", "Hero"],
         units: List["Unit"],
         world: Optional["WorldMap"] = None,
     ) -> bool:
         """Créer une caravane vers ``dest`` transportant ``units``.
 
         Les unités sont retirées de la garnison locale et voyageront un nombre
-        de jours correspondant à la distance de Manhattan entre les villes.
+        de jours correspondant à la distance de Manhattan entre les villes ou
+        la position du héros.
         """
 
         if not units:
@@ -340,7 +341,10 @@ class Town(Building):
         distance = 1
         if world is not None:
             from_pos = world.find_building_pos(self)
-            to_pos = world.find_building_pos(dest)
+            if isinstance(dest, Town):
+                to_pos = world.find_building_pos(dest)
+            else:
+                to_pos = (dest.x, dest.y)
             if from_pos and to_pos:
                 distance = abs(from_pos[0] - to_pos[0]) + abs(from_pos[1] - to_pos[1])
                 if distance <= 0:
@@ -348,18 +352,72 @@ class Town(Building):
         self.caravan_orders.append(Caravan(dest, sent, distance))
         return True
 
-    def advance_day(self) -> None:
-        """Fait progresser les caravanes d'une journée et fusionne à l'arrivée."""
+    def advance_day(
+        self,
+        hero: Optional["Hero"] = None,
+        world: Optional["WorldMap"] = None,
+    ) -> None:
+        """Fait progresser les caravanes d'une journée et fusionne à l'arrivée.
+
+        Lorsque ``hero`` est fourni et hors de portée, les unités de la
+        garnison sont automatiquement envoyées soit vers le héros, soit vers la
+        ville alliée la plus proche.
+        """
 
         arrived: List[Caravan] = []
         for order in self.caravan_orders:
             order.remaining -= 1
             if order.remaining <= 0:
-                order.dest.garrison.extend(order.units)
+                if isinstance(order.dest, Town):
+                    order.dest.garrison.extend(order.units)
+                else:
+                    order.dest.army.extend(order.units)
                 arrived.append(order)
         for order in arrived:
             self.caravan_orders.remove(order)
+
+        if hero is not None and world is not None and self.garrison:
+            from_pos = world.find_building_pos(self)
+            if from_pos:
+                dist = abs(hero.x - from_pos[0]) + abs(hero.y - from_pos[1])
+                if dist > 1:
+                    allied = [
+                        t
+                        for t in world.towns
+                        if t is not self and getattr(t, "owner", None) == getattr(self, "owner", None)
+                    ]
+                    dest: Union["Town", "Hero"]
+                    if allied:
+                        def _dist(t: Town) -> int:
+                            tp = world.find_building_pos(t)
+                            if not tp:
+                                return 10 ** 6
+                            return abs(tp[0] - from_pos[0]) + abs(tp[1] - from_pos[1])
+
+                        dest = min(allied, key=_dist)
+                    else:
+                        dest = hero
+                    self.send_caravan(dest, list(self.garrison), world)
+
         self.built_today = False
+
+    def cancel_caravan(self, index: int) -> bool:
+        """Annuler la caravane à l'index donné et rapatrier les unités."""
+
+        if 0 <= index < len(self.caravan_orders):
+            order = self.caravan_orders.pop(index)
+            self.garrison.extend(order.units)
+            return True
+        return False
+
+    def intercept_caravan(self, index: int, hero: "Hero") -> bool:
+        """Intercepter la caravane à ``index`` et transférer les unités au héros."""
+
+        if 0 <= index < len(self.caravan_orders):
+            order = self.caravan_orders.pop(index)
+            hero.army.extend(order.units)
+            return True
+        return False
 
     # --------------------------- Town management ----------------------------
     def build_structure(

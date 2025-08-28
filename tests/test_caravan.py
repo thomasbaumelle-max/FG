@@ -1,6 +1,5 @@
 import types
 import sys
-import types
 
 
 def test_caravan_travel_and_arrival():
@@ -120,3 +119,68 @@ def test_world_map_advances_caravans():
     world.advance_day()
     world.advance_day()
     assert unit in t2.garrison
+
+
+def test_auto_caravan_to_nearest_ally():
+    from core.world import WorldMap
+    from core.buildings import Town
+    from core.entities import Unit, SWORDSMAN_STATS, Hero
+
+    world = WorldMap(width=5, height=1, biome_weights={"scarletia_echo_plain": 1.0}, num_obstacles=0, num_treasures=0, num_enemies=0)
+    t1, t2 = Town("A"), Town("B")
+    world.grid[0][0].building = t1
+    world.grid[0][3].building = t2
+    t1.owner = t2.owner = 1
+
+    unit = Unit(SWORDSMAN_STATS, 2, "hero")
+    t1.garrison.append(unit)
+    hero = Hero(4, 0, [])
+
+    world.advance_day(hero)
+    assert not t1.garrison and t1.caravan_orders
+
+    for _ in range(3):
+        world.advance_day(hero)
+    assert unit in t2.garrison
+
+
+def test_townscreen_cancel_and_intercept(monkeypatch, pygame_stub):
+    pg = pygame_stub(
+        KEYDOWN=2,
+        MOUSEBUTTONDOWN=1,
+        K_u=117,
+        K_ESCAPE=27,
+        transform=types.SimpleNamespace(smoothscale=lambda img, size: img),
+    )
+    monkeypatch.setattr(pg.Rect, "collidepoint", lambda self, pos: True)
+    monkeypatch.setattr(
+        pg.Surface, "get_size", lambda self: (self.get_width(), self.get_height())
+    )
+    monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
+    monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
+
+    from core.world import WorldMap
+    from core.entities import Hero, Unit, SWORDSMAN_STATS
+    from core.buildings import Town
+    from ui.town_screen import TownScreen
+
+    game = types.SimpleNamespace()
+    world = WorldMap(width=2, height=1, biome_weights={"scarletia_echo_plain": 1.0}, num_obstacles=0, num_treasures=0, num_enemies=0)
+    t1, t2 = Town("A"), Town("B")
+    world.grid[0][0].building = t1
+    world.grid[0][1].building = t2
+    game.world = world
+    game.hero = Hero(0, 0, [])
+
+    screen = pg.display.set_mode((1, 1))
+    ts = TownScreen(screen, game, t1, None, None, (0, 0))
+    u1 = Unit(SWORDSMAN_STATS, 1, "hero")
+    u2 = Unit(SWORDSMAN_STATS, 2, "hero")
+    t1.garrison.extend([u1, u2])
+
+    assert ts.launch_caravan(t2, [u1])
+    assert ts.launch_caravan(t2, [u2])
+    assert ts.cancel_caravan(0)
+    assert u1 in t1.garrison
+    assert ts.intercept_caravan(0)
+    assert u2 in game.hero.army
