@@ -204,6 +204,27 @@ class Game:
 
             BiomeCatalog.load(self.ctx, "biomes/biomes.json")
             init_biome_images()
+
+            # Load unit and creature definitions early so ``load_assets`` can
+            # access metadata such as sprite paths.  The loader returns both the
+            # parsed stats and any extra information used later for image
+            # loading.
+            try:
+                self.unit_defs, self.unit_extra = units_loader.load_units(
+                    self.ctx, "units/units.json"
+                )
+            except Exception:
+                self.unit_defs, self.unit_extra = {}, {}
+            try:
+                self.creature_defs, self.creature_extra = units_loader.load_units(
+                    self.ctx, "units/creatures.json", section="creatures"
+                )
+            except Exception:
+                self.creature_defs, self.creature_extra = {}, {}
+            self._stats_by_name = {**self.unit_defs, **self.creature_defs}
+
+            # Asset loading needs ``unit_extra``/``creature_extra`` to bake unit
+            # sprites, so perform it after the definitions are available.
             self.load_assets()
 
             battlefield_manifest = os.path.join(
@@ -224,20 +245,6 @@ class Game:
             self.resources: Dict[str, ResourceDef] = load_resources(
                 self.ctx, "resources/resources.json", tile_size=constants.TILE_SIZE
             )
-
-            try:
-                self.unit_defs, self.unit_extra = units_loader.load_units(
-                    self.ctx, "units/units.json"
-                )
-            except Exception:
-                self.unit_defs, self.unit_extra = {}, {}
-            try:
-                self.creature_defs, self.creature_extra = units_loader.load_units(
-                    self.ctx, "units/creatures.json", section="creatures"
-                )
-            except Exception:
-                self.creature_defs, self.creature_extra = {}, {}
-            self._stats_by_name = {**self.unit_defs, **self.creature_defs}
             try:
                 self.hero_defs = load_heroes(self.ctx, "units/heroes.json")
             except Exception:
