@@ -54,6 +54,7 @@ from core.entities import (
     CAVALRY_STATS,
     DRAGON_STATS,
     PRIEST_STATS,
+    RECRUITABLE_UNITS,
     create_random_enemy_army,
     STARTING_ARTIFACTS,
     ARTIFACT_ICONS,
@@ -89,14 +90,7 @@ from core import economy, auto_resolve, vision
 logger = logging.getLogger(__name__)
 
 # Mapping from unit names to their statistics for serialisation
-STATS_BY_NAME: Dict[str, UnitStats] = {
-    SWORDSMAN_STATS.name: SWORDSMAN_STATS,
-    ARCHER_STATS.name: ARCHER_STATS,
-    MAGE_STATS.name: MAGE_STATS,
-    CAVALRY_STATS.name: CAVALRY_STATS,
-    DRAGON_STATS.name: DRAGON_STATS,
-    PRIEST_STATS.name: PRIEST_STATS,
-}
+STATS_BY_NAME: Dict[str, UnitStats] = dict(RECRUITABLE_UNITS)
 
 
 

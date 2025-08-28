@@ -28,11 +28,7 @@ from core.entities import (
     Unit,
     Hero,
     EnemyHero,
-    FUMEROLLE_LIZARD_STATS,
-    SHADOWLEAF_WOLF_STATS,
-    BOAR_RAVEN_STATS,
-    HURLOMBE_STATS,
-    REEF_SERPENT_STATS,
+    CREATURE_STATS as ENTITY_CREATURE_STATS,
     Army,
     UnitCarrier,
 )
@@ -63,25 +59,13 @@ if TYPE_CHECKING:  # pragma: no cover
 # Mapping from unit names to image identifiers for enemy stacks
 # Only creatures populate the world map; enemy hero armies still use the
 # recruitable units defined elsewhere.
-ENEMY_UNIT_IMAGES: Dict[str, str] = {
-    FUMEROLLE_LIZARD_STATS.name: FUMEROLLE_LIZARD_STATS.name,
-    SHADOWLEAF_WOLF_STATS.name: SHADOWLEAF_WOLF_STATS.name,
-    BOAR_RAVEN_STATS.name: BOAR_RAVEN_STATS.name,
-    HURLOMBE_STATS.name: HURLOMBE_STATS.name,
-    REEF_SERPENT_STATS.name: REEF_SERPENT_STATS.name,
-}
+ENEMY_UNIT_IMAGES: Dict[str, str] = {name: name for name in ENTITY_CREATURE_STATS}
 
 # Number of tiles grouped into a single flora chunk used for spatial indexing
 FLORA_CHUNK_TILES = 32
 
 # All known creature stats indexed by their unique name
-CREATURE_STATS: Dict[str, "UnitStats"] = {
-    FUMEROLLE_LIZARD_STATS.name: FUMEROLLE_LIZARD_STATS,
-    SHADOWLEAF_WOLF_STATS.name: SHADOWLEAF_WOLF_STATS,
-    BOAR_RAVEN_STATS.name: BOAR_RAVEN_STATS,
-    HURLOMBE_STATS.name: HURLOMBE_STATS,
-    REEF_SERPENT_STATS.name: REEF_SERPENT_STATS,
-}
+CREATURE_STATS: Dict[str, "UnitStats"] = ENTITY_CREATURE_STATS
 
 
 def _reset_town_counter() -> None:
@@ -110,6 +94,8 @@ def _load_creatures_by_biome() -> Tuple[
     try:
         with open(path, "r", encoding="utf-8") as fh:
             data = json.load(fh)
+        if isinstance(data, dict):
+            data = data.get("creatures", [])
         if isinstance(data, list):
             for entry in data:
                 try:
@@ -146,12 +132,9 @@ def _load_creatures_by_biome() -> Tuple[
 
 
 CREATURES_BY_BIOME, CREATURE_BEHAVIOUR = _load_creatures_by_biome()
-DEFAULT_ENEMY_UNITS: List[str] = [
-    FUMEROLLE_LIZARD_STATS.name,
-    SHADOWLEAF_WOLF_STATS.name,
-    BOAR_RAVEN_STATS.name,
-    HURLOMBE_STATS.name,
-]
+DEFAULT_ENEMY_UNITS: List[str] = list(CREATURE_STATS.keys())
+
+_DEFAULT_CREATURE = next(iter(CREATURE_STATS.values()))
 
 
 
@@ -984,14 +967,14 @@ class WorldMap:
         creature_names = CREATURES_BY_BIOME.get(biome)
         if not creature_names:
             if biome in constants.WATER_BIOMES:
-                creature_names = [REEF_SERPENT_STATS.name]
+                creature_names = ["reef_serpent"]
             else:
                 creature_names = DEFAULT_ENEMY_UNITS
         num_stacks = random.randint(1, 3)
         units: List[Unit] = []
         for _ in range(num_stacks):
             name = random.choice(creature_names)
-            stats = CREATURE_STATS.get(name, FUMEROLLE_LIZARD_STATS)
+            stats = CREATURE_STATS.get(name, _DEFAULT_CREATURE)
             count = random.randint(5, 12)
             units.append(Unit(stats, count, side="enemy"))
         return units
