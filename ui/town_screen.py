@@ -570,10 +570,7 @@ class TownScreen:
 
         bid = self._find_building_at(pos)
         if bid:
-            if self.town.is_structure_built(bid):
-                self.town.built_structures.discard(bid)
-            else:
-                self.town.built_structures.add(bid)
+            self._handle_building_click(bid)
             self.hovered_building = bid
             return
 
@@ -596,32 +593,36 @@ class TownScreen:
         # Cards click
         for sid, rc in self.building_cards:
             if rc.collidepoint(pos):
-                if not self.town.is_structure_built(sid):
-                    if self.town.built_today:
-                        return
-                    cost = self.town.structure_cost(sid)
-                    if self._can_afford(self.hero, cost):
-                        player = economy.PlayerEconomy()
-                        player.resources.update(self.hero.resources)
-                        player.resources["gold"] = self.hero.gold
-                        if self.town.build_structure(sid, self.hero, player):
-                            self._publish_resources()
-                else:
-                    if sid == "market":
-                        market_screen.open(self.screen, self.game, self.town, self.hero, self.clock)
-                    elif sid == "castle":
-                        self._open_castle_overlay()
-                    elif sid == "tavern":
-                        self._open_tavern_overlay()
-                    elif sid == "bounty_board":
-                        self._open_bounty_overlay()
-                    elif sid == "magic_school":
-                        self._open_spellbook_overlay()
-                    else:
-                        units = self.town.recruitable_units(sid)
-                        if units:
-                            self._open_recruit_overlay(sid, units[0])
+                self._handle_building_click(sid)
                 return
+    def _handle_building_click(self, sid: str) -> None:
+        if not self.town.is_structure_built(sid):
+            if self.town.built_today:
+                return
+            cost = self.town.structure_cost(sid)
+            if self._can_afford(self.hero, cost):
+                player = economy.PlayerEconomy()
+                player.resources.update(self.hero.resources)
+                player.resources["gold"] = self.hero.gold
+                if self.town.build_structure(sid, self.hero, player):
+                    self._publish_resources()
+        else:
+            if sid == "market":
+                market_screen.open(
+                    self.screen, self.game, self.town, self.hero, self.clock
+                )
+            elif sid == "castle":
+                self._open_castle_overlay()
+            elif sid == "tavern":
+                self._open_tavern_overlay()
+            elif sid == "bounty_board":
+                self._open_bounty_overlay()
+            elif sid == "magic_school":
+                self._open_spellbook_overlay()
+            else:
+                units = self.town.recruitable_units(sid)
+                if units:
+                    self._open_recruit_overlay(sid, units[0])
 
     def _on_mouseup(self, pos: Tuple[int,int], button: int) -> None:
         if self._overlay_active():

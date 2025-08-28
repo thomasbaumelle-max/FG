@@ -158,11 +158,20 @@ def test_open_town_passes_scene_states(monkeypatch, pygame_stub):
     captured = {}
 
     class DummySceneScreen:
-        def __init__(self, screen, scn, assets, clock, building_states=None):
+        def __init__(
+            self,
+            screen,
+            scn,
+            assets,
+            clock,
+            building_states=None,
+            game=None,
+            town=None,
+        ):
             captured["states"] = dict(building_states)
 
         def run(self, debug=False):
-            pass
+            return False
 
     monkeypatch.setitem(
         sys.modules,
