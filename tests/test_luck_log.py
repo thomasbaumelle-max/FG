@@ -4,8 +4,10 @@ from dataclasses import replace
 
 os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
 
-from core.entities import Unit, SWORDSMAN_STATS
+from core.entities import Unit, RECRUITABLE_UNITS
 import pygame
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
 
 def test_positive_luck_logs(monkeypatch, simple_combat):

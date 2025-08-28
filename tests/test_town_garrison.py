@@ -4,7 +4,9 @@ os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
 import pygame
 
 from core.buildings import Town
-from core.entities import Hero, Unit, SWORDSMAN_STATS
+from core.entities import Hero, Unit, RECRUITABLE_UNITS
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
 
 def test_garrison_transfer():

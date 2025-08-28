@@ -5,11 +5,13 @@ pygame_stub = types.SimpleNamespace()
 sys.modules.setdefault("pygame", pygame_stub)
 
 from core.buildings import Building
-from core.entities import Hero, Unit, SWORDSMAN_STATS
+from core.entities import Hero, Unit, RECRUITABLE_UNITS
 from core import economy
 from core.game import Game
 from core.world import WorldMap
 from state.game_state import GameState
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
 
 def test_building_upgrade_updates_income_and_resources():

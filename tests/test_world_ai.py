@@ -1,5 +1,5 @@
 from core.world import WorldMap
-from core.entities import Hero, EnemyHero, Unit, SWORDSMAN_STATS
+from core.entities import Hero, EnemyHero, Unit, RECRUITABLE_UNITS
 from core.buildings import Town, Building
 from core.game import Game
 import core.exploration_ai as exploration_ai
@@ -8,6 +8,8 @@ from core.ai.creature_ai import GuardianAI, RoamingAI
 import pytest
 import random
 from pathlib import Path
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
 @pytest.fixture(scope="module")
 def _marine_world_base() -> WorldMap:

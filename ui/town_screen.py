@@ -11,8 +11,6 @@ from core.entities import (
     HeroStats,
     Unit,
     UnitStats,
-    SWORDSMAN_STATS,
-    ARCHER_STATS,
     RECRUITABLE_UNITS,
     Army,
 )
@@ -157,13 +155,13 @@ class TownScreen:
                 "name": "Bran",
                 "cost": 1500,
                 "stats": HeroStats(1, 1, 0, 0, 0, 0, 0, 0, 0),
-                "army": [Unit(SWORDSMAN_STATS, 10, "hero")],
+                "army": [Unit(RECRUITABLE_UNITS["swordsman"], 10, "hero")],
             },
             {
                 "name": "Luna",
                 "cost": 2500,
                 "stats": HeroStats(0, 0, 1, 1, 0, 0, 0, 0, 0),
-                "army": [Unit(ARCHER_STATS, 10, "hero")],
+                "army": [Unit(RECRUITABLE_UNITS["archer"], 10, "hero")],
             },
         ]
         # Sélection des unités à envoyer en caravane

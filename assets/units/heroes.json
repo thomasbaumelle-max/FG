@@ -96,11 +96,16 @@
       "name": "Lirael",
       "class": "Mist Grove Warden",
       "faction": "sylvan",
+      "starting_army": [
+        {"unit": "Mist Dragon", "count": 22},
+        {"unit": "Harmonia", "count": 30},
+        {"unit": "Mist Nymph", "count": 15}
+      ],
       "starting_skills": [
-        {"branch": "Mists & Streams", "rank": "N", "id": "Mist Veil"},
-        {"branch": "Sylvan Heart", "rank": "N", "id": "Entangling Vines"},
-        {"branch": "Verdant Grace", "rank": "N", "id": "Dew Mend"},
-        {"branch": "Song of the Wind", "rank": "N", "id": "Zephyr Step"}
+        {"branch": "Mists & Streams", "rank": "N", "id": "mist_veil_n"},
+        {"branch": "Sylvan Heart", "rank": "N", "id": "entangling_vines_n"},
+        {"branch": "Verdant Grace", "rank": "N", "id": "dew_mend_n"},
+        {"branch": "Song of the Wind", "rank": "N", "id": "zephyr_step_n"}
       ],
       "known_spells": ["sand_screen"],
       "PortraitSprite": "hero/sylvan_haven/lirael.png",
@@ -115,11 +120,16 @@
       "name": "Thorne of the Umbra Grove",
       "class": "Umbra Druid",
       "faction": "sylvan",
+      "starting_army": [
+        {"unit": "Mist Dragon", "count": 22},
+        {"unit": "Harmonia", "count": 30},
+        {"unit": "Mist Nymph", "count": 15}
+      ],
       "starting_skills": [
-        {"branch": "Sylvan Heart", "rank": "N", "id": "Entangling Vines"},
-        {"branch": "Sylvan Heart", "rank": "A", "id": "Bramble Field"},
-        {"branch": "Sylvan Heart", "rank": "E", "id": "Summon Sprite"},
-        {"branch": "Verdant Grace", "rank": "N", "id": "Dew Mend"}
+        {"branch": "Sylvan Heart", "rank": "N", "id": "entangling_vines_n"},
+        {"branch": "Sylvan Heart", "rank": "A", "id": "bramble_field"},
+        {"branch": "Sylvan Heart", "rank": "E", "id": "summon_sprite"},
+        {"branch": "Verdant Grace", "rank": "N", "id": "dew_mend_n"}
       ],
       "known_spells": ["sand_screen"],
       "PortraitSprite": "hero/sylvan_haven/thorne.png",

@@ -12,7 +12,7 @@ from tests.unit_stats import get_unit_stats
 from core.buildings import create_building
 from core.game import Game
 
-SWORDSMAN_STATS = get_unit_stats("Swordsman")
+SWORDSMAN_STATS = get_unit_stats("swordsman")
 
 def test_place_resources_and_collect(rng, monkeypatch):
     monkeypatch.setattr("random.shuffle", rng.shuffle)

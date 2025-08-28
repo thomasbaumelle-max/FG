@@ -4,7 +4,10 @@ os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 
 from dataclasses import replace
 
-from core.entities import Unit, ARCHER_STATS, SWORDSMAN_STATS
+from core.entities import Unit, RECRUITABLE_UNITS
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
+ARCHER_STATS = RECRUITABLE_UNITS["archer"]
 
 
 def test_archer_min_range_excludes_adjacent(simple_combat):

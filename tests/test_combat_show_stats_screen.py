@@ -4,8 +4,10 @@ import pygame
 import theme
 import pytest
 
-from core.entities import Unit, SWORDSMAN_STATS
+from core.entities import Unit, RECRUITABLE_UNITS
 from ui import combat_summary
+
+SWORDSMAN_STATS = RECRUITABLE_UNITS["swordsman"]
 
 
 pytestmark = pytest.mark.combat

@@ -87,6 +87,10 @@ logger = logging.getLogger(__name__)
 # Fallback mapping for unit statistics used when a ``Game`` instance has not
 # initialised its own data yet (e.g. in certain unit tests).
 STATS_BY_NAME: Dict[str, UnitStats] = {**RECRUITABLE_UNITS, **CREATURE_STATS}
+for st in list(STATS_BY_NAME.values()):
+    STATS_BY_NAME.setdefault(st.name, st)
+    alias = str(st.name).lower().replace(" ", "_")
+    STATS_BY_NAME.setdefault(alias, st)
 
 
 # Filenames for save slots
@@ -794,23 +798,40 @@ class Game:
         self.artifacts_manifest = load_artifact_manifest(repo_root, self.assets)
 
         # Load unit and creature sprites using metadata from the loaders
+        images: Set[str] = {
+            info.get("image")
+            for extras in (self.unit_extra, self.creature_extra)
+            for info in extras.values()
+            if info.get("image")
+        }
+        if images:
+            self.load_additional_assets(list(images))
+
         self.unit_shadow_baked = {}
-        for extras in (self.unit_extra, self.creature_extra):
+        for extras, stats_map in (
+            (self.unit_extra, self.unit_defs),
+            (self.creature_extra, self.creature_defs),
+        ):
             for uid, info in extras.items():
-                try:
-                    self.unit_shadow_baked[uid] = bool(info.get("shadow_baked", False))
-                    image = info.get("image")
-                    if not image:
-                        continue
-                    surf = self.assets.get(image)
-                    surf = scale_surface(
-                        surf,
-                        (constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE),
-                        smooth=True,
-                    )
-                    self.assets[uid] = surf
-                except Exception:
+                image = info.get("image")
+                anchor = info.get("anchor_px")
+                if not image:
                     continue
+                stats = stats_map.get(uid)
+                scale = getattr(stats, "battlefield_scale", 1.0) if stats else 1.0
+                target = int(constants.COMBAT_HEX_SIZE * scale)
+                surf, anchor = scale_with_anchor(
+                    self.assets.get(image),
+                    (target, target),
+                    anchor_px=anchor,
+                    smooth=True,
+                )
+                self.assets[uid] = surf
+                name = info.get("name")
+                if name:
+                    self.assets[name] = surf
+                    self.assets[name.lower().replace(" ", "_")] = surf
+                self.unit_shadow_baked[uid] = bool(info.get("shadow_baked", False))
 
         # Load hero portraits and map icons declared in assets/units/heroes.json
         heroes_path = os.path.join(repo_root, "assets", "units", "heroes.json")
@@ -2083,7 +2104,7 @@ class Game:
         if tile.building and not tile.building.passable:
             # Interact with the building without moving onto its tile
             self.hero.ap -= step_cost
-            if tile.building.garrison:
+            if tile.building.garrison and tile.building.owner != 0:
                 enemy = EnemyHero(nx, ny, tile.building.garrison)
                 engaged = self.combat_with_enemy_hero(enemy, initiated_by="hero")
                 if not engaged:
@@ -2272,7 +2293,7 @@ class Game:
                     self.refresh_army_list()
                     return
                 self.refresh_army_list()
-        if tile.building and tile.building.garrison:
+        if tile.building and tile.building.garrison and tile.building.owner != 0:
             enemy = EnemyHero(nx, ny, tile.building.garrison)
             engaged = self.combat_with_enemy_hero(enemy, initiated_by="hero")
             if not engaged:
