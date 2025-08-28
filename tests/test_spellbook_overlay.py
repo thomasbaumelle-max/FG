@@ -27,7 +27,10 @@ def _make_event(t, **kw):
 def test_pagination_and_tooltip(pygame_stub):
     pygame = pygame_stub(KEYDOWN=1, MOUSEBUTTONDOWN=2, K_RIGHT=3, K_LEFT=4,
                          K_s=5, K_ESCAPE=6, K_PAGEDOWN=7, K_PAGEUP=8)
-    from ui.spellbook_overlay import SpellbookOverlay
+    import importlib
+    import ui.spellbook_overlay as sb
+    importlib.reload(sb)
+    SpellbookOverlay = sb.SpellbookOverlay
     screen = pygame.Surface((200, 200))
     combat = DummyCombat()
     overlay = SpellbookOverlay(screen, combat)
