@@ -3288,7 +3288,8 @@ class Game:
                 )
                 run = getattr(scn_screen, "run", None)
                 if callable(run):
-                    run()
+                    debug_scene = os.environ.get("FG_TOWN_DEBUG") == "1"
+                    run(debug=debug_scene)
             except Exception as exc:
                 logger.warning("Failed to load town scene %s: %s", scene_path, exc)
                 scene = None

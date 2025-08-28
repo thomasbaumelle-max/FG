@@ -75,8 +75,12 @@ class TownSceneScreen:
             if not events and fast_tests:
                 break
             for event in events:
-                if event.type == pygame.KEYDOWN and getattr(event, "key", None) == pygame.K_ESCAPE:
-                    running = False
+                if event.type == pygame.KEYDOWN:
+                    key = getattr(event, "key", None)
+                    if key == pygame.K_ESCAPE:
+                        running = False
+                    elif key == pygame.K_F1:
+                        debug = not debug
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     for building in self.renderer.scene.buildings:
                         hotspot = getattr(building, "hotspot", [])
