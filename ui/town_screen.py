@@ -119,17 +119,10 @@ class TownScreen:
         self._scene_hotspots: List[Tuple[str, List[Tuple[int, int]], str]] = []
         if self.scene_renderer:
             for b in self.scene_renderer.scene.buildings:
-                hs = getattr(b, "hotspot", None)
+                hs = getattr(b, "hotspot", [])
                 if not hs:
                     continue
-                pts: List[Tuple[int, int]]
-                vals = list(hs)
-                if len(vals) == 4:
-                    x1, y1, x2, y2 = vals
-                    pts = [(x1, y1), (x2, y1), (x2, y2), (x1, y2)]
-                else:
-                    pts = [(vals[i], vals[i + 1]) for i in range(0, len(vals), 2)]
-                self._scene_hotspots.append((b.id, pts, getattr(b, "tooltip", "")))
+                self._scene_hotspots.append((b.id, list(hs), getattr(b, "tooltip", "")))
         self.hovered_building: Optional[str] = None
 
         # zones interactives

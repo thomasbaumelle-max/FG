@@ -30,7 +30,7 @@ class TownBuilding:
     layer: str
     pos: Tuple[int, int]
     states: Dict[str, str]
-    hotspot: Tuple[int, int, int, int] | None = None
+    hotspot: List[Tuple[int, int]] = field(default_factory=list)
     tooltip: str = ""
     z_index: int = 0
 
@@ -92,8 +92,9 @@ def load_town_scene(path: str, assets: Any | None = None) -> TownScene:
                     pass
         pos_list = entry.get("pos", [0, 0])
         pos = (int(pos_list[0]), int(pos_list[1])) if len(pos_list) >= 2 else (0, 0)
-        hotspot_list = entry.get("hotspot")
-        hotspot = tuple(hotspot_list) if hotspot_list else None
+        hs = entry.get("hotspot")
+        hotspot = [tuple(p) for p in hs] if hs else []
+
         z_index = int(entry.get("z_index", 0))
         buildings.append(
             TownBuilding(

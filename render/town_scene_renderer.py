@@ -71,10 +71,8 @@ class TownSceneRenderer:
                 surface.blit(img, building.pos)
                 if debug and getattr(building, "hotspot", None):
                     hs = building.hotspot
-                    if len(hs) >= 4:
-                        x1, y1, x2, y2 = hs[0], hs[1], hs[2], hs[3]
-                        rect = pygame.Rect(x1, y1, x2 - x1, y2 - y1)
-                        pygame.draw.rect(surface, constants.MAGENTA, rect, 1)
+                    if len(hs) >= 3:
+                        pygame.draw.polygon(surface, constants.MAGENTA, hs, 1)
 
 
 __all__ = ["TownSceneRenderer"]
