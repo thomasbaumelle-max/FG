@@ -11,8 +11,18 @@ import constants
 from loaders.town_scene_loader import TownScene, TownBuilding
 from render.town_scene_renderer import TownSceneRenderer
 from core import economy
+from state.game_state import PlayerResources
 from . import market_screen
-from .town_screen import TownScreen
+from .town_common import (
+    draw_army_row,
+    draw_label,
+    ROW_H,
+    RESBAR_H,
+    TOPBAR_H,
+    GAP,
+)
+from .town_screen import TownScreen, FONT_NAME, COLOR_PANEL
+from .widgets.resources_bar import ResourcesBar
 
 
 def _point_in_poly(pt: tuple[int, int], poly: list[tuple[int, int]]) -> bool:
@@ -22,9 +32,7 @@ def _point_in_poly(pt: tuple[int, int], poly: list[tuple[int, int]]) -> bool:
     for i in range(len(poly)):
         xi, yi = poly[i]
         xj, yj = poly[j]
-        if ((yi > y) != (yj > y)) and (
-            x < (xj - xi) * (y - yi) / (yj - yi) + xi
-        ):
+        if ((yi > y) != (yj > y)) and (x < (xj - xi) * (y - yi) / (yj - yi) + xi):
             inside = not inside
         j = i
     return inside
@@ -61,6 +69,22 @@ class TownSceneScreen:
         self.building_states = dict(building_states) if building_states else {}
         self.game = game
         self.town = town
+        self.hero = getattr(game, "hero", None) if game else None
+        self.army_units = getattr(self.hero, "army", []) if self.hero else []
+
+        self.font = pygame.font.SysFont(FONT_NAME, 18)
+        self.font_small = pygame.font.SysFont(FONT_NAME, 14)
+        self.font_big = pygame.font.SysFont(FONT_NAME, 20, bold=True)
+
+        self.res_bar = ResourcesBar()
+        if self.hero is not None:
+            pr = PlayerResources(
+                gold=getattr(self.hero, "gold", 0),
+                wood=self.hero.resources.get("wood", 0),
+                stone=self.hero.resources.get("stone", 0),
+                crystal=self.hero.resources.get("crystal", 0),
+            )
+            self.res_bar.set_resources(pr)
 
     def on_building_click(self, building: TownBuilding) -> bool:
         """Hook executed when a building hotspot is clicked.
@@ -119,6 +143,8 @@ class TownSceneScreen:
         handled = False
         fast_tests = os.environ.get("FG_FAST_TESTS") == "1"
         while running:
+            dt = self.clock.tick(getattr(constants, "FPS", 60)) / 1000.0
+            layout = self._compute_layout()
             events = pygame.event.get()
             if not events and fast_tests:
                 break
@@ -130,6 +156,8 @@ class TownSceneScreen:
                     elif key == pygame.K_F1:
                         debug = not debug
                 elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if any(rect.collidepoint(event.pos) for rect in layout.values()):
+                        continue
                     for building in self.renderer.scene.buildings:
                         hotspot = getattr(building, "hotspot", [])
                         if hotspot and _point_in_poly(event.pos, hotspot):
@@ -138,9 +166,61 @@ class TownSceneScreen:
                                 handled = True
                             break
             self.renderer.draw(self.screen, self.building_states, debug=debug)
+            if self.town is not None:
+                pygame.draw.rect(self.screen, COLOR_PANEL, layout["top_bar"])
+                pygame.draw.rect(self.screen, COLOR_PANEL, layout["garrison_row"])
+                pygame.draw.rect(self.screen, COLOR_PANEL, layout["hero_row"])
+                pygame.draw.rect(self.screen, COLOR_PANEL, layout["resbar"])
+                draw_label(
+                    self.screen,
+                    self.font_big,
+                    self.town.name,
+                    pygame.Rect(
+                        layout["top_bar"].x + 20, layout["top_bar"].y + 8, 0, 0
+                    ),
+                )
+                draw_label(
+                    self.screen,
+                    self.font_big,
+                    "Garrison",
+                    layout["garrison_row"].inflate(-8, -ROW_H + 24).move(8, 4),
+                )
+                draw_label(
+                    self.screen,
+                    self.font_big,
+                    "Visiting Hero",
+                    layout["hero_row"].inflate(-8, -ROW_H + 24).move(8, 4),
+                )
+                draw_army_row(
+                    self.screen,
+                    self.font,
+                    self.font_small,
+                    getattr(self.town, "garrison", []),
+                    layout["garrison_row"],
+                )
+                draw_army_row(
+                    self.screen,
+                    self.font,
+                    self.font_small,
+                    self.army_units,
+                    layout["hero_row"],
+                )
+                self.res_bar.update(dt)
+                self.res_bar.draw(self.screen, layout["resbar"])
             pygame.display.flip()
-            self.clock.tick(getattr(constants, "FPS", 60))
         return handled
+
+    def _compute_layout(self) -> dict[str, pygame.Rect]:
+        """Compute rectangles for UI elements."""
+        W, H = self.screen.get_size()
+        rects: dict[str, pygame.Rect] = {}
+        rects["top_bar"] = pygame.Rect(0, 0, W, TOPBAR_H)
+        rects["resbar"] = pygame.Rect(0, H - RESBAR_H, W, RESBAR_H)
+        rects["hero_row"] = pygame.Rect(20, H - RESBAR_H - GAP - ROW_H, W - 40, ROW_H)
+        rects["garrison_row"] = pygame.Rect(
+            20, rects["hero_row"].y - GAP - ROW_H, W - 40, ROW_H
+        )
+        return rects
 
 
 __all__ = ["TownSceneScreen"]

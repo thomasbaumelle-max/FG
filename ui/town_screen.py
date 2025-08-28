@@ -15,15 +15,19 @@ from core.entities import (
     RECRUITABLE_UNITS,
     Army,
 )
+from .town_common import (
+    SLOT_COUNT,
+    ROW_H,
+    RESBAR_H,
+    TOPBAR_H,
+    GAP,
+    COLOR_ACCENT,
+    COLOR_TEXT,
+    draw_army_row,
+    draw_label,
+)
 
 # ---------------------------------------------------------------------------
-
-SLOT_COUNT = 7
-SLOT_PAD = 6
-ROW_H = 96
-RESBAR_H = 36
-TOPBAR_H = 40
-GAP = 10
 
 CARD_W = 220
 CARD_H = 160
@@ -33,17 +37,14 @@ FONT_NAME = None
 
 COLOR_BG = (16, 18, 22)
 COLOR_PANEL = (28, 30, 36)
-COLOR_ACCENT = (210, 180, 80)
-COLOR_TEXT = (240, 240, 240)
 COLOR_DISABLED = (120, 120, 120)
 COLOR_OK = (80, 190, 80)
 COLOR_WARN = (210, 90, 70)
-COLOR_SLOT_BG = (36, 38, 44)
-COLOR_SLOT_BD = (80, 80, 90)
 
 # ---------------------------------------------------------------------------
 
 logger = logging.getLogger(__name__)
+
 
 class TownScreen:
     def __init__(
@@ -81,7 +82,6 @@ class TownScreen:
             else:
                 self.army_units = []
 
-
         self.font = pygame.font.SysFont(FONT_NAME, 18)
         self.font_small = pygame.font.SysFont(FONT_NAME, 14)
         self.font_big = pygame.font.SysFont(FONT_NAME, 20, bold=True)
@@ -96,7 +96,9 @@ class TownScreen:
             surf: Optional[pygame.Surface] = None
             if path:
                 try:
-                    surf = pygame.image.load(os.path.join("assets", path)).convert_alpha()
+                    surf = pygame.image.load(
+                        os.path.join("assets", path)
+                    ).convert_alpha()
                     w, h = surf.get_size()
                     scale = min(max_w / w, max_h / h, 1.0)
                     new_size = (int(w * scale), int(h * scale))
@@ -188,7 +190,9 @@ class TownScreen:
         # Sélection des unités à envoyer en caravane
         self.send_queue: List[Unit] = []
 
-    def launch_caravan(self, dest: "Town", units: Optional[List["Unit"]] = None) -> bool:
+    def launch_caravan(
+        self, dest: "Town", units: Optional[List["Unit"]] = None
+    ) -> bool:
         """Envoyer une caravane depuis cette ville vers ``dest``.
 
         Quand ``units`` est ``None``, toutes les unités de la garnison sont
@@ -256,8 +260,12 @@ class TownScreen:
         rects["top_bar"] = pygame.Rect(0, 0, W, TOPBAR_H)
         rects["resbar"] = pygame.Rect(0, H - RESBAR_H, W, RESBAR_H)
         rects["hero_row"] = pygame.Rect(20, H - RESBAR_H - GAP - ROW_H, W - 40, ROW_H)
-        rects["garrison_row"] = pygame.Rect(20, rects["hero_row"].y - GAP - ROW_H, W - 40, ROW_H)
-        rects["center"] = pygame.Rect(20, TOPBAR_H + 20, W - 40, rects["garrison_row"].y - (TOPBAR_H + 30))
+        rects["garrison_row"] = pygame.Rect(
+            20, rects["hero_row"].y - GAP - ROW_H, W - 40, ROW_H
+        )
+        rects["center"] = pygame.Rect(
+            20, TOPBAR_H + 20, W - 40, rects["garrison_row"].y - (TOPBAR_H + 30)
+        )
         return rects
 
     def _resources_dict(self) -> Dict[str, int]:
@@ -301,12 +309,35 @@ class TownScreen:
         pygame.draw.rect(self.screen, COLOR_PANEL, R["top_bar"])
         pygame.draw.rect(self.screen, COLOR_PANEL, R["garrison_row"])
         pygame.draw.rect(self.screen, COLOR_PANEL, R["hero_row"])
-        self._draw_label(self.town.name, pygame.Rect(R["top_bar"].x + 20, R["top_bar"].y + 8, 0, 0))
-        self._draw_label("Garrison", R["garrison_row"].inflate(-8, -ROW_H + 24).move(8, 4))
-        self._draw_label("Visiting Hero", R["hero_row"].inflate(-8, -ROW_H + 24).move(8, 4))
+        draw_label(
+            self.screen,
+            self.font_big,
+            self.town.name,
+            pygame.Rect(R["top_bar"].x + 20, R["top_bar"].y + 8, 0, 0),
+        )
+        draw_label(
+            self.screen,
+            self.font_big,
+            "Garrison",
+            R["garrison_row"].inflate(-8, -ROW_H + 24).move(8, 4),
+        )
+        draw_label(
+            self.screen,
+            self.font_big,
+            "Visiting Hero",
+            R["hero_row"].inflate(-8, -ROW_H + 24).move(8, 4),
+        )
 
-        self.garrison_slots = self._draw_army_row(self.town.garrison, R["garrison_row"])
-        self.hero_slots = self._draw_army_row(self.army_units, R["hero_row"])
+        self.garrison_slots = draw_army_row(
+            self.screen,
+            self.font,
+            self.font_small,
+            self.town.garrison,
+            R["garrison_row"],
+        )
+        self.hero_slots = draw_army_row(
+            self.screen, self.font, self.font_small, self.army_units, R["hero_row"]
+        )
 
         self._draw_buildings_panel(R["center"])
 
@@ -351,8 +382,13 @@ class TownScreen:
             pygame.draw.rect(self.screen, (120, 120, 140), ghost, 2, border_radius=6)
             name = getattr(self.drag_unit.stats, "name", "Unit")
             cnt = getattr(self.drag_unit, "count", 1)
-            self.screen.blit(self.font.render(name, True, COLOR_TEXT), (ghost.x + 8, ghost.y + 8))
-            self.screen.blit(self.font_small.render(f"x{cnt}", True, COLOR_ACCENT), (ghost.x + 8, ghost.y + 34))
+            self.screen.blit(
+                self.font.render(name, True, COLOR_TEXT), (ghost.x + 8, ghost.y + 8)
+            )
+            self.screen.blit(
+                self.font_small.render(f"x{cnt}", True, COLOR_ACCENT),
+                (ghost.x + 8, ghost.y + 34),
+            )
 
     def _draw_resbar(self, rect: pygame.Rect) -> None:
         pygame.draw.rect(self.screen, (20, 20, 24), rect)
@@ -366,30 +402,6 @@ class TownScreen:
             txt = self.font.render(str(val), True, COLOR_TEXT)
             self.screen.blit(txt, (x, y_center - txt.get_height() // 2))
             x += txt.get_width() + 28
-
-    def _draw_label(self, text: str, rect: pygame.Rect) -> None:
-        self.screen.blit(self.font_big.render(text, True, COLOR_TEXT), (rect.x, rect.y))
-
-    def _draw_army_row(self, army, rect: pygame.Rect) -> List[pygame.Rect]:
-        slots: List[pygame.Rect] = []
-        w = (rect.width - (SLOT_COUNT + 1) * SLOT_PAD) // SLOT_COUNT
-        h = rect.height - 2 * SLOT_PAD
-        y = rect.y + SLOT_PAD
-        x = rect.x + SLOT_PAD
-        for i in range(SLOT_COUNT):
-            r = pygame.Rect(x, y, w, h)
-            slots.append(r)
-            pygame.draw.rect(self.screen, COLOR_SLOT_BG, r, border_radius=6)
-            pygame.draw.rect(self.screen, COLOR_SLOT_BD, r, 2, border_radius=6)
-            if i < len(army):
-                u = army[i]
-                name = getattr(u.stats, "name", "Unit")
-                count = getattr(u, "count", 1)
-                self.screen.blit(self.font.render(name, True, COLOR_TEXT), (r.x + 6, r.y + 6))
-                self.screen.blit(self.font_small.render(f"x{count}", True, COLOR_ACCENT),
-                                 (r.right - 28, r.bottom - 20))
-            x += w + SLOT_PAD
-        return slots
 
     def _draw_buildings_panel(self, rect: pygame.Rect) -> None:
         pygame.draw.rect(self.screen, (26, 28, 34), rect)
@@ -447,7 +459,9 @@ class TownScreen:
         pygame.draw.rect(self.screen, (44, 46, 54), card, border_radius=8)
         pygame.draw.rect(self.screen, (100, 100, 110), card, 2, border_radius=8)
         title = sid.replace("_", " ").title()
-        self.screen.blit(self.font_big.render(title, True, COLOR_TEXT), (card.x + 10, card.y + 8))
+        self.screen.blit(
+            self.font_big.render(title, True, COLOR_TEXT), (card.x + 10, card.y + 8)
+        )
         img = self.building_images.get(sid)
         desc_y = card.y + 36
         if img:
@@ -457,7 +471,13 @@ class TownScreen:
             desc_y = rect.bottom + 4
         desc = self.town.structures.get(sid, {}).get("desc", "")
         if desc:
-            self._blit_wrapped(self.font_small, desc, (card.x + 10, desc_y), card.width - 20, COLOR_TEXT)
+            self._blit_wrapped(
+                self.font_small,
+                desc,
+                (card.x + 10, desc_y),
+                card.width - 20,
+                COLOR_TEXT,
+            )
 
         if built:
             units = self.town.recruitable_units(sid)
@@ -495,17 +515,31 @@ class TownScreen:
                 hint_text = "Click to recruit"
             if hint_text:
                 hint = self.font_small.render(hint_text, True, COLOR_ACCENT)
-                self.screen.blit(hint, (card.right - hint.get_width() - 8, card.bottom - 24))
+                self.screen.blit(
+                    hint, (card.right - hint.get_width() - 8, card.bottom - 24)
+                )
         elif locked:
             lab = self.font.render("Locked", True, COLOR_DISABLED)
             self.screen.blit(lab, (card.x + 10, card.bottom - 24))
         else:
             cost = self.town.structure_cost(sid)
-            cost_txt = " / ".join(f"{k}:{v}" for k, v in cost.items()) if cost else "Free"
+            cost_txt = (
+                " / ".join(f"{k}:{v}" for k, v in cost.items()) if cost else "Free"
+            )
             col = COLOR_TEXT if self._can_afford(self.hero, cost) else COLOR_DISABLED
-            self.screen.blit(self.font_small.render(f"Cost: {cost_txt}", True, col), (card.x + 10, card.bottom - 24))
+            self.screen.blit(
+                self.font_small.render(f"Cost: {cost_txt}", True, col),
+                (card.x + 10, card.bottom - 24),
+            )
 
-    def _blit_wrapped(self, font: pygame.font.Font, text: str, topleft: Tuple[int,int], max_w: int, color) -> None:
+    def _blit_wrapped(
+        self,
+        font: pygame.font.Font,
+        text: str,
+        topleft: Tuple[int, int],
+        max_w: int,
+        color,
+    ) -> None:
         words = text.split()
         x, y = topleft
         line = ""
@@ -563,7 +597,7 @@ class TownScreen:
                 self.dirty_rects.clear()
             self.clock.tick(60)
 
-    def _on_mousedown(self, pos: Tuple[int,int], button: int) -> None:
+    def _on_mousedown(self, pos: Tuple[int, int], button: int) -> None:
         if self._overlay_active():
             self._on_overlay_mousedown(pos, button)
             return
@@ -595,6 +629,7 @@ class TownScreen:
             if rc.collidepoint(pos):
                 self._handle_building_click(sid)
                 return
+
     def _handle_building_click(self, sid: str) -> None:
         if not self.town.is_structure_built(sid):
             if self.town.built_today:
@@ -624,7 +659,7 @@ class TownScreen:
                 if units:
                     self._open_recruit_overlay(sid, units[0])
 
-    def _on_mouseup(self, pos: Tuple[int,int], button: int) -> None:
+    def _on_mouseup(self, pos: Tuple[int, int], button: int) -> None:
         if self._overlay_active():
             self._on_overlay_mouseup(pos, button)
             return
@@ -758,7 +793,9 @@ class TownScreen:
         pygame.draw.rect(self.screen, (40, 42, 50), r, border_radius=8)
         pygame.draw.rect(self.screen, (110, 110, 120), r, 2, border_radius=8)
         title = f"Recruit {self.recruit_unit} – {self.recruit_struct.replace('_',' ').title()}"
-        self.screen.blit(self.font_big.render(title, True, COLOR_TEXT), (r.x + 16, r.y + 12))
+        self.screen.blit(
+            self.font_big.render(title, True, COLOR_TEXT), (r.x + 16, r.y + 12)
+        )
         portrait_rect = pygame.Rect(r.x + 16, r.y + 40, 72, 72)
         if self.recruit_portrait:
             portrait = self.recruit_portrait
@@ -777,7 +814,10 @@ class TownScreen:
             ]
             yy = portrait_rect.y
             for line in lines:
-                self.screen.blit(self.font_small.render(line, True, COLOR_TEXT), (portrait_rect.right + 10, yy))
+                self.screen.blit(
+                    self.font_small.render(line, True, COLOR_TEXT),
+                    (portrait_rect.right + 10, yy),
+                )
                 yy += 18
         cost = self._unit_cost(self.recruit_unit, self.recruit_count)
         cost_str = " / ".join(f"{k}:{v}" for k, v in cost.items()) if cost else "Free"
@@ -795,22 +835,47 @@ class TownScreen:
             pygame.draw.rect(
                 self.screen,
                 (80, 160, 80),
-                pygame.Rect(self.slider_rect.x, self.slider_rect.y, filled, self.slider_rect.height),
+                pygame.Rect(
+                    self.slider_rect.x,
+                    self.slider_rect.y,
+                    filled,
+                    self.slider_rect.height,
+                ),
                 border_radius=4,
             )
         pygame.draw.rect(self.screen, (60, 62, 72), self.btn_plus, border_radius=4)
         pygame.draw.rect(self.screen, (60, 62, 72), self.btn_max, border_radius=4)
-        btn_col = (70, 140, 70) if self.recruit_count > 0 and can_afford else COLOR_DISABLED
+        btn_col = (
+            (70, 140, 70) if self.recruit_count > 0 and can_afford else COLOR_DISABLED
+        )
         pygame.draw.rect(self.screen, btn_col, self.btn_buy, border_radius=4)
-        self.screen.blit(self.font_small.render("min", True, COLOR_TEXT), (self.btn_min.x + 3, self.btn_min.y + 5))
-        self.screen.blit(self.font_big.render("-", True, COLOR_TEXT), (self.btn_minus.x + 8, self.btn_minus.y + 2))
-        self.screen.blit(self.font_big.render("+", True, COLOR_TEXT), (self.btn_plus.x + 6, self.btn_plus.y + 2))
-        self.screen.blit(self.font_small.render("max", True, COLOR_TEXT), (self.btn_max.x + 2, self.btn_max.y + 5))
-        self.screen.blit(self.font_big.render("Recruit", True, COLOR_TEXT), (self.btn_buy.x + 12, self.btn_buy.y + 2))
+        self.screen.blit(
+            self.font_small.render("min", True, COLOR_TEXT),
+            (self.btn_min.x + 3, self.btn_min.y + 5),
+        )
+        self.screen.blit(
+            self.font_big.render("-", True, COLOR_TEXT),
+            (self.btn_minus.x + 8, self.btn_minus.y + 2),
+        )
+        self.screen.blit(
+            self.font_big.render("+", True, COLOR_TEXT),
+            (self.btn_plus.x + 6, self.btn_plus.y + 2),
+        )
+        self.screen.blit(
+            self.font_small.render("max", True, COLOR_TEXT),
+            (self.btn_max.x + 2, self.btn_max.y + 5),
+        )
+        self.screen.blit(
+            self.font_big.render("Recruit", True, COLOR_TEXT),
+            (self.btn_buy.x + 12, self.btn_buy.y + 2),
+        )
         pygame.draw.rect(self.screen, (90, 50, 50), self.btn_close, border_radius=4)
-        self.screen.blit(self.font.render("x", True, COLOR_TEXT), (self.btn_close.x + 7, self.btn_close.y + 3))
+        self.screen.blit(
+            self.font.render("x", True, COLOR_TEXT),
+            (self.btn_close.x + 7, self.btn_close.y + 3),
+        )
 
-    def _on_overlay_mousedown(self, pos: Tuple[int,int], button: int) -> None:
+    def _on_overlay_mousedown(self, pos: Tuple[int, int], button: int) -> None:
         if self.recruit_open:
             if self.btn_close.collidepoint(pos):
                 self.recruit_open = False
@@ -827,9 +892,15 @@ class TownScreen:
             if self.btn_max.collidepoint(pos):
                 self.recruit_count = self.recruit_max
                 return
-            if self.slider_rect.collidepoint(pos) and self.slider_rect.width > 0 and self.recruit_max > 0:
+            if (
+                self.slider_rect.collidepoint(pos)
+                and self.slider_rect.width > 0
+                and self.recruit_max > 0
+            ):
                 ratio = (pos[0] - self.slider_rect.x) / self.slider_rect.width
-                self.recruit_count = max(0, min(self.recruit_max, int(self.recruit_max * ratio + 0.5)))
+                self.recruit_count = max(
+                    0, min(self.recruit_max, int(self.recruit_max * ratio + 0.5))
+                )
                 return
             if self.btn_buy.collidepoint(pos) and self.recruit_unit:
                 cost = self._unit_cost(self.recruit_unit, self.recruit_count)
@@ -851,7 +922,8 @@ class TownScreen:
                         self.recruit_open = False
             return
         if self.market_open:
-            self._market_click(pos); return
+            self._market_click(pos)
+            return
         if self.castle_open:
             # clic sur une carte unité → ouvrir mini-recrutement
             for uid, rc in self.castle_unit_cards:
@@ -863,7 +935,7 @@ class TownScreen:
             self._tavern_click(pos)
             return
 
-    def _on_overlay_mouseup(self, pos: Tuple[int,int], button: int) -> None:
+    def _on_overlay_mouseup(self, pos: Tuple[int, int], button: int) -> None:
         pass
 
     def _find_building_at(self, pos: Tuple[int, int]) -> Optional[str]:
@@ -882,15 +954,14 @@ class TownScreen:
         for i in range(n):
             x1, y1 = poly[i]
             x2, y2 = poly[(i + 1) % n]
-            if (y1 > y) != (y2 > y) and (
-                x < (x2 - x1) * (y - y1) / (y2 - y1) + x1
-            ):
+            if (y1 > y) != (y2 > y) and (x < (x2 - x1) * (y - y1) / (y2 - y1) + x1):
                 inside = not inside
         return inside
 
     def _unit_cost(self, unit_id: str, count: int) -> Dict[str, int]:
         try:
             import constants
+
             base = dict(getattr(constants, "UNIT_RECRUIT_COSTS", {}).get(unit_id, {}))
         except Exception:
             base = {}
@@ -899,10 +970,13 @@ class TownScreen:
     @staticmethod
     def _can_afford(hero: "Hero", cost: Dict[str, int]) -> bool:
         g = cost.get("gold", 0)
-        if hero.gold < g: return False
+        if hero.gold < g:
+            return False
         for k, v in cost.items():
-            if k == "gold": continue
-            if hero.resources.get(k, 0) < v: return False
+            if k == "gold":
+                continue
+            if hero.resources.get(k, 0) < v:
+                return False
         return True
 
     def _format_cost_tooltip(self, cost: Dict[str, int]) -> str:
@@ -947,60 +1021,100 @@ class TownScreen:
         self.market_open = True
         W, H = self.screen.get_size()
         self.market_rect.center = (W // 2, H // 2)
-        self.market_btn_do.topleft = (self.market_rect.right - 140, self.market_rect.bottom - 44)
+        self.market_btn_do.topleft = (
+            self.market_rect.right - 140,
+            self.market_rect.bottom - 44,
+        )
 
     def _draw_market_overlay(self) -> None:
         s = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
-        s.fill((0, 0, 0, 160)); self.screen.blit(s, (0, 0))
+        s.fill((0, 0, 0, 160))
+        self.screen.blit(s, (0, 0))
         r = self.market_rect
         pygame.draw.rect(self.screen, (40, 42, 50), r, border_radius=8)
         pygame.draw.rect(self.screen, (110, 110, 120), r, 2, border_radius=8)
 
-        self.screen.blit(self.font_big.render("Market – Trade Resources", True, COLOR_TEXT), (r.x + 16, r.y + 12))
+        self.screen.blit(
+            self.font_big.render("Market – Trade Resources", True, COLOR_TEXT),
+            (r.x + 16, r.y + 12),
+        )
 
         # simple UI: deux listes déroulantes "from"/"to" simulées par cycles par clic
         opts = ["gold", "wood", "stone", "crystal"]
         # boutons pour cycler
         btn_from = pygame.Rect(r.x + 24, r.y + 60, 160, 28)
-        btn_to   = pygame.Rect(r.x + 24, r.y + 100, 160, 28)
+        btn_to = pygame.Rect(r.x + 24, r.y + 100, 160, 28)
         pygame.draw.rect(self.screen, (60, 62, 72), btn_from, border_radius=4)
         pygame.draw.rect(self.screen, (60, 62, 72), btn_to, border_radius=4)
-        self.screen.blit(self.font.render(f"Give: {self.market_from}", True, COLOR_TEXT), (btn_from.x + 8, btn_from.y + 4))
-        self.screen.blit(self.font.render(f"Get : {self.market_to}", True, COLOR_TEXT), (btn_to.x + 8, btn_to.y + 4))
+        self.screen.blit(
+            self.font.render(f"Give: {self.market_from}", True, COLOR_TEXT),
+            (btn_from.x + 8, btn_from.y + 4),
+        )
+        self.screen.blit(
+            self.font.render(f"Get : {self.market_to}", True, COLOR_TEXT),
+            (btn_to.x + 8, btn_to.y + 4),
+        )
 
         # amount
         amt_rect = pygame.Rect(r.x + 220, r.y + 80, 120, 28)
         pygame.draw.rect(self.screen, (60, 62, 72), amt_rect, border_radius=4)
-        self.screen.blit(self.font.render(f"Amount: {self.market_amount}", True, COLOR_TEXT), (amt_rect.x + 8, amt_rect.y + 4))
+        self.screen.blit(
+            self.font.render(f"Amount: {self.market_amount}", True, COLOR_TEXT),
+            (amt_rect.x + 8, amt_rect.y + 4),
+        )
 
         # bouton trade
-        pygame.draw.rect(self.screen, (70, 140, 70), self.market_btn_do, border_radius=4)
-        self.screen.blit(self.font_big.render("Trade", True, COLOR_TEXT), (self.market_btn_do.x + 20, self.market_btn_do.y + 2))
+        pygame.draw.rect(
+            self.screen, (70, 140, 70), self.market_btn_do, border_radius=4
+        )
+        self.screen.blit(
+            self.font_big.render("Trade", True, COLOR_TEXT),
+            (self.market_btn_do.x + 20, self.market_btn_do.y + 2),
+        )
 
         # info taux
         rate = self.town.market_rates.get((self.market_from, self.market_to))
-        info = f"Rate: {rate} {self.market_from} -> 1 {self.market_to}" if rate else "No rate"
-        self.screen.blit(self.font_small.render(info, True, COLOR_ACCENT), (r.x + 24, r.bottom - 36))
+        info = (
+            f"Rate: {rate} {self.market_from} -> 1 {self.market_to}"
+            if rate
+            else "No rate"
+        )
+        self.screen.blit(
+            self.font_small.render(info, True, COLOR_ACCENT), (r.x + 24, r.bottom - 36)
+        )
 
         # sauver rects pour clics
-        self._market_btn_from, self._market_btn_to, self._market_btn_amt = btn_from, btn_to, amt_rect
+        self._market_btn_from, self._market_btn_to, self._market_btn_amt = (
+            btn_from,
+            btn_to,
+            amt_rect,
+        )
 
-    def _market_click(self, pos: Tuple[int,int]) -> None:
+    def _market_click(self, pos: Tuple[int, int]) -> None:
         if self._market_btn_from.collidepoint(pos):
             order = ["gold", "wood", "stone", "crystal"]
             i = (order.index(self.market_from) + 1) % len(order)
-            self.market_from = order[i]; return
+            self.market_from = order[i]
+            return
         if self._market_btn_to.collidepoint(pos):
             order = ["gold", "wood", "stone", "crystal"]
             i = (order.index(self.market_to) + 1) % len(order)
-            self.market_to = order[i]; return
+            self.market_to = order[i]
+            return
         if self._market_btn_amt.collidepoint(pos):
-            self.market_amount = 1 if self.market_amount >= 50 else self.market_amount + 1; return
+            self.market_amount = (
+                1 if self.market_amount >= 50 else self.market_amount + 1
+            )
+            return
         if self.market_btn_do.collidepoint(pos):
-            if self.market_from == self.market_to: 
+            if self.market_from == self.market_to:
                 return
-            if self.town.can_trade(self.market_from, self.market_to, self.market_amount, self.hero):
-                if self.town.trade(self.market_from, self.market_to, self.market_amount, self.hero):
+            if self.town.can_trade(
+                self.market_from, self.market_to, self.market_amount, self.hero
+            ):
+                if self.town.trade(
+                    self.market_from, self.market_to, self.market_amount, self.hero
+                ):
                     self._publish_resources()
         # clic hors panneau pour fermer ?
         if not self.market_rect.collidepoint(pos):
@@ -1020,7 +1134,10 @@ class TownScreen:
         r = self.tavern_rect
         pygame.draw.rect(self.screen, (40, 42, 50), r, border_radius=8)
         pygame.draw.rect(self.screen, (110, 110, 120), r, 2, border_radius=8)
-        self.screen.blit(self.font_big.render("Tavern – Hire Heroes", True, COLOR_TEXT), (r.x + 16, r.y + 12))
+        self.screen.blit(
+            self.font_big.render("Tavern – Hire Heroes", True, COLOR_TEXT),
+            (r.x + 16, r.y + 12),
+        )
         card_w = 180
         card_h = 180
         gap = 20
@@ -1036,11 +1153,19 @@ class TownScreen:
             pygame.draw.rect(self.screen, (110, 110, 120), portrait, 2)
             name = info["name"]
             cost = info["cost"]
-            self.screen.blit(self.font.render(name, True, COLOR_TEXT), (card.x + 8, card.y + 80))
-            self.screen.blit(self.font_small.render(f"Cost: {cost}", True, COLOR_ACCENT), (card.x + 8, card.y + 110))
+            self.screen.blit(
+                self.font.render(name, True, COLOR_TEXT), (card.x + 8, card.y + 80)
+            )
+            self.screen.blit(
+                self.font_small.render(f"Cost: {cost}", True, COLOR_ACCENT),
+                (card.x + 8, card.y + 110),
+            )
             btn = pygame.Rect(card.x + 40, card.bottom - 40, 100, 28)
             pygame.draw.rect(self.screen, (70, 140, 70), btn, border_radius=4)
-            self.screen.blit(self.font_small.render("Hire", True, COLOR_TEXT), (btn.x + 28, btn.y + 6))
+            self.screen.blit(
+                self.font_small.render("Hire", True, COLOR_TEXT),
+                (btn.x + 28, btn.y + 6),
+            )
             self.tavern_cards.append((idx, btn))
 
         if self.tavern_msg:
@@ -1049,14 +1174,19 @@ class TownScreen:
             msg_rect.midtop = (r.centerx, r.bottom - 30)
             self.screen.blit(msg_surf, msg_rect)
 
-    def _tavern_click(self, pos: Tuple[int,int]) -> None:
+    def _tavern_click(self, pos: Tuple[int, int]) -> None:
         for idx, btn in self.tavern_cards:
             if btn.collidepoint(pos):
                 info = self.tavern_heroes[idx]
                 cost = info["cost"]
                 if self.hero.gold >= cost:
                     self.hero.gold -= cost
-                    new_hero = Hero(self.town.origin[0], self.town.origin[1], info["army"], info["stats"])
+                    new_hero = Hero(
+                        self.town.origin[0],
+                        self.town.origin[1],
+                        info["army"],
+                        info["stats"],
+                    )
                     new_hero.name = info["name"]
                     self.game.add_hero(new_hero)
                     self._publish_resources()
@@ -1099,25 +1229,33 @@ class TownScreen:
 
     def _draw_castle_overlay(self) -> None:
         s = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
-        s.fill((0, 0, 0, 170)); self.screen.blit(s, (0, 0))
+        s.fill((0, 0, 0, 170))
+        self.screen.blit(s, (0, 0))
         r = self.castle_rect
         pygame.draw.rect(self.screen, (36, 38, 46), r, border_radius=8)
         pygame.draw.rect(self.screen, (120, 120, 130), r, 2, border_radius=8)
-        self.screen.blit(self.font_big.render("Castle – Recruitment Overview", True, COLOR_TEXT), (r.x + 16, r.y + 10))
+        self.screen.blit(
+            self.font_big.render("Castle – Recruitment Overview", True, COLOR_TEXT),
+            (r.x + 16, r.y + 10),
+        )
 
         # cartes unités (toutes débloquées)
         units = self.town.list_all_recruitables()
         from core.entities import RECRUITABLE_UNITS
+
         cols = 2
         cw, ch = (r.width - 3 * 16) // cols, 130
-        x = r.x + 16; y = r.y + 48
+        x = r.x + 16
+        y = r.y + 48
         self.castle_unit_cards = []
         for i, uid in enumerate(units):
             card = pygame.Rect(x, y, cw, ch)
             pygame.draw.rect(self.screen, (48, 50, 58), card, border_radius=8)
             pygame.draw.rect(self.screen, (100, 100, 110), card, 2, border_radius=8)
             # header
-            self.screen.blit(self.font_big.render(uid, True, COLOR_TEXT), (card.x + 10, card.y + 6))
+            self.screen.blit(
+                self.font_big.render(uid, True, COLOR_TEXT), (card.x + 10, card.y + 6)
+            )
             # “building” placeholder (gauche) + “unit portrait” placeholder (droite)
             bh = pygame.Rect(card.x + 10, card.y + 34, 72, 72)
             uh = pygame.Rect(card.right - 82, card.y + 34, 72, 72)
@@ -1134,17 +1272,23 @@ class TownScreen:
                 ]
                 yy = card.y + 34
                 for line in lines:
-                    self.screen.blit(self.font_small.render(line, True, COLOR_TEXT), (bh.right + 10, yy))
+                    self.screen.blit(
+                        self.font_small.render(line, True, COLOR_TEXT),
+                        (bh.right + 10, yy),
+                    )
                     yy += 18
             # hint
             hint = self.font_small.render("Click to recruit", True, COLOR_ACCENT)
-            self.screen.blit(hint, (card.right - hint.get_width() - 8, card.bottom - 22))
+            self.screen.blit(
+                hint, (card.right - hint.get_width() - 8, card.bottom - 22)
+            )
 
             self.castle_unit_cards.append((uid, card))
 
             # advance layout
             if (i % cols) == cols - 1:
-                x = r.x + 16; y += ch + 12
+                x = r.x + 16
+                y += ch + 12
             else:
                 x += cw + 16
 
