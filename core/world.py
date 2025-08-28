@@ -9,7 +9,6 @@ current state of the world onto a Pygame surface using supplied images.
 
 from __future__ import annotations
 
-import json
 import logging
 import os
 import random
@@ -40,6 +39,8 @@ try:  # flora loader is optional for tests without pygame
 except Exception:  # pragma: no cover
     FloraLoader = PropInstance = None  # type: ignore
 from loaders.biomes import BiomeCatalog
+from loaders.core import Context, read_json
+from loaders.units_loader import load_units
 from .vision import compute_vision
 from core.ai.creature_ai import (
     CreatureAI,
@@ -76,59 +77,37 @@ def _reset_town_counter() -> None:
 def _load_creatures_by_biome() -> Tuple[
     Dict[str, List[str]], Dict[str, Tuple[CreatureBehavior, int]]
 ]:
-    """Load creature spawn data from ``assets/units/creatures.json``.
+    """Load creature spawn data using the unit loader.
 
-    Each entry provides the list of ``biomes`` it inhabits as well as optional
-    ``behavior`` and ``guard_range`` fields.  Returns a tuple of two mappings:
-    biome → creature ids and creature id → (behaviour, guard_range).
-    Falls back to a default mapping if the manifest is missing or malformed.
+    Returns a tuple ``(biomes, behaviour)`` where ``biomes`` maps biome ids to
+    creature identifiers and ``behaviour`` maps creature identifiers to their
+    configured :class:`CreatureBehavior` and guard range.  Any errors during
+    loading are logged and result in empty mappings.
     """
 
-    path = os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__), "..", "assets", "units", "creatures.json"
-        )
-    )
+    base = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    ctx = Context(base, [os.path.join(base, "assets")])
     mapping: Dict[str, List[str]] = {}
     behaviour: Dict[str, Tuple[CreatureBehavior, int]] = {}
+    manifest = "units/creatures.json"
     try:
-        with open(path, "r", encoding="utf-8") as fh:
-            data = json.load(fh)
-        if isinstance(data, dict):
-            data = data.get("creatures", [])
-        if isinstance(data, list):
-            for entry in data:
-                try:
-                    cid = entry["id"]
-                    for biome in entry.get("biomes", []):
-                        mapping.setdefault(str(biome), []).append(cid)
-                    beh = entry.get("behavior", "roamer")
-                    try:
-                        mode = CreatureBehavior(beh)
-                    except ValueError:
-                        mode = CreatureBehavior.ROAMER
-                    guard = int(entry.get("guard_range", 3))
-                    behaviour[cid] = (mode, guard)
-                except Exception:
-                    continue
+        # Attempt to read the manifest first so we can surface any errors.
+        read_json(ctx, manifest)
+        _, extras = load_units(ctx, manifest, section="creatures")
+        for cid, info in extras.items():
+            for biome in info.get("biomes", []):
+                mapping.setdefault(str(biome), []).append(cid)
+            beh = info.get("behavior", "roamer")
+            try:
+                mode = CreatureBehavior(beh)
+            except ValueError:
+                mode = CreatureBehavior.ROAMER
+            guard = int(info.get("guard_range", 3))
+            behaviour[cid] = (mode, guard)
     except Exception as exc:  # pragma: no cover - simple logging
+        path = os.path.join(base, "assets", manifest)
         logger.warning("Failed to load creature manifest from %s: %s", path, exc)
-    if mapping:
-        return mapping, behaviour
-    return (
-        {
-            "scarletia_echo_plain": ["boar_raven"],
-            "scarletia_crimson_forest": ["shadowleaf_wolf", "hurlombe"],
-            "mountain": ["hurlombe", "boar_raven"],
-            "scarletia_volcanic": ["fumet_lizard"],
-        },
-        {
-            "boar_raven": (CreatureBehavior.ROAMER, 2),
-            "shadowleaf_wolf": (CreatureBehavior.ROAMER, 3),
-            "fumet_lizard": (CreatureBehavior.ROAMER, 3),
-            "hurlombe": (CreatureBehavior.GUARDIAN, 2),
-        },
-    )
+    return mapping, behaviour
 
 
 CREATURES_BY_BIOME, CREATURE_BEHAVIOUR = _load_creatures_by_biome()

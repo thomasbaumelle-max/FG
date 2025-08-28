@@ -48,13 +48,8 @@ from core.entities import (
     Item,
     EquipmentSlot,
     HeroStats,
-    SWORDSMAN_STATS,
-    ARCHER_STATS,
-    MAGE_STATS,
-    CAVALRY_STATS,
-    DRAGON_STATS,
-    PRIEST_STATS,
     RECRUITABLE_UNITS,
+    CREATURE_STATS,
     create_random_enemy_army,
     STARTING_ARTIFACTS,
     ARTIFACT_ICONS,
@@ -89,9 +84,9 @@ from core import economy, auto_resolve, vision
 
 logger = logging.getLogger(__name__)
 
-# Mapping from unit names to their statistics for serialisation
-STATS_BY_NAME: Dict[str, UnitStats] = dict(RECRUITABLE_UNITS)
-
+# Fallback mapping for unit statistics used when a ``Game`` instance has not
+# initialised its own data yet (e.g. in certain unit tests).
+STATS_BY_NAME: Dict[str, UnitStats] = {**RECRUITABLE_UNITS, **CREATURE_STATS}
 
 
 # Filenames for save slots
@@ -237,6 +232,13 @@ class Game:
             except Exception:
                 self.unit_defs, self.unit_extra = {}, {}
             try:
+                self.creature_defs, self.creature_extra = units_loader.load_units(
+                    self.ctx, "units/creatures.json", section="creatures"
+                )
+            except Exception:
+                self.creature_defs, self.creature_extra = {}, {}
+            self._stats_by_name = {**self.unit_defs, **self.creature_defs}
+            try:
                 self.hero_defs = load_heroes(self.ctx, "units/heroes.json")
             except Exception:
                 self.hero_defs = {}
@@ -261,6 +263,10 @@ class Game:
             )
             self.resources = {}
             self.unit_defs = {}
+            self.creature_defs = {}
+            self.unit_extra = {}
+            self.creature_extra = {}
+            self._stats_by_name = {}
             self.hero_defs = {}
             self.boat_defs = {}
             self.tile_variants = {}
@@ -335,7 +341,7 @@ class Game:
             try:
                 self.scenario_data = load_scenario(path)
                 for info in self.scenario_data.get("units", []):
-                    stats = STATS_BY_NAME.get(info.get("type"))
+                    stats = self.stats_by_name.get(info.get("type"))
                     if not stats:
                         continue
                     unit = Unit(stats, info.get("count", 1), owner="enemy")
@@ -413,7 +419,7 @@ class Game:
             hero_def = self.hero_defs.get(hero_id) if hero_id else None
             if hero_def:
                 for unit_id, count in hero_def.starting_army:
-                    stats = STATS_BY_NAME.get(unit_id)
+                    stats = self.stats_by_name.get(unit_id)
                     if stats:
                         starting_army.append(Unit(stats, count, "hero"))
                 if hero_def.portrait:
@@ -588,6 +594,10 @@ class Game:
             panel.set_hero(self.hero)
         EVENT_BUS.publish(ON_SELECT_HERO, self.hero)
         self._update_minimap_viewport()
+
+    @property
+    def stats_by_name(self) -> Dict[str, UnitStats]:
+        return getattr(self, "_stats_by_name", STATS_BY_NAME)
 
     def _recalc_ui(self) -> None:
         """Recalculate layout when the screen size changes."""
@@ -776,36 +786,22 @@ class Game:
         # Load artifact icons declared in assets/artifacts.json
         self.artifacts_manifest = load_artifact_manifest(repo_root, self.assets)
 
-        # Load unit and creature sprites declared in assets/units/*.json
-        self.unit_shadow_baked: Dict[str, bool] = {}
-        for fname in ["units.json", "creatures.json"]:
-            manifest_path = os.path.join(repo_root, "assets", "units", fname)
-            if not os.path.isfile(manifest_path):
-                continue
-            try:
-                with open(manifest_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-            except Exception:
-                continue
-            if isinstance(data, dict):
-                templates = data.get("templates", {})
-                entries = data.get("units") or data.get("creatures") or []
-            else:
-                templates = {}
-                entries = data
-            for entry in entries:
-                tpl_id = entry.get("template")
-                base = templates.get(tpl_id, {}) if isinstance(templates, dict) else {}
-                merged = {**base, **entry}
+        # Load unit and creature sprites using metadata from the loaders
+        self.unit_shadow_baked = {}
+        for extras in (self.unit_extra, self.creature_extra):
+            for uid, info in extras.items():
                 try:
-                    self.unit_shadow_baked[merged["id"]] = bool(merged.get("shadow_baked", False))
-                    surf = self.assets.get(merged["image"])
+                    self.unit_shadow_baked[uid] = bool(info.get("shadow_baked", False))
+                    image = info.get("image")
+                    if not image:
+                        continue
+                    surf = self.assets.get(image)
                     surf = scale_surface(
                         surf,
                         (constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE),
                         smooth=True,
                     )
-                    self.assets[merged["id"]] = surf
+                    self.assets[uid] = surf
                 except Exception:
                     continue
 
@@ -2944,7 +2940,7 @@ class Game:
                     if not b.garrison:
                         continue
                     for unit_id, amount in list(b.garrison.items()):
-                        stats = STATS_BY_NAME.get(unit_id)
+                        stats = self.stats_by_name.get(unit_id)
                         if not stats or amount <= 0:
                             continue
                         hero.army.append(Unit(stats, amount, "enemy"))
@@ -3355,7 +3351,7 @@ class Game:
         }
 
     def _unit_from_dict(self, data: Dict[str, Any]) -> Optional[Unit]:
-        stats = STATS_BY_NAME.get(data["name"])
+        stats = self.stats_by_name.get(data["name"])
         if not stats:
             logger.warning("Unknown unit '%s' in save, skipping", data.get("name"))
             return None
