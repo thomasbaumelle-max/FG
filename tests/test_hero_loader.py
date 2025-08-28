@@ -10,4 +10,4 @@ def test_hero_loader_parses_manifest():
     assert "scarletia_aurianne" in heroes
     aurianne = heroes["scarletia_aurianne"]
     assert aurianne.faction == "red_knights"
-    assert any(u == "Swordsman" for u, _ in aurianne.starting_army)
+    assert any(u == "swordsman" for u, _ in aurianne.starting_army)
