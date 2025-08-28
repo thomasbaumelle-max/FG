@@ -111,4 +111,7 @@ class IconButton:
     def get_tooltip(self) -> str:
         """Return the tooltip string for the button."""
 
-        return self.tooltip
+        if self.hovered:
+            return self.tooltip
+        mouse_get_pos = getattr(getattr(pygame, "mouse", None), "get_pos", lambda: (0, 0))
+        return self.tooltip if self.collidepoint(mouse_get_pos()) else ""
