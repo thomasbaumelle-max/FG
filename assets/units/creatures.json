@@ -1,86 +1,193 @@
 {
-  "templates": {
-    "lizard": {
-      "stats": {"attack": 4, "defense": 3, "hp": 18, "speed": 5},
-      "palette": ["#556B2F", "#8FBC8F", "#2E8B57"]
-    },
-    "wolf": {
-      "stats": {"attack": 5, "defense": 3, "hp": 20, "speed": 6},
-      "palette": ["#696969", "#A9A9A9", "#000000"]
-    },
-    "boar": {
-      "stats": {"attack": 6, "defense": 4, "hp": 28, "speed": 5},
-      "palette": ["#8B4513", "#A0522D", "#3E2723"]
-    },
-    "hurlombe": {
-      "stats": {"attack": 7, "defense": 6, "hp": 35, "speed": 4},
-      "palette": ["#2F4F4F", "#708090", "#000000"]
-    },
-    "serpent": {
-      "stats": {"attack": 9, "defense": 8, "hp": 50, "speed": 7},
-      "palette": ["#1E90FF", "#00CED1", "#F0FFFF"]
-    }
-  },
   "creatures": [
     {
       "id": "fumet_lizard",
-      "template": "lizard",
       "image": "units/scarletia/fumet_lizard_0.png",
       "anchor_px": [384, 580],
       "shadow_baked": false,
       "biomes": ["scarletia_volcanic"],
       "behavior": "roamer",
       "guard_range": 3,
-      "battlefield_scale": 1.0,
-      "abilities": {}
+      "abilities": {},
+      "stats": {
+        "name": "fumet_lizard",
+        "max_hp": 22,
+        "attack_min": 3,
+        "attack_max": 5,
+        "defence_melee": 2,
+        "defence_ranged": 1,
+        "defence_magic": 2,
+        "speed": 4,
+        "attack_range": 1,
+        "initiative": 7,
+        "sheet": "creatures",
+        "hero_frames": [0, 0],
+        "enemy_frames": [0, 0],
+        "morale": 0,
+        "luck": 0,
+        "abilities": [
+          "ember_spit(2, fire, cd=2)",
+          "fire_resistance(25%)",
+          "heated_scales(burn_on_hit=20%)"
+        ],
+        "role": "Skirmisher rapide, harcèlement feu à courte portée",
+        "unit_type": "beast-elemental",
+        "mana": 1,
+        "min_range": 1,
+        "retaliations_per_round": 1,
+        "battlefield_scale": 1.0
+      }
     },
     {
       "id": "shadowleaf_wolf",
-      "template": "wolf",
       "image": "units/scarletia/shadowleaf_wolf_0.png",
       "anchor_px": [384, 590],
       "shadow_baked": false,
       "biomes": ["scarletia_crimson_forest"],
       "behavior": "roamer",
       "guard_range": 3,
-      "battlefield_scale": 1.0,
-      "abilities": {}
+      "abilities": {},
+      "stats": {
+        "name": "shadowleaf_wolf",
+        "max_hp": 28,
+        "attack_min": 4,
+        "attack_max": 6,
+        "defence_melee": 2,
+        "defence_ranged": 3,
+        "defence_magic": 1,
+        "speed": 5,
+        "attack_range": 1,
+        "initiative": 8,
+        "sheet": "creatures",
+        "hero_frames": [0, 0],
+        "enemy_frames": [0, 0],
+        "morale": 0,
+        "luck": 0,
+        "abilities": [
+          "pounce(bleed=2, bonus_vs_flanked)",
+          "forest_camouflage(+20% evade_in_forest)",
+          "stalk(first_strike_if_undetected)"
+        ],
+        "role": "Assassin de brousse, projection/embuscade",
+        "unit_type": "beast",
+        "mana": 0,
+        "min_range": 1,
+        "retaliations_per_round": 1,
+        "battlefield_scale": 1.0
+      }
     },
     {
       "id": "boar_raven",
-      "template": "boar",
       "image": "units/scarletia/boar_raven_0.png",
       "anchor_px": [384, 610],
       "shadow_baked": false,
       "biomes": ["scarletia_echo_plain", "mountain"],
       "behavior": "roamer",
       "guard_range": 2,
-      "battlefield_scale": 1.0,
-      "abilities": {}
+      "abilities": {},
+      "stats": {
+        "name": "boar_raven",
+        "max_hp": 60,
+        "attack_min": 7,
+        "attack_max": 10,
+        "defence_melee": 4,
+        "defence_ranged": 3,
+        "defence_magic": 1,
+        "speed": 4,
+        "attack_range": 1,
+        "initiative": 6,
+        "sheet": "creatures",
+        "hero_frames": [0, 0],
+        "enemy_frames": [0, 0],
+        "morale": 1,
+        "luck": 0,
+        "abilities": [
+          "gore_charge(+50% dmg after_move>=2, knockback=1)",
+          "thick_hide(-20% melee_damage_taken)",
+          "scavenge_on_kill(heal=6)"
+        ],
+        "role": "Briseur de ligne, charge et repousser",
+        "unit_type": "beast",
+        "mana": 0,
+        "min_range": 1,
+        "retaliations_per_round": 1,
+        "battlefield_scale": 1.0
+      }
     },
     {
       "id": "hurlombe",
-      "template": "hurlombe",
       "image": "units/scarletia/hurlombe_0.png",
       "anchor_px": [384, 600],
       "shadow_baked": false,
       "biomes": ["scarletia_crimson_forest", "mountain"],
       "behavior": "guardian",
       "guard_range": 2,
-      "battlefield_scale": 1.0,
-      "abilities": {}
+      "abilities": {},
+      "stats": {
+        "name": "hurlombe",
+        "max_hp": 24,
+        "attack_min": 4,
+        "attack_max": 5,
+        "defence_melee": 1,
+        "defence_ranged": 2,
+        "defence_magic": 4,
+        "speed": 5,
+        "attack_range": 1,
+        "initiative": 9,
+        "sheet": "creatures",
+        "hero_frames": [0, 0],
+        "enemy_frames": [0, 0],
+        "morale": 0,
+        "luck": 0,
+        "abilities": [
+          "wail(2, mind, fear=-1_morale, cd=2)",
+          "incorporeal(20% miss_physical)",
+          "hover(ignore_terrain_penalties)"
+        ],
+        "role": "Contrôle mental léger, harcèlement mobile",
+        "unit_type": "undead-spirit",
+        "mana": 2,
+        "min_range": 1,
+        "retaliations_per_round": 1,
+        "battlefield_scale": 1.0
+      }
     },
     {
       "id": "reef_serpent",
-      "template": "serpent",
       "image": "units/scarletia/reef_serpent_0.png",
       "anchor_px": [384, 600],
       "shadow_baked": false,
       "biomes": ["ocean"],
       "behavior": "roamer",
       "guard_range": 3,
-      "battlefield_scale": 1.75,
-      "abilities": {}
+      "abilities": {},
+      "stats": {
+        "name": "reef_serpent",
+        "max_hp": 48,
+        "attack_min": 6,
+        "attack_max": 9,
+        "defence_melee": 3,
+        "defence_ranged": 3,
+        "defence_magic": 2,
+        "speed": 4,
+        "attack_range": 1,
+        "initiative": 7,
+        "sheet": "creatures",
+        "hero_frames": [0, 0],
+        "enemy_frames": [0, 0],
+        "morale": 0,
+        "luck": 0,
+        "abilities": [
+          "water_resistance(25%)",
+          "constrict(immobilize=1)"
+        ],
+        "role": "Prédateur marin à l'étreinte constrictive",
+        "unit_type": "beast",
+        "mana": 0,
+        "min_range": 1,
+        "retaliations_per_round": 1,
+        "battlefield_scale": 1.75
+      }
     }
   ]
 }

@@ -721,322 +721,45 @@ def build_skill_catalog(faction_id: str | None = None) -> List[Dict[str, Any]]:
 build_skill_catalog()
 
 ###########################################################################
-# Unit type definitions
+# Load unit and creature definitions from manifests
 ###########################################################################
 
-SWORDSMAN_STATS = UnitStats(
-    name="Swordsman",
-    max_hp=40,
-    attack_min=4,
-    attack_max=6,
-    defence_melee=3,
-    defence_ranged=3,
-    defence_magic=0,
-    speed=3,
-    attack_range=1,
-    initiative=5,
-    sheet="units",
-    hero_frames=(0, 0),
-    enemy_frames=(3, 3),
-    min_range=1,
-    retaliations_per_round=1,
-    morale=0,
-    luck=0,
-    abilities=["shield_block"],
-    role="Sturdy melee combatant for the front line",
-    unit_type="non-magic",
-    mana=1,
-    battlefield_scale=1.0,
-)
 
-ARCHER_STATS = UnitStats(
-    name="Archer",
-    max_hp=25,
-    attack_min=3,
-    attack_max=5,
-    defence_melee=2,
-    defence_ranged=2,
-    defence_magic=0,
-    speed=3,
-    attack_range=3,
-    min_range=2,
-    initiative=7,
-    sheet="units",
-    hero_frames=(1, 1),
-    enemy_frames=(4, 4),
-    retaliations_per_round=1,
-    morale=0,
-    luck=0,
-    abilities=["focus"],
-    role="Mobile shooter, effective against low-Def. range targets",
-    unit_type="non-magic",
-    mana=1,
-    battlefield_scale=1.0,
-)
+def _load_stats(manifest: str, section: str) -> Dict[str, UnitStats]:
+    """Helper to load ``UnitStats`` mappings from JSON manifests."""
 
-MAGE_STATS = UnitStats(
-    name="Mage",
-    max_hp=20,
-    attack_min=5,
-    attack_max=8,
-    defence_melee=1,
-    defence_ranged=1,
-    defence_magic=0,
-    speed=3,
-    attack_range=4,
-    min_range=1,
-    initiative=6,
-    sheet="units",
-    hero_frames=(2, 2),
-    enemy_frames=(5, 5),
-    retaliations_per_round=1,
-    morale=0,
-    luck=0,
-    abilities=["fireball", "chain_lightning", "ice_wall"],
-    role="Versatile spellcaster wielding powerful magic",
-    unit_type="magic",
-    mana=10,
-    battlefield_scale=1.0,
-)
+    from loaders.units_loader import load_units  # local import to avoid cycle
+    from loaders.core import Context
 
-CAVALRY_STATS = UnitStats(
-    name="Cavalry",
-    max_hp=50,
-    attack_min=6,
-    attack_max=9,
-    defence_melee=4,
-    defence_ranged=4,
-    defence_magic=0,
-    speed=5,
-    attack_range=1,
-    min_range=1,
-    initiative=8,
-    sheet="units",
-    hero_frames=(0, 0),
-    enemy_frames=(0, 0),
-    retaliations_per_round=1,
-    morale=0,
-    luck=0,
-    abilities=["charge"],
-    role="Fast attacker that excels at charging",
-    unit_type="non-magic",
-    mana=1,
-    battlefield_scale=1.0,
-)
+    base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "assets"))
+    ctx = Context(base, [""])
+    data = load_units(ctx, manifest, section=section)
+    return {entry["stats"].name: entry["stats"] for entry in data.values()}
 
-DRAGON_STATS = UnitStats(
-    name="Dragon",
-    max_hp=200,
-    attack_min=10,
-    attack_max=10,
-    defence_melee=8,
-    defence_ranged=8,
-    defence_magic=0,
-    speed=4,
-    attack_range=1,
-    min_range=1,
-    initiative=9,
-    sheet="units",
-    hero_frames=(0, 0),
-    enemy_frames=(0, 0),
-    retaliations_per_round=1,
-    morale=0,
-    luck=0,
-    abilities=["flying", "multi_shot", "dragon_breath"],
-    role="Flying powerhouse with devastating breath",
-    unit_type="magic",
-    mana=5,
-    battlefield_scale=1.75,
-)
-
-PRIEST_STATS = UnitStats(
-    name="Priest",
-    max_hp=30,
-    attack_min=4,
-    attack_max=6,
-    defence_melee=2,
-    defence_ranged=2,
-    defence_magic=0,
-    speed=3,
-    attack_range=3,
-    min_range=1,
-    initiative=7,
-    sheet="units",
-    hero_frames=(0, 0),
-    enemy_frames=(0, 0),
-    retaliations_per_round=1,
-    morale=0,
-    luck=0,
-    abilities=["passive_heal", "heal"],
-    role="Support caster able to heal allies",
-    unit_type="magic",
-    mana=10,
-    battlefield_scale=1.0,
-)
 
 # Units that can be recruited in towns
-RECRUITABLE_UNITS: Dict[str, UnitStats] = {
-    SWORDSMAN_STATS.name: SWORDSMAN_STATS,
-    ARCHER_STATS.name: ARCHER_STATS,
-    MAGE_STATS.name: MAGE_STATS,
-    CAVALRY_STATS.name: CAVALRY_STATS,
-    DRAGON_STATS.name: DRAGON_STATS,
-    PRIEST_STATS.name: PRIEST_STATS,
-}
+RECRUITABLE_UNITS: Dict[str, UnitStats] = _load_stats("units/units.json", "units")
 
+# Individual unit constants retained for backward compatibility in tests
+SWORDSMAN_STATS = RECRUITABLE_UNITS.get("Swordsman")
+ARCHER_STATS = RECRUITABLE_UNITS.get("Archer")
+MAGE_STATS = RECRUITABLE_UNITS.get("Mage")
+CAVALRY_STATS = RECRUITABLE_UNITS.get("Cavalry")
+DRAGON_STATS = RECRUITABLE_UNITS.get("Dragon")
+PRIEST_STATS = RECRUITABLE_UNITS.get("Priest")
 
 ###########################################################################
 # Creatures type definitions
 ###########################################################################
 
-# Lézard Fumerolle — faible, rapide, affinité feu
-FUMEROLLE_LIZARD_STATS = UnitStats(
-    name="fumet_lizard",
-    max_hp=22,
-    attack_min=3,
-    attack_max=5,
-    defence_melee=2,
-    defence_ranged=1,
-    defence_magic=2,          # résistance feu via ability
-    speed=4,
-    attack_range=1,           # attaque de base en mêlée (crachat via ability)
-    initiative=7,
-    sheet="creatures",
-    hero_frames=(0, 0),
-    enemy_frames=(0, 0),
-    min_range=1,
-    retaliations_per_round=1,
-    morale=0,
-    luck=0,
-    abilities=[
-        "ember_spit(2, fire, cd=2)",      # petit projectile feu à 2 cases
-        "fire_resistance(25%)",           # -25% dégâts feu reçus
-        "heated_scales(burn_on_hit=20%)"  # 20% chance d’infliger Brûlure aux assaillants de mêlée
-    ],
-    role="Skirmisher rapide, harcèlement feu à courte portée",
-    unit_type="beast-elemental",
-    mana=1,
-    battlefield_scale=1.0,
-)
+CREATURE_STATS: Dict[str, UnitStats] = _load_stats("units/creatures.json", "creatures")
 
-# Ombreloup des feuilles — faible, très mobile, embuscade
-SHADOWLEAF_WOLF_STATS = UnitStats(
-    name="shadowleaf_wolf",
-    max_hp=28,
-    attack_min=4,
-    attack_max=6,
-    defence_melee=2,
-    defence_ranged=3,         # esquive meilleure vs projectiles
-    defence_magic=1,
-    speed=5,
-    attack_range=1,
-    initiative=8,
-    sheet="creatures",
-    hero_frames=(0, 0),
-    enemy_frames=(0, 0),
-    min_range=1,
-    retaliations_per_round=1,
-    morale=0,
-    luck=0,
-    abilities=[
-        "pounce(bleed=2, bonus_vs_flanked)",    # bond : saignement léger + bonus si cible flanquée
-        "forest_camouflage(+20% evade_in_forest)",
-        "stalk(first_strike_if_undetected)"     # si non repéré ce tour, frappe d’abord
-    ],
-    role="Assassin de brousse, projection/embuscade",
-    unit_type="beast",
-    mana=0,
-    battlefield_scale=1.0,
-)
-
-# Corbeau sanglier — plus fort, heurte/renverse
-BOAR_RAVEN_STATS = UnitStats(
-    name="boar_raven",
-    max_hp=60,
-    attack_min=7,
-    attack_max=10,
-    defence_melee=4,
-    defence_ranged=3,
-    defence_magic=1,
-    speed=4,
-    attack_range=1,
-    initiative=6,
-    sheet="creatures",
-    hero_frames=(0, 0),
-    enemy_frames=(0, 0),
-    min_range=1,
-    retaliations_per_round=1,
-    morale=1,                 # un cran au-dessus
-    luck=0,
-    abilities=[
-        "gore_charge(+50% dmg after_move>=2, knockback=1)",
-        "thick_hide(-20% melee_damage_taken)",
-        "scavenge_on_kill(heal=6)"            # se soigne légèrement après élimination
-    ],
-    role="Briseur de ligne, charge et repousser",
-    unit_type="beast",
-    mana=0,
-    battlefield_scale=1.0,
-)
-
-# Hurlombe — faible en PV, esprit volant, cri terrifiant
-HURLOMBE_STATS = UnitStats(
-    name="hurlombe",
-    max_hp=24,
-    attack_min=4,
-    attack_max=5,
-    defence_melee=1,
-    defence_ranged=2,
-    defence_magic=4,          # esprit : bonne résistance magique
-    speed=5,                  # vole/plane
-    attack_range=1,
-    initiative=9,
-    sheet="creatures",
-    hero_frames=(0, 0),
-    enemy_frames=(0, 0),
-    min_range=1,
-    retaliations_per_round=1,
-    morale=0,
-    luck=0,
-    abilities=[
-        "wail(2, mind, fear=-1_morale, cd=2)",  # cri à 2 cases : -1 morale (test de peur)
-        "incorporeal(20% miss_physical)",       # chance d’esquive « spectrale » vs physique
-        "hover(ignore_terrain_penalties)"       # survole le terrain difficile
-    ],
-    role="Contrôle mental léger, harcèlement mobile",
-    unit_type="undead-spirit",
-    mana=2,
-    battlefield_scale=1.0,
-)
-
-# Serpent des récifs — créature marine ne vivant que dans l'océan
-REEF_SERPENT_STATS = UnitStats(
-    name="reef_serpent",
-    max_hp=48,
-    attack_min=6,
-    attack_max=9,
-    defence_melee=3,
-    defence_ranged=3,
-    defence_magic=2,
-    speed=4,
-    attack_range=1,
-    initiative=7,
-    sheet="creatures",
-    hero_frames=(0, 0),
-    enemy_frames=(0, 0),
-    min_range=1,
-    retaliations_per_round=1,
-    morale=0,
-    luck=0,
-    abilities=[
-        "water_resistance(25%)",
-        "constrict(immobilize=1)",
-    ],
-    role="Prédateur marin à l'étreinte constrictive",
-    unit_type="beast",
-    mana=0,
-    battlefield_scale=1.75,
-)
+# Expose individual creature stats for existing imports
+FUMEROLLE_LIZARD_STATS = CREATURE_STATS.get("fumet_lizard")
+SHADOWLEAF_WOLF_STATS = CREATURE_STATS.get("shadowleaf_wolf")
+BOAR_RAVEN_STATS = CREATURE_STATS.get("boar_raven")
+HURLOMBE_STATS = CREATURE_STATS.get("hurlombe")
+REEF_SERPENT_STATS = CREATURE_STATS.get("reef_serpent")
 
 
 def create_random_enemy_army() -> List[Unit]:
