@@ -76,7 +76,7 @@ def draw(screen: "InventoryScreen") -> None:
             pygame.draw.rect(screen.screen, COLOR_SLOT_BG, rect, border_radius=8)
             pygame.draw.rect(screen.screen, state_col, rect, 3, border_radius=8)
 
-            icon = screen.assets.get(f"skill_{node.id}.png")
+            icon = screen.assets.get(node.icon) if node.icon else None
             if icon:
                 icon = pygame.transform.smoothscale(
                     icon, (rect.width - 12, rect.height - 46)
