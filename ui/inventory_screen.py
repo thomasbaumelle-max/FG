@@ -10,7 +10,6 @@ Inventory & Hero screen – HoMM-like look:
 
 from __future__ import annotations
 from typing import Callable, Dict, List, Optional, Tuple, Set
-import os
 import pygame
 
 import constants
@@ -23,7 +22,6 @@ from core.entities import (
     SkillNode,
     Unit,
     SKILL_CATALOG,
-    REPO_ROOT,
     build_skill_catalog,
 )
 from .inventory_interface import InventoryInterface
@@ -82,7 +80,6 @@ class InventoryScreen:
         self.dirty_rects: List[pygame.Rect] = [self.offscreen.get_rect()]
 
         # Fonts
-        font_path = os.path.join(REPO_ROOT, "fonts", "roboto.ttf")
         if hasattr(pygame, "font") and not pygame.font.get_init():
             pygame.font.init()
 
@@ -90,10 +87,10 @@ class InventoryScreen:
             f = theme.get_font(size)
             if f is None and hasattr(pygame, "font"):
                 try:  # pragma: no cover
-                    if hasattr(pygame.font, "Font"):
-                        f = pygame.font.Font(font_path, size)
-                    elif hasattr(pygame.font, "SysFont"):
-                        f = pygame.font.SysFont("roboto", size)
+                    if hasattr(pygame.font, "SysFont"):
+                        f = pygame.font.SysFont("arial", size)
+                    elif hasattr(pygame.font, "Font"):
+                        f = pygame.font.Font(None, size)
                 except Exception:  # pragma: no cover
                     f = None
             if f and bold and hasattr(f, "set_bold"):
