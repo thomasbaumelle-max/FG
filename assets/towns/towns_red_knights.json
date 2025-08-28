@@ -1,164 +1,395 @@
 {
-  "size": [1920, 1080],
+  "size": [
+    1920,
+    1080
+  ],
   "layers": [
-    { "id": "sky",        "image": "towns/red_knights/midground.png",        "parallax": 0.2 },
-    { "id": "background", "image": "towns/red_knights/background.png", "parallax": 0.5 },
-    { "id": "foreground", "image": "towns/red_knights/foreground.png", "parallax": 1.2 }
+    {
+      "id": "sky",
+      "image": "layers/00_sky.png",
+      "parallax": 0.2
+    },
+    {
+      "id": "background",
+      "image": "layers/10_background.png",
+      "parallax": 0.5
+    },
+    {
+      "id": "foreground",
+      "image": "layers/90_foreground.png",
+      "parallax": 1.2
+    }
   ],
   "buildings": [
     {
       "id": "barracks",
       "layer": "foreground",
-      "pos": [420, 820],
+      "pos": [
+        240,
+        600
+      ],
       "states": {
-        "unbuilt": "towns/red_knights/buildings_scaled/barracks_unbuilt.png",
-        "built":   "towns/red_knights/buildings_scaled/barracks_built.png"
+        "unbuilt": "buildings_scaled/barracks_unbuilt.png",
+        "built": "buildings_scaled/barracks_built.png"
       },
       "hotspot": [
-        [300, 690], [540, 690], [560, 820], [280, 840]
+        [
+          120,
+          470
+        ],
+        [
+          360,
+          470
+        ],
+        [
+          380,
+          600
+        ],
+        [
+          100,
+          620
+        ]
       ],
       "z_index": 50
     },
     {
       "id": "archery_range",
       "layer": "foreground",
-      "pos": [690, 840],
+      "pos": [
+        550,
+        590
+      ],
       "states": {
-        "unbuilt": "towns/red_knights/buildings_scaled/archery_range_unbuilt.png",
-        "built":   "towns/red_knights/buildings_scaled/archery_range_built.png"
+        "unbuilt": "buildings_scaled/archery_range_unbuilt.png",
+        "built": "buildings_scaled/archery_range_built.png"
       },
       "hotspot": [
-        [580, 720], [850, 720], [870, 865], [570, 870]
+        [
+          440,
+          470
+        ],
+        [
+          710,
+          470
+        ],
+        [
+          730,
+          615
+        ],
+        [
+          430,
+          620
+        ]
       ],
       "z_index": 50
     },
     {
       "id": "mage_guild",
       "layer": "foreground",
-      "pos": [800, 830],
+      "pos": [
+        920,
+        610
+      ],
       "states": {
-        "unbuilt": "towns/red_knights/buildings_scaled/mage_guild_unbuilt.png",
-        "built":   "towns/red_knights/buildings_scaled/mage_guild_built.png"
+        "unbuilt": "buildings_scaled/mage_guild_unbuilt.png",
+        "built": "buildings_scaled/mage_guild_built.png"
       },
       "hotspot": [
-        [680, 690], [940, 690], [960, 850], [660, 870]
+        [
+          800,
+          470
+        ],
+        [
+          1060,
+          470
+        ],
+        [
+          1080,
+          630
+        ],
+        [
+          780,
+          650
+        ]
       ],
       "z_index": 50
     },
     {
       "id": "hall_of_grandmasters",
       "layer": "foreground",
-      "pos": [1500, 800],
+      "pos": [
+        1070,
+        180
+      ],
       "states": {
-        "unbuilt": "towns/red_knights/buildings_scaled/hall_of_grandmasters_unbuilt.png",
-        "built":   "towns/red_knights/buildings_scaled/hall_of_grandmasters_built.png"
+        "unbuilt": "buildings_scaled/hall_of_grandmasters_unbuilt.png",
+        "built": "buildings_scaled/hall_of_grandmasters_built.png"
       },
       "hotspot": [
-        [1390, 670], [1640, 670], [1660, 820], [1370, 840]
+        [
+          960,
+          50
+        ],
+        [
+          1210,
+          50
+        ],
+        [
+          1230,
+          200
+        ],
+        [
+          940,
+          220
+        ]
       ],
       "z_index": 50
     },
     {
       "id": "cavalry_stables",
       "layer": "foreground",
-      "pos": [1680, 880],
+      "pos": [
+        660,
+        840
+      ],
       "states": {
-        "unbuilt": "towns/red_knights/buildings_scaled/cavalry_stables_unbuilt.png",
-        "built":   "towns/red_knights/buildings_scaled/cavalry_stables_built.png"
+        "unbuilt": "buildings_scaled/cavalry_stables_unbuilt.png",
+        "built": "buildings_scaled/cavalry_stables_built.png"
       },
       "hotspot": [
-        [1570, 770], [1820, 770], [1835, 900], [1560, 910]
+        [
+          550,
+          730
+        ],
+        [
+          800,
+          730
+        ],
+        [
+          815,
+          860
+        ],
+        [
+          540,
+          870
+        ]
       ],
       "z_index": 50
     },
     {
       "id": "dragon_lair",
       "layer": "foreground",
-      "pos": [1710, 540],
+      "pos": [
+        700,
+        330
+      ],
       "states": {
-        "unbuilt": "towns/red_knights/buildings_scaled/dragon_lair_unbuilt.png",
-        "built":   "towns/red_knights/buildings_scaled/dragon_lair_built.png"
+        "unbuilt": "buildings_scaled/dragon_lair_unbuilt.png",
+        "built": "buildings_scaled/dragon_lair_built.png"
       },
       "hotspot": [
-        [1580, 260], [1890, 260], [1900, 580], [1560, 600]
+        [
+          570,
+          50
+        ],
+        [
+          880,
+          50
+        ],
+        [
+          890,
+          370
+        ],
+        [
+          550,
+          390
+        ]
       ],
       "z_index": 50
     },
     {
       "id": "market",
       "layer": "foreground",
-      "pos": [560, 900],
+      "pos": [
+        1190,
+        550
+      ],
       "states": {
-        "unbuilt": "towns/red_knights/buildings_scaled/market_unbuilt.png",
-        "built":   "towns/red_knights/buildings_scaled/market_built.png"
+        "unbuilt": "buildings_scaled/market_unbuilt.png",
+        "built": "buildings_scaled/market_built.png"
       },
       "hotspot": [
-        [500, 820], [680, 820], [700, 910], [500, 920]
+        [
+          1130,
+          470
+        ],
+        [
+          1310,
+          470
+        ],
+        [
+          1330,
+          560
+        ],
+        [
+          1130,
+          570
+        ]
       ],
       "z_index": 40
     },
     {
       "id": "tavern",
       "layer": "foreground",
-      "pos": [320, 900],
+      "pos": [
+        190,
+        800
+      ],
       "states": {
-        "unbuilt": "towns/red_knights/buildings_scaled/tavern_unbuilt.png",
-        "built":   "towns/red_knights/buildings_scaled/tavern_built.png"
+        "unbuilt": "buildings_scaled/tavern_unbuilt.png",
+        "built": "buildings_scaled/tavern_built.png"
       },
       "hotspot": [
-        [250, 830], [400, 830], [420, 915], [230, 920]
+        [
+          120,
+          730
+        ],
+        [
+          270,
+          730
+        ],
+        [
+          290,
+          815
+        ],
+        [
+          100,
+          820
+        ]
       ],
       "z_index": 40
     },
     {
       "id": "bounty_board",
       "layer": "foreground",
-      "pos": [240, 920],
+      "pos": [
+        410,
+        790
+      ],
       "states": {
-        "unbuilt": "towns/red_knights/buildings_scaled/bounty_board_unbuilt.png",
-        "built":   "towns/red_knights/buildings_scaled/bounty_board_built.png"
+        "unbuilt": "buildings_scaled/bounty_board_unbuilt.png",
+        "built": "buildings_scaled/bounty_board_built.png"
       },
       "hotspot": [
-        [180, 860], [300, 860], [320, 930], [170, 940]
+        [
+          350,
+          730
+        ],
+        [
+          470,
+          730
+        ],
+        [
+          490,
+          800
+        ],
+        [
+          340,
+          810
+        ]
       ],
       "z_index": 35
     },
     {
       "id": "magic_school",
       "layer": "foreground",
-      "pos": [1340, 840],
+      "pos": [
+        1370,
+        130
+      ],
       "states": {
-        "unbuilt": "towns/red_knights/buildings_scaled/magic_school_unbuilt.png",
-        "built":   "towns/red_knights/buildings_scaled/magic_school_built.png"
+        "unbuilt": "buildings_scaled/magic_school_unbuilt.png",
+        "built": "buildings_scaled/magic_school_built.png"
       },
       "hotspot": [
-        [1260, 760], [1420, 760], [1440, 850], [1250, 860]
+        [
+          1290,
+          50
+        ],
+        [
+          1450,
+          50
+        ],
+        [
+          1470,
+          140
+        ],
+        [
+          1280,
+          150
+        ]
       ],
       "z_index": 55
     },
     {
       "id": "caravansary",
       "layer": "foreground",
-      "pos": [1830, 910],
+      "pos": [
+        945,
+        810
+      ],
       "states": {
-        "unbuilt": "towns/red_knights/buildings_scaled/caravansary_unbuilt.png",
-        "built":   "towns/red_knights/buildings_scaled/caravansary_built.png"
+        "unbuilt": "buildings_scaled/caravansary_unbuilt.png",
+        "built": "buildings_scaled/caravansary_built.png"
       },
       "hotspot": [
-        [1760, 830], [1930, 830], [1950, 930], [1750, 940]
+        [
+          875,
+          730
+        ],
+        [
+          1045,
+          730
+        ],
+        [
+          1065,
+          830
+        ],
+        [
+          865,
+          840
+        ]
       ],
       "z_index": 45
     },
     {
       "id": "castle",
       "layer": "foreground",
-      "pos": [1120, 680],
+      "pos": [
+        300,
+        250
+      ],
       "states": {
-        "unbuilt": "towns/red_knights/buildings_scaled/castle_unbuilt.png",
-        "built":   "towns/red_knights/buildings_scaled/castle_built.png"
+        "unbuilt": "buildings_scaled/castle_unbuilt.png",
+        "built": "buildings_scaled/castle_built.png"
       },
       "hotspot": [
-        [940, 480], [1300, 480], [1320, 740], [920, 760]
+        [
+          120,
+          50
+        ],
+        [
+          480,
+          50
+        ],
+        [
+          500,
+          310
+        ],
+        [
+          100,
+          330
+        ]
       ],
       "z_index": 58
     }
