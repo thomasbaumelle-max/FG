@@ -1724,6 +1724,7 @@ class Combat:
 
         start_rect = self.cell_rect(*start)
         end_rect = self.cell_rect(*end)
+        duration = 10 / constants.FPS
         if hasattr(pygame, "math"):
             start_pos = pygame.math.Vector2(start_rect.center)
             end_pos = pygame.math.Vector2(end_rect.center)
@@ -1735,7 +1736,6 @@ class Combat:
                 (end_pos[0] - start_pos[0]) / duration,
                 (end_pos[1] - start_pos[1]) / duration,
             )
-        duration = 10 / constants.FPS
         event = FXEvent(img, start_pos, duration, z=100, velocity=velocity)
         self.fx_queue.add(event)
 
