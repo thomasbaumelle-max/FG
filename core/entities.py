@@ -734,7 +734,10 @@ def _load_stats(manifest: str, section: str) -> Dict[str, UnitStats]:
     base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "assets"))
     ctx = Context(base, [""])
     stats_map, _ = load_units(ctx, manifest, section=section)
-    return {st.name: st for st in stats_map.values()}
+
+    out = {uid: st for uid, st in stats_map.items()}
+    out.update({st.name: st for st in stats_map.values()})
+    return out
 
 
 # Units that can be recruited in towns
@@ -764,7 +767,7 @@ REEF_SERPENT_STATS = CREATURE_STATS.get("reef_serpent")
 
 def create_random_enemy_army() -> List[Unit]:
     """Generate a random selection of enemy units for the world map."""
-    stats_choices = list(RECRUITABLE_UNITS.values())
+    stats_choices = list({id(st): st for st in RECRUITABLE_UNITS.values()}.values())
     num_stacks = random.randint(1, 3)
     units: List[Unit] = []
     for _ in range(num_stacks):
