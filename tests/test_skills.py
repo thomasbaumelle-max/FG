@@ -52,7 +52,7 @@ def test_red_knights_manifest_and_icons():
             entry = next(e for e in entries if e["rank"] == rank)
             if prev_id:
                 assert prev_id in entry["requires"]
-            icon = assets.get(entry["id"])
+            icon = assets.get(entry["icon"])
             assert hasattr(icon, "get_width") and icon.get_width() > 0
             prev_id = entry["id"]
 

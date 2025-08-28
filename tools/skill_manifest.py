@@ -35,8 +35,9 @@ def load_skill_manifest(
         directory.
     assets:
         Optional mapping where extracted icons will be stored.  When provided
-        the loader expects each manifest to specify a ``sheet`` key pointing to
-        a spritesheet containing the skill icons.
+        the loader expects each skill entry to either specify an ``icon``
+        pointing to an image file or to provide ``coords`` alongside a
+        manifest level ``sheet`` defining a spritesheet containing the icons.
     faction_id:
         Optional faction identifier limiting which modern manifest is loaded.
     """
@@ -97,9 +98,16 @@ def load_skill_manifest(
                         reqs.append(prev_id)
                     entry["requires"] = reqs
 
-                    if assets is not None and sheet_path and entry.get("coords") is not None:
-                        assets[entry["id"]] = get_icon(sheet_path, tuple(entry["coords"]))
-                        entry["icon"] = entry["id"]
+                    if assets is not None:
+                        key = f"skill_{entry['id']}"
+                        icon_path = entry.get('icon')
+                        if icon_path:
+                            img_path = os.path.join(repo_root, 'assets', icon_path)
+                            assets[key] = get_icon(img_path, (0, 0), grid=1)
+                            entry['icon'] = key
+                        elif sheet_path and entry.get('coords') is not None:
+                            assets[key] = get_icon(sheet_path, tuple(entry['coords']))
+                            entry['icon'] = key
 
                     entries.append(entry)
                     prev_id = entry["id"]
