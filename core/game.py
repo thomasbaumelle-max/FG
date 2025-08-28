@@ -2100,7 +2100,7 @@ class Game:
         if tile.building and not tile.building.passable:
             # Interact with the building without moving onto its tile
             self.hero.ap -= step_cost
-            if tile.building.garrison:
+            if tile.building.garrison and tile.building.owner != 0:
                 enemy = EnemyHero(nx, ny, tile.building.garrison)
                 engaged = self.combat_with_enemy_hero(enemy, initiated_by="hero")
                 if not engaged:
@@ -2289,7 +2289,7 @@ class Game:
                     self.refresh_army_list()
                     return
                 self.refresh_army_list()
-        if tile.building and tile.building.garrison:
+        if tile.building and tile.building.garrison and tile.building.owner != 0:
             enemy = EnemyHero(nx, ny, tile.building.garrison)
             engaged = self.combat_with_enemy_hero(enemy, initiated_by="hero")
             if not engaged:
