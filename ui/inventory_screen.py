@@ -10,6 +10,7 @@ Inventory & Hero screen – HoMM-like look:
 
 from __future__ import annotations
 from typing import Callable, Dict, List, Optional, Tuple, Set
+import os
 import pygame
 
 import constants
@@ -77,22 +78,28 @@ class InventoryScreen:
         self.open_pause_menu = pause_cb
 
         # Fonts
-        try:
-            self.font = pygame.font.SysFont("arial", 18)
-        except Exception:  # pragma: no cover
-            self.font = None
-        try:
-            self.font_small = pygame.font.SysFont("arial", 14)
-        except Exception:  # pragma: no cover
-            self.font_small = None
-        try:
-            self.font_big = pygame.font.SysFont("arial", 22, bold=True)
-        except Exception:  # pragma: no cover
-            self.font_big = self.font
-        try:
-            self.font_title = pygame.font.SysFont("arial", 28, bold=True)
-        except Exception:  # pragma: no cover
-            self.font_title = self.font_big or self.font
+        font_path = os.path.join(REPO_ROOT, "fonts", "roboto.ttf")
+        if hasattr(pygame, "font") and not pygame.font.get_init():
+            pygame.font.init()
+
+        def _load_font(size: int, bold: bool = False):
+            f = theme.get_font(size)
+            if f is None and hasattr(pygame, "font"):
+                try:  # pragma: no cover
+                    if hasattr(pygame.font, "Font"):
+                        f = pygame.font.Font(font_path, size)
+                    elif hasattr(pygame.font, "SysFont"):
+                        f = pygame.font.SysFont("roboto", size)
+                except Exception:  # pragma: no cover
+                    f = None
+            if f and bold and hasattr(f, "set_bold"):
+                f.set_bold(True)
+            return f
+
+        self.font = _load_font(18)
+        self.font_small = _load_font(14)
+        self.font_big = _load_font(22, bold=True) or self.font
+        self.font_title = _load_font(28, bold=True) or self.font_big or self.font
 
         # Offset of the panel within the main screen when run() uses an overlay
         self.offset = (0, 0)
@@ -516,7 +523,10 @@ class InventoryScreen:
 
         if not lines:
             return
-        texts = [self.font.render(t, True, c) for t, c in lines]
+        font = self.font or theme.get_font(18)
+        if not font:
+            return
+        texts = [font.render(t, True, c) for t, c in lines]
         w = max(t.get_width() for t in texts) + 10
         h = sum(t.get_height() for t in texts) + 10
         tip = pygame.Surface((w, h), pygame.SRCALPHA)
