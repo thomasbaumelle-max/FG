@@ -8,7 +8,7 @@ from typing import Any
 import pygame
 import constants
 
-from loaders.town_scene_loader import TownScene
+from loaders.town_scene_loader import TownScene, TownBuilding
 from render.town_scene_renderer import TownSceneRenderer
 
 
@@ -32,6 +32,16 @@ class TownSceneScreen:
         self.clock = clock or pygame.time.Clock()
         self.renderer = TownSceneRenderer(scene, assets)
 
+    def on_building_click(self, building: TownBuilding) -> bool:
+        """Hook executed when a building hotspot is clicked.
+
+        Subclasses may override this to open panels or trigger other actions.
+        Return ``True`` to close the screen after handling the click.
+        """
+
+        # Placeholder action: override in subclass for real behaviour
+        return False
+
     def run(self) -> None:
         if not (self.renderer.scene.layers or self.renderer.scene.buildings):
             return
@@ -45,7 +55,16 @@ class TownSceneScreen:
                 if event.type == pygame.KEYDOWN and getattr(event, "key", None) == pygame.K_ESCAPE:
                     running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    running = False
+                    for building in self.renderer.scene.buildings:
+                        hotspot = getattr(building, "hotspot", None)
+                        if not hotspot or len(hotspot) < 4:
+                            continue
+                        x1, y1, x2, y2 = hotspot[0], hotspot[1], hotspot[2], hotspot[3]
+                        x, y = event.pos
+                        if x1 <= x <= x2 and y1 <= y <= y2:
+                            if self.on_building_click(building):
+                                running = False
+                            break
             self.renderer.draw(self.screen, {})
             pygame.display.flip()
             self.clock.tick(getattr(constants, "FPS", 60))
