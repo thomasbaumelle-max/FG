@@ -3255,6 +3255,9 @@ class Game:
         if scene_path is None and town is not None:
             fast_tests = os.environ.get("FG_FAST_TESTS") == "1"
             mods = getattr(getattr(pygame, "key", None), "get_mods", lambda: 0)()
+            # ``pygame.key.get_mods`` is used here instead of relying on an
+            # event object so that modifier keys like Ctrl are honoured when the
+            # method is called from UI widgets.
             if not fast_tests and not (mods & getattr(pygame, "KMOD_CTRL", 0)):
                 scene_path = os.path.join(
                     self.ctx.repo_root,

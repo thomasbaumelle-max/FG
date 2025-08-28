@@ -90,7 +90,9 @@ The resulting executable and bundled assets are placed in `dist/fantaisie/`.
 A status panel along the bottom of the window displays your hero's gold,
 mana, army composition and remaining action points.  During exploration you
 can click the on-screen **End Turn** and **Heal** buttons (or press **T** and
-**H**) to manage your army.
+**H**) to manage your army.  The **Next Town** button cycles through player
+towns; hold **Ctrl** while activating it to open the highlighted town
+immediately.  Modifier keys are detected via `pygame.key.get_mods`.
 
 ## Assets
 
@@ -223,6 +225,13 @@ Pytest provides several options to iterate quickly during development:
   `make lf` exposes this behaviour.
 * `pytest --randomly-seed=0` (requires the `pytest-randomly` plugin) fixes the
   random seed to help detect order-dependent failures.
+
+### Fast test mode
+
+The test suite honours the `FG_FAST_TESTS` environment variable.  When set to
+`1`, the game skips some heavy asset loading paths to make tests run more
+quickly.  This variable is set automatically in the test harness and **should
+remain unset in production** so the full game behaviour is exercised.
 
 
 ## Configuration
