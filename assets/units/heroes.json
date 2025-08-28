@@ -99,7 +99,7 @@
       "starting_army": [
         {"unit": "Mist Dragon", "count": 22},
         {"unit": "Harmonia", "count": 30},
-        {"unit": "Mist Nymph", "count": 15},
+        {"unit": "Mist Nymph", "count": 15}
       ],
       "starting_skills": [
         {"branch": "Mists & Streams", "rank": "N", "id": "mist_veil_n"},
@@ -123,7 +123,7 @@
       "starting_army": [
         {"unit": "Mist Dragon", "count": 22},
         {"unit": "Harmonia", "count": 30},
-        {"unit": "Mist Nymph", "count": 15},
+        {"unit": "Mist Nymph", "count": 15}
       ],
       "starting_skills": [
         {"branch": "Sylvan Heart", "rank": "N", "id": "entangling_vines_n"},

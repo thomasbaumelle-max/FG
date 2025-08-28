@@ -29,10 +29,12 @@ def _parse_army(items: List[Any]) -> List[Tuple[str, int]]:
             unit = entry.get("unit") or entry.get("id")
             if not unit:
                 continue
+            unit = str(unit).lower().replace(" ", "_")
             count = int(entry.get("count", 1))
             army.append((unit, count))
         elif isinstance(entry, str):
-            army.append((entry, 1))
+            unit = str(entry).lower().replace(" ", "_")
+            army.append((unit, 1))
     return army
 
 
@@ -69,6 +71,13 @@ def load_heroes(ctx: Context, manifest: str = "units/heroes.json") -> Dict[str, 
         stats = merged.get("stats", {})
         overworld = dict(merged.get("overworld", stats.get("overworld", {})))
         combat = dict(merged.get("combat", stats.get("combat", {})))
+        portrait = (
+            merged.get("hero_portrait")
+            or merged.get("portrait")
+            or merged.get("PortraitSprite")
+        )
+        overworld_sprite = merged.get("overworld_sprite") or merged.get("OverWorldSprite")
+        battlefield_sprite = merged.get("battlefield_sprite") or merged.get("BattlefieldSprite")
         hero = HeroDef(
             id=merged["id"],
             name=merged.get("name", merged["id"]),
@@ -78,9 +87,9 @@ def load_heroes(ctx: Context, manifest: str = "units/heroes.json") -> Dict[str, 
             starting_army=_parse_army(merged.get("starting_army", [])),
             starting_skills=[dict(s) for s in merged.get("starting_skills", [])],
             known_spells=list(merged.get("known_spells", [])),
-            portrait=merged.get("PortraitSprite"),
-            overworld_sprite=merged.get("OverWorldSprite"),
-            battlefield_sprite=merged.get("BattlefieldSprite"),
+            portrait=portrait,
+            overworld_sprite=overworld_sprite,
+            battlefield_sprite=battlefield_sprite,
         )
         heroes[hero.id] = hero
     return heroes

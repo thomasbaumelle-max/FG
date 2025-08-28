@@ -87,6 +87,10 @@ logger = logging.getLogger(__name__)
 # Fallback mapping for unit statistics used when a ``Game`` instance has not
 # initialised its own data yet (e.g. in certain unit tests).
 STATS_BY_NAME: Dict[str, UnitStats] = {**RECRUITABLE_UNITS, **CREATURE_STATS}
+for st in list(STATS_BY_NAME.values()):
+    STATS_BY_NAME.setdefault(st.name, st)
+    alias = str(st.name).lower().replace(" ", "_")
+    STATS_BY_NAME.setdefault(alias, st)
 
 
 # Filenames for save slots
@@ -222,6 +226,10 @@ class Game:
             except Exception:
                 self.creature_defs, self.creature_extra = {}, {}
             self._stats_by_name = {**self.unit_defs, **self.creature_defs}
+            for st in list(self._stats_by_name.values()):
+                self._stats_by_name.setdefault(st.name, st)
+                alias = str(st.name).lower().replace(" ", "_")
+                self._stats_by_name.setdefault(alias, st)
 
             # Asset loading needs ``unit_extra``/``creature_extra`` to bake unit
             # sprites, so perform it after the definitions are available.
