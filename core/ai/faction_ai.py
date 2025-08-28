@@ -10,11 +10,15 @@ management, unit recruitment and strategic movement across the world map.
 """
 
 from dataclasses import dataclass, field
+import logging
 from typing import Iterable, List, Optional, Tuple
 
 from core.buildings import Building, Town
 from core.entities import EnemyHero
 from core import economy
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -144,6 +148,56 @@ class FactionAI:
                 ox, oy = getattr(town, "origin", (0, 0))
             for dx, dy in getattr(town, "footprint", [(0, 0)]):
                 world.reveal(1, ox + dx, oy + dy, radius=2)
+
+    # ------------------------------------------------------------------
+    # Town management
+    # ------------------------------------------------------------------
+    def build_in_town(self) -> None:
+        """Attempt to construct the next available structure in ``self.town``.
+
+        Structures are prioritised by type: unit dwellings are built first in
+        tier order (T1→T7) followed by utility buildings such as markets or
+        magic schools.  Construction is skipped if the faction cannot afford the
+        associated ``cost`` or if the town has already built something today.
+        """
+
+        town = self.town
+        if not town or town.built_today:
+            return
+
+        structures = getattr(town, "structures", {})
+        if not structures:
+            return
+
+        ui_order = list(getattr(town, "ui_order", structures.keys()))
+        ordered: List[str] = []
+        for sid in ui_order:
+            info = structures.get(sid, {})
+            if sid in town.built_structures:
+                continue
+            dwelling = info.get("dwelling", {}) if isinstance(info, dict) else {}
+            if isinstance(dwelling, dict) and dwelling:
+                ordered.append(sid)
+        for sid in ui_order:
+            if sid not in ordered and sid not in town.built_structures:
+                ordered.append(sid)
+
+        for sid in ordered:
+            info = structures.get(sid, {})
+            cost = town.structure_cost(sid)
+            if not economy.can_afford(self.economy, cost):
+                continue
+            hero = self.heroes[0] if self.heroes else EnemyHero(0, 0, [])
+            if town.build_structure(sid, hero, self.economy):
+                dwelling = info.get("dwelling", {}) if isinstance(info, dict) else {}
+                if isinstance(dwelling, dict) and dwelling:
+                    desc = ", ".join(
+                        f"+{amt} {uid.lower()}/sem" for uid, amt in dwelling.items()
+                    )
+                else:
+                    desc = "utility"
+                logger.info("Build %s: %s, coût OK", sid.replace("_", " "), desc)
+                break
 
     # ------------------------------------------------------------------
     # Public API
