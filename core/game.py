@@ -3243,12 +3243,22 @@ class Game:
     ) -> None:
         """Open a town management screen or selection overlay.
 
-        If ``scene_path`` is provided a scenic view defined by the JSON
-        manifest is rendered using :class:`TownSceneRenderer` before displaying
-        the normal town interface.  Supplying ``town`` keeps the previous
-        behaviour of opening the full :class:`TownScreen`.  When no ``town`` is
-        given a :class:`TownOverlay` listing all player-owned towns is shown.
+        By default a scenic view defined by the ``towns_red_knights.json``
+        manifest is shown before the regular town interface.  Holding
+        ``Ctrl`` while triggering this method skips the scenic view and opens
+        the traditional interface directly.  Supplying ``town`` keeps the
+        previous behaviour of opening the full :class:`TownScreen`.  When no
+        ``town`` is given a :class:`TownOverlay` listing all player-owned towns
+        is shown.
         """
+
+        if scene_path is None and town is not None:
+            fast_tests = os.environ.get("FG_FAST_TESTS") == "1"
+            mods = getattr(getattr(pygame, "key", None), "get_mods", lambda: 0)()
+            if not fast_tests and not (mods & getattr(pygame, "KMOD_CTRL", 0)):
+                scene_path = os.path.join(
+                    "assets", "towns", "towns_red_knights.json"
+                )
 
         scene = None
         if scene_path:
