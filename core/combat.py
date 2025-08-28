@@ -1720,7 +1720,7 @@ class Combat:
         w, h = img.get_size()
         scale = min(tile / w, tile / h, 1.0)
         if scale != 1.0 and hasattr(pygame, "transform"):
-            img = pygame.transform.scale(img, (int(w * scale), int(h * scale)))
+            img = pygame.transform.smoothscale(img, (int(w * scale), int(h * scale)))
 
         start_rect = self.cell_rect(*start)
         end_rect = self.cell_rect(*end)
@@ -1750,7 +1750,7 @@ class Combat:
         w, h = img.get_size()
         scale = min(rect.width / w, rect.height / h, 1.0)
         if scale != 1.0 and hasattr(pygame, "transform"):
-            img = pygame.transform.scale(img, (int(w * scale), int(h * scale)))
+            img = pygame.transform.smoothscale(img, (int(w * scale), int(h * scale)))
         center = (
             rect.x + rect.width // 2,
             rect.y + rect.height // 2,
@@ -1772,7 +1772,7 @@ class Combat:
         w, h = img.get_size()
         scale = min(rect.width / w, rect.height / h, 1.0)
         if scale != 1.0 and hasattr(pygame, "transform"):
-            img = pygame.transform.scale(img, (int(w * scale), int(h * scale)))
+            img = pygame.transform.smoothscale(img, (int(w * scale), int(h * scale)))
         center = rect.center
         if hasattr(pygame, "math"):
             img_pos = pygame.math.Vector2(center)

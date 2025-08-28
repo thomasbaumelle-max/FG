@@ -92,7 +92,7 @@ def draw(combat, frame: int = 0) -> None:
         if (orig_w, orig_h) != (target_w, target_h):
             scale_x = target_w / orig_w
             scale_y = target_h / orig_h
-            bg = pygame.transform.scale(bg, (target_w, target_h))
+            bg = pygame.transform.smoothscale(bg, (target_w, target_h))
             combat._battlefield_bg = bg
         combat._battlefield_bg_scale = (scale_x, scale_y)
         combat.screen.blit(
@@ -147,7 +147,7 @@ def draw(combat, frame: int = 0) -> None:
             if highlight_img:
                 img = highlight_img
                 if rect.size != highlight_img.get_size():
-                    img = pygame.transform.scale(highlight_img, rect.size)
+                    img = pygame.transform.smoothscale(highlight_img, rect.size)
                 overlay.blit(img, rect.topleft)
             else:
                 draw_hex(overlay, rect, constants.GREEN, 100)
@@ -186,7 +186,7 @@ def draw(combat, frame: int = 0) -> None:
             if highlight_img:
                 img = highlight_img
                 if rect.size != highlight_img.get_size():
-                    img = pygame.transform.scale(highlight_img, rect.size)
+                    img = pygame.transform.smoothscale(highlight_img, rect.size)
                 overlay.blit(img, rect.topleft)
             else:
                 draw_hex(overlay, rect, constants.BLUE, 100)
@@ -215,7 +215,7 @@ def draw(combat, frame: int = 0) -> None:
             if highlight_img:
                 img = highlight_img
                 if rect.size != highlight_img.get_size():
-                    img = pygame.transform.scale(highlight_img, rect.size)
+                    img = pygame.transform.smoothscale(highlight_img, rect.size)
                 overlay.blit(img, rect.topleft)
             else:
                 draw_hex(overlay, rect, colour, 100)
@@ -231,7 +231,7 @@ def draw(combat, frame: int = 0) -> None:
         rect = combat.cell_rect(cx, cy)
         img = combat.assets.get(constants.IMG_OBSTACLE)
         if img and rect.size != img.get_size():
-            img = pygame.transform.scale(img, rect.size)
+            img = pygame.transform.smoothscale(img, rect.size)
         if img:
             combat.screen.blit(img, rect.topleft)
         else:
@@ -243,7 +243,7 @@ def draw(combat, frame: int = 0) -> None:
         img = combat.assets.get("ice_wall")
         if img:
             if rect.size != img.get_size():
-                img = pygame.transform.scale(img, rect.size)
+                img = pygame.transform.smoothscale(img, rect.size)
             combat.screen.blit(img, rect.topleft)
         else:
             pygame.draw.rect(combat.screen, constants.WHITE, rect)
@@ -383,7 +383,7 @@ def draw(combat, frame: int = 0) -> None:
             flag = getattr(pygame, "BLEND_RGBA_ADD", None)
             if overlay_img and flag is not None:
                 if rect.size != overlay_img.get_size():
-                    img = pygame.transform.scale(overlay_img, rect.size)
+                    img = pygame.transform.smoothscale(overlay_img, rect.size)
                 else:
                     img = overlay_img
                 try:
