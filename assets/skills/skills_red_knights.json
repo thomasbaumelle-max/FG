@@ -6,7 +6,7 @@
       "desc": "",
       "cost": 1,
       "effects": [],
-      "icon": "icons/logistics_N.png"
+      "icon": "icons/red_knights_skills/skill_crimson_surge.png"
     },
     "A": {
       "id": "logistics_A",
@@ -14,7 +14,7 @@
       "desc": "",
       "cost": 1,
       "effects": [],
-      "icon": "icons/logistics_A.png"
+      "icon": "icons/red_knights_skills/skill_valiant_charge.png"
     },
     "E": {
       "id": "logistics_E",
@@ -22,7 +22,7 @@
       "desc": "",
       "cost": 1,
       "effects": [],
-      "icon": "icons/logistics_E.png"
+      "icon": "icons/red_knights_skills/skill_rally.png"
     },
     "M": {
       "id": "logistics_M",
@@ -30,7 +30,7 @@
       "desc": "",
       "cost": 1,
       "effects": [],
-      "icon": "icons/logistics_M.png"
+      "icon": "icons/red_knights_skills/skill_sapper_charge.png"
     }
   },
   "tactics": {
@@ -40,7 +40,7 @@
       "desc": "",
       "cost": 1,
       "effects": [],
-      "icon": "icons/tactics_N.png"
+      "icon": "icons/red_knights_skills/skill_guard_order.png"
     },
     "A": {
       "id": "tactics_A",
@@ -48,7 +48,7 @@
       "desc": "",
       "cost": 1,
       "effects": [],
-      "icon": "icons/tactics_A.png"
+      "icon": "icons/red_knights_skills/skill_deplay_stakes.png"
     },
     "E": {
       "id": "tactics_E",
@@ -56,7 +56,7 @@
       "desc": "",
       "cost": 1,
       "effects": [],
-      "icon": "icons/tactics_E.png"
+      "icon": "icons/red_knights_skills/skill_aegis.png"
     },
     "M": {
       "id": "tactics_M",
@@ -64,7 +64,7 @@
       "desc": "",
       "cost": 1,
       "effects": [],
-      "icon": "icons/tactics_M.png"
+      "icon": "icons/red_knights_skills/skill_mass_bless.png"
     }
   },
   "marksmanship": {
@@ -74,7 +74,7 @@
       "desc": "",
       "cost": 1,
       "effects": [],
-      "icon": "icons/marksmanship_N.png"
+      "icon": "icons/red_knights_skills/skill_firebolt.png"
     },
     "A": {
       "id": "marksmanship_A",
@@ -82,7 +82,7 @@
       "desc": "",
       "cost": 1,
       "effects": [],
-      "icon": "icons/marksmanship_A.png"
+      "icon": "icons/red_knights_skills/skill_volley.png"
     },
     "E": {
       "id": "marksmanship_E",
@@ -90,7 +90,7 @@
       "desc": "",
       "cost": 1,
       "effects": [],
-      "icon": "icons/marksmanship_E.png"
+      "icon": "icons/red_knights_skills/skill_fireball.png"
     },
     "M": {
       "id": "marksmanship_M",
@@ -98,7 +98,7 @@
       "desc": "",
       "cost": 1,
       "effects": [],
-      "icon": "icons/marksmanship_M.png"
+      "icon": "icons/red_knights_skills/skill_deadeye.png"
     }
   },
   "weaponsmithing": {
@@ -108,7 +108,7 @@
       "desc": "",
       "cost": 1,
       "effects": [],
-      "icon": "icons/weaponsmithing_N.png"
+      "icon": "icons/red_knights_skills/skill_intimidate.png"
     },
     "A": {
       "id": "weaponsmithing_A",
@@ -116,7 +116,7 @@
       "desc": "",
       "cost": 1,
       "effects": [],
-      "icon": "icons/weaponsmithing_A.png"
+      "icon": "icons/red_knights_skills/skill_sharpen.png"
     },
     "E": {
       "id": "weaponsmithing_E",
@@ -124,7 +124,7 @@
       "desc": "",
       "cost": 1,
       "effects": [],
-      "icon": "icons/weaponsmithing_E.png"
+      "icon": "icons/red_knights_skills/skill_flame_alt.png"
     },
     "M": {
       "id": "weaponsmithing_M",
@@ -132,7 +132,7 @@
       "desc": "",
       "cost": 1,
       "effects": [],
-      "icon": "icons/weaponsmithing_M.png"
+      "icon": "icons/red_knights_skills/skill_overrun.png"
     }
   }
 }
