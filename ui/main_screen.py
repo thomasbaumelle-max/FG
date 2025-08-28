@@ -159,14 +159,13 @@ class MainScreen:
             if mods & getattr(pygame, "KMOD_CTRL", 0):
                 open_cb = getattr(self.game, "open_town", None)
                 if open_cb:
-                    path = os.path.join("assets", "towns", "towns_red_knights.json")
                     town = getattr(self.game, "_focused_town", None)
                     pos = getattr(self.game, "_focused_town_pos", None)
                     try:
                         if town:
-                            open_cb(town, town_pos=pos, scene_path=path)
+                            open_cb(town, town_pos=pos)
                         else:
-                            open_cb(scene_path=path)
+                            open_cb()
                     except TypeError:
                         if town:
                             open_cb(town, town_pos=pos)
