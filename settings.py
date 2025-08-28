@@ -92,6 +92,9 @@ TOOLTIP_READ_MODE: bool = _get_bool(
     "FG_TOOLTIP_READ_MODE", "tooltip_read_mode", False
 )
 
+# Enable super user mode for debugging and cheats
+SUPER_USER_MODE: bool = _get_bool("FG_SUPER_USER", "super_user_mode", False)
+
 _DEFAULT_KEYMAP: Dict[str, List[str]] = {
     "pan_left": ["K_LEFT", "K_a"],
     "pan_right": ["K_RIGHT", "K_d"],
@@ -132,6 +135,7 @@ __all__ = [
     "SCROLL_SPEED",
     "ANIMATION_SPEED",
     "TOOLTIP_READ_MODE",
+    "SUPER_USER_MODE",
     "KEYMAP",
     "save_settings",
     "remap_key",
