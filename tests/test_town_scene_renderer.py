@@ -54,3 +54,39 @@ def test_draws_layers_and_buildings_in_order():
     surface2 = DummySurface()
     renderer.draw(surface2, {"b": "unbuilt"})
     assert surface2.calls[-1] == (unbuilt, (1, 2))
+
+
+def test_buildings_sorted_by_z_index():
+    b1_img = object()
+    b2_img = object()
+    assets = DummyAssets(
+        {
+            "b1.png": b1_img,
+            "b2.png": b2_img,
+        }
+    )
+
+    scene = TownScene(
+        size=(10, 10),
+        layers=[],
+        buildings=[
+            TownBuilding(
+                id="b1",
+                layer="",
+                pos=(1, 1),
+                states={"built": "b1.png"},
+                z_index=1,
+            ),
+            TownBuilding(
+                id="b2",
+                layer="",
+                pos=(2, 2),
+                states={"built": "b2.png"},
+                z_index=0,
+            ),
+        ],
+    )
+    renderer = TownSceneRenderer(scene, assets)
+    surface = DummySurface()
+    renderer.draw(surface, {"b1": "built", "b2": "built"})
+    assert surface.calls == [(b2_img, (2, 2)), (b1_img, (1, 1))]
