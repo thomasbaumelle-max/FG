@@ -3257,7 +3257,10 @@ class Game:
             mods = getattr(getattr(pygame, "key", None), "get_mods", lambda: 0)()
             if not fast_tests and not (mods & getattr(pygame, "KMOD_CTRL", 0)):
                 scene_path = os.path.join(
-                    "assets", "towns", "towns_red_knights.json"
+                    self.ctx.repo_root,
+                    "assets",
+                    "towns",
+                    "towns_red_knights.json",
                 )
 
         scene = None
@@ -3265,9 +3268,10 @@ class Game:
             try:  # pragma: no cover - allow running without package context
                 from loaders.town_scene_loader import load_town_scene
                 from ui.town_scene_screen import TownSceneScreen
-                assets = getattr(self, "assets", None)
-                scene = load_town_scene(scene_path, assets)
-                scn_screen = TownSceneScreen(self.screen, scene, assets, self.clock)
+                scene = load_town_scene(scene_path, self.assets)
+                scn_screen = TownSceneScreen(
+                    self.screen, scene, self.assets, self.clock
+                )
                 run = getattr(scn_screen, "run", None)
                 if callable(run):
                     run()
