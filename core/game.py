@@ -802,14 +802,14 @@ class Game:
         self.artifacts_manifest = load_artifact_manifest(repo_root, self.assets)
 
         # Load unit and creature sprites using metadata from the loaders
-        image_files: Set[str] = {
+        images: Set[str] = {
             info.get("image")
             for extras in (self.unit_extra, self.creature_extra)
             for info in extras.values()
             if info.get("image")
         }
-        if image_files:
-            self.load_additional_assets(list(image_files))
+        if images:
+            self.load_additional_assets(list(images))
 
         self.unit_shadow_baked = {}
         for extras in (self.unit_extra, self.creature_extra):
@@ -825,6 +825,10 @@ class Game:
                     smooth=True,
                 )
                 self.assets[uid] = surf
+                name = info.get("name")
+                if name:
+                    self.assets[name] = surf
+                    self.assets[name.lower().replace(" ", "_")] = surf
                 self.unit_shadow_baked[uid] = bool(info.get("shadow_baked", False))
 
         # Load hero portraits and map icons declared in assets/units/heroes.json
