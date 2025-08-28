@@ -16,6 +16,8 @@ import json
 import os
 from typing import Dict, List
 
+from core.economy import DEFAULT_MARKET_RATES
+
 import settings
 from loaders.i18n import load_locale
 
@@ -152,10 +154,7 @@ UNIT_RECRUIT_COSTS = {
     "Archer": {"gold": 75},
 }
 # for futur market rates and buildings
-MARKET_RATES = {
-    ("gold","wood"): 100, ("gold","stone"): 100, ("gold","crystal"): 250,
-    ("wood","gold"): 8, ("stone","gold"): 8, ("crystal","gold"): 25,
-}
+MARKET_RATES = DEFAULT_MARKET_RATES
 
 # Combat settings
 # Battlefield dimensions for tactical combat

@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, Optional, Set, List, Tuple
 
 import constants
+from core.economy import DEFAULT_MARKET_RATES
 from loaders import building_loader
 from loaders.building_loader import BuildingAsset
 from loaders.core import Context
@@ -240,14 +241,6 @@ class Town(Building):
         # File d'ordres pour les caravanes en transit
         self.caravan_orders: List[Caravan] = []
 
-        DEFAULT_MARKET_RATES = {
-            ("gold", "wood"): 100,
-            ("gold", "stone"): 100,
-            ("gold", "crystal"): 250,
-            ("wood", "gold"): 8,
-            ("stone", "gold"): 8,
-            ("crystal", "gold"): 25,
-        }
         self.market_rates = getattr(constants, "MARKET_RATES", DEFAULT_MARKET_RATES)
         self.built_today = False
 
