@@ -2875,6 +2875,7 @@ class Game:
     def _run_ai_turn(self) -> None:
         """Execute AI recruitment and movement for the turn."""
         if getattr(self, "ai_player", None):
+            self.ai_player.build_in_town()
             self._spawn_enemy_heroes()
         self.move_enemies_randomly()
         self.move_enemy_heroes()
