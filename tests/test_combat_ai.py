@@ -4,13 +4,13 @@ import pytest
 
 os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
 
-from core.entities import (
-    Unit,
-    SWORDSMAN_STATS,
-    DRAGON_STATS,
-    MAGE_STATS,
-    ARCHER_STATS,
-)
+from core.entities import Unit
+from tests.unit_stats import get_unit_stats
+
+SWORDSMAN_STATS = get_unit_stats("Swordsman")
+DRAGON_STATS = get_unit_stats("Dragon")
+MAGE_STATS = get_unit_stats("Mage")
+ARCHER_STATS = get_unit_stats("Archer")
 from core.combat_ai import ai_take_turn, allied_ai_turn, select_spell, _a_star
 import constants
 

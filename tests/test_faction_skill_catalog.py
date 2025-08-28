@@ -1,7 +1,10 @@
 import pygame
 
 import core.entities as entities
-from core.entities import Hero, Unit, SWORDSMAN_STATS
+from core.entities import Hero, Unit
+from tests.unit_stats import get_unit_stats
+
+SWORDSMAN_STATS = get_unit_stats("Swordsman")
 from core.faction import FactionDef
 from ui.inventory_screen import InventoryScreen
 

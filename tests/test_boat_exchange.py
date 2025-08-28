@@ -16,7 +16,9 @@ def test_boat_garrison_exchange(monkeypatch, pygame_stub):
     )
     monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
     monkeypatch.setitem(sys.modules, "pygame.transform", pg.transform)
-    from core.entities import Hero, Unit, SWORDSMAN_STATS, Boat
+    from core.entities import Hero, Unit, Boat
+    from tests.unit_stats import get_unit_stats
+    SWORDSMAN_STATS = get_unit_stats("Swordsman")
     from ui.boat_screen import BoatScreen
 
     hero = Hero(0, 0, [Unit(SWORDSMAN_STATS, 1, "hero")])
