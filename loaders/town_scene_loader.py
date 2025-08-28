@@ -61,6 +61,7 @@ def load_town_scene(path: str, assets: Any | None = None) -> TownScene:
         Parsed town scene with layers and buildings.
     """
 
+    path = os.path.abspath(path)
     ctx = Context(repo_root=os.path.dirname(path), search_paths=[""], asset_loader=None)
     try:
         data = read_json(ctx, os.path.basename(path))
