@@ -226,10 +226,6 @@ class Game:
             except Exception:
                 self.creature_defs, self.creature_extra = {}, {}
             self._stats_by_name = {**self.unit_defs, **self.creature_defs}
-            for st in list(self._stats_by_name.values()):
-                self._stats_by_name.setdefault(st.name, st)
-                alias = str(st.name).lower().replace(" ", "_")
-                self._stats_by_name.setdefault(alias, st)
 
             # Asset loading needs ``unit_extra``/``creature_extra`` to bake unit
             # sprites, so perform it after the definitions are available.

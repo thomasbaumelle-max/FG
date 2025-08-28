@@ -598,6 +598,14 @@ class WorldRenderer:
                     img_name = ENEMY_UNIT_IMAGES.get(strongest.stats.name)
                     img = self.assets.get(img_name)
                     if img:
+                        try:
+                            if img.get_size() != (tile_size, tile_size):
+                                img = pygame.transform.smoothscale(
+                                    img, (tile_size, tile_size)
+                                )
+                        except AttributeError:
+                            # Surface may be a stub during tests
+                            pass
                         layers[constants.LAYER_UNITS].blit(
                             img,
                             (
