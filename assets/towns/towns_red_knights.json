@@ -7,20 +7,20 @@
   ],
   "buildings": [
     {
-      "id": "town_hall",
+      "id": "barracks",
       "layer": "midground",
       "pos": [640, 480],
-      "states": {"unbuilt": "towns/red_knights/buildings/town_hall.png"},
+      "states": {"unbuilt": "towns/red_knights/buildings/barracks.png"},
       "hotspot": [630, 470, 680, 520],
-      "tooltip": "town_hall"
+      "tooltip": "barracks"
     },
     {
-      "id": "blacksmith",
+      "id": "stables",
       "layer": "midground",
       "pos": [800, 500],
-      "states": {"unbuilt": "towns/red_knights/buildings/blacksmith.png"},
+      "states": {"unbuilt": "towns/red_knights/buildings/stables.png"},
       "hotspot": [790, 490, 840, 540],
-      "tooltip": "blacksmith"
+      "tooltip": "stables"
     }
   ]
 }
