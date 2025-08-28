@@ -1453,16 +1453,18 @@ class WorldMap:
         return towns
 
 
-    def advance_day(self) -> None:
+    def advance_day(self, hero: Optional["Hero"] = None) -> None:
         """Advance daily progression for all towns on the map.
 
-        This currently forwards to each town's ``advance_day`` method so that
-        caravan orders continue their journey across the world.
+        This forwards to each town's ``advance_day`` method so that caravan
+        orders continue their journey across the world.  When ``hero`` is
+        provided, towns may automatically expédier des renforts vers lui ou
+        vers des alliés.
         """
 
         for town in self.towns:
             if hasattr(town, "advance_day"):
-                town.advance_day()
+                town.advance_day(hero, self)
 
 
     def find_building_pos(self, building: Building) -> Optional[Tuple[int, int]]:
