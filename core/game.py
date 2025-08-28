@@ -802,6 +802,15 @@ class Game:
         self.artifacts_manifest = load_artifact_manifest(repo_root, self.assets)
 
         # Load unit and creature sprites using metadata from the loaders
+        image_files: Set[str] = set()
+        for extras in (self.unit_extra, self.creature_extra):
+            for info in extras.values():
+                img = info.get("image")
+                if img:
+                    image_files.add(img)
+        if image_files:
+            self.load_additional_assets(list(image_files))
+
         self.unit_shadow_baked = {}
         for extras in (self.unit_extra, self.creature_extra):
             for uid, info in extras.items():
