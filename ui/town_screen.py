@@ -6,6 +6,7 @@ import pygame
 from core import economy
 from loaders import icon_loader as IconLoader
 from . import market_screen
+from render.town_scene_renderer import TownSceneRenderer
 from core.entities import (
     Hero,
     HeroStats,
@@ -103,6 +104,16 @@ class TownScreen:
                 except Exception:
                     surf = None
             self.building_images[sid] = surf
+
+        # Optional scenic renderer for the town background
+        self.scene_renderer: Optional[TownSceneRenderer] = None
+        scene = getattr(self.town, "scene", None)
+        assets = getattr(self.game, "assets", None)
+        if scene is not None and assets is not None:
+            try:
+                self.scene_renderer = TownSceneRenderer(scene, assets)
+            except Exception:
+                self.scene_renderer = None
 
         # zones interactives
         self.hero_slots: List[pygame.Rect] = []
@@ -261,6 +272,15 @@ class TownScreen:
     # ----------------------------------------------------------------- drawing
     def draw(self) -> None:
         self.screen.fill(COLOR_BG)
+        if self.scene_renderer:
+            states = {
+                b.id: ("built" if self.town.is_structure_built(b.id) else "unbuilt")
+                for b in self.scene_renderer.scene.buildings
+            }
+            try:
+                self.scene_renderer.draw(self.screen, states)
+            except Exception:
+                pass
         R = self._compute_layout()
         self.tooltip = None
         pygame.draw.rect(self.screen, COLOR_PANEL, R["top_bar"])
