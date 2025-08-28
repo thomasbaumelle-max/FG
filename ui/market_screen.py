@@ -38,6 +38,10 @@ class MarketScreen:
         self.font_big = theme.get_font(20) or pygame.font.SysFont(None, 20, bold=True)
         self.running = True
 
+        # Off-screen rendering
+        self.offscreen = pygame.Surface(screen.get_size())
+        self.dirty_rects: List[pygame.Rect] = [self.offscreen.get_rect()]
+
         self.give_res = "gold"
         self.get_res = "wood"
         self.amount = 1
@@ -81,6 +85,12 @@ class MarketScreen:
         pub = getattr(self.game, "_publish_resources", None)
         if callable(pub):
             pub()
+
+    def _invalidate(self, rect: pygame.Rect | None = None) -> None:
+        """Mark a rectangle as needing redraw."""
+        if rect is None:
+            rect = self.offscreen.get_rect()
+        self.dirty_rects.append(rect)
 
     # ----------------------------------------------------------------- drawing
     def _draw_player_resources(self) -> None:
@@ -142,31 +152,34 @@ class MarketScreen:
         info_surf = self.font.render(info, True, theme.PALETTE["accent"])
         self.screen.blit(info_surf, (self.panel_rect.x + 20, self.panel_rect.bottom - 28))
 
-        pygame.display.flip()
-
     # ----------------------------------------------------------------- events
     def _handle_click(self, pos: Tuple[int, int]) -> None:
         for res, rect in self.give_icons:
             if rect.collidepoint(pos):
                 self.give_res = res
                 self.amount = 1
+                self._invalidate(rect)
                 return
         for res, rect in self.get_icons:
             if rect.collidepoint(pos):
                 self.get_res = res
                 self.amount = 1
+                self._invalidate(rect)
                 return
         if self.slider_rect.collidepoint(pos):
             rel = (pos[0] - self.slider_rect.x) / self.slider_rect.width
             self.amount = max(1, int(self._max_amount() * rel))
+            self._invalidate(self.slider_rect)
             return
         if self.max_btn.collidepoint(pos):
             self.amount = max(1, self._max_amount())
+            self._invalidate(self.max_btn)
             return
         if self.trade_btn.collidepoint(pos):
             if self.give_res != self.get_res and self.town.trade(self.give_res, self.get_res, self.amount, self.hero):
                 self._publish_resources()
                 self.running = False
+            self._invalidate(self.panel_rect)
             return
         if not self.panel_rect.collidepoint(pos):
             self.running = False
@@ -180,9 +193,18 @@ class MarketScreen:
                     raise SystemExit
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     self.running = False
+                    self._invalidate()
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     self._handle_click(event.pos)
-            self.draw()
+            if self.dirty_rects:
+                orig = self.screen
+                self.screen = self.offscreen
+                self.draw()
+                self.screen = orig
+                for r in self.dirty_rects:
+                    orig.blit(self.offscreen, r, r)
+                pygame.display.update(self.dirty_rects)
+                self.dirty_rects.clear()
             if test_mode:
                 break
             self.clock.tick(getattr(constants, "FPS", 30))

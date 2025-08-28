@@ -77,6 +77,10 @@ class InventoryScreen:
         self.active_skill_tab = ""
         self.open_pause_menu = pause_cb
 
+        # Off-screen surface for partial updates
+        self.offscreen = pygame.Surface(self.screen.get_size())
+        self.dirty_rects: List[pygame.Rect] = [self.offscreen.get_rect()]
+
         # Fonts
         font_path = os.path.join(REPO_ROOT, "fonts", "roboto.ttf")
         if hasattr(pygame, "font") and not pygame.font.get_init():
@@ -154,6 +158,12 @@ class InventoryScreen:
 
         # Layout
         self._recalc_layout()
+
+    def _invalidate(self, rect: Optional[pygame.Rect] = None) -> None:
+        """Mark a region of the screen as dirty."""
+        if rect is None:
+            rect = self.offscreen.get_rect()
+        self.dirty_rects.append(rect)
 
     # ------------------------------------------------------------------ Skills
     def _build_skill_trees(self) -> None:
@@ -306,7 +316,7 @@ class InventoryScreen:
             x, y = 0, 0
         return x - self.offset[0], y - self.offset[1]
 
-    def draw(self, flip: bool = True) -> None:
+    def draw(self, flip: bool = False) -> None:
         self.screen.fill(theme.PALETTE.get("background", COLOR_BG))
 
         self._draw_tabs()
@@ -360,8 +370,6 @@ class InventoryScreen:
 
         # tooltips last
         self._draw_tooltip()
-        if flip:
-            pygame.display.flip()
 
     # Panels ------------------------------------------------------------------
     def _panel(self, rect: pygame.Rect) -> None:
@@ -586,6 +594,7 @@ class InventoryScreen:
                             if e.unicode and e.unicode.isprintable():
                                 self.search_text += e.unicode
                                 self.inventory_offset = 0
+                        self._invalidate()
                         continue
 
                 if e.type == pygame.MOUSEBUTTONDOWN:
@@ -597,7 +606,6 @@ class InventoryScreen:
                                 btn.callback()
                                 break
                         else:
-                            # No tab clicked
                             if (
                                 self.active_tab == "skills"
                                 and self._check_skill_tab_click(pos)
@@ -629,21 +637,26 @@ class InventoryScreen:
                             self.inventory_offset = min(
                                 max_off, self.inventory_offset + 16
                             )
-
                 elif e.type == pygame.MOUSEBUTTONUP and e.button == 1:
                     pos = (e.pos[0] - panel_rect.x, e.pos[1] - panel_rect.y)
                     self._on_lmb_up(pos)
+                self._invalidate()
 
-            orig_screen.blit(background, (0, 0))
-            dim = pygame.Surface(orig_screen.get_size(), pygame.SRCALPHA)
-            dim.fill((*theme.PALETTE["background"], 200))
-            orig_screen.blit(dim, (0, 0))
-            self.draw(flip=False)
-            orig_screen.blit(self.screen, panel_rect.topleft)
-            pygame.draw.rect(
-                orig_screen, theme.PALETTE["accent"], panel_rect, theme.FRAME_WIDTH
-            )
-            pygame.display.flip()
+            if self.dirty_rects:
+                off = self.offscreen
+                off.blit(background, (0, 0))
+                dim = pygame.Surface(orig_screen.get_size(), pygame.SRCALPHA)
+                dim.fill((*theme.PALETTE["background"], 200))
+                off.blit(dim, (0, 0))
+                self.draw(flip=False)
+                off.blit(self.screen, panel_rect.topleft)
+                pygame.draw.rect(
+                    off, theme.PALETTE["accent"], panel_rect, theme.FRAME_WIDTH
+                )
+                for r in self.dirty_rects:
+                    orig_screen.blit(off, r, r)
+                pygame.display.update(self.dirty_rects)
+                self.dirty_rects.clear()
             self.clock.tick(constants.FPS)
 
         restore()

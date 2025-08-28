@@ -62,6 +62,10 @@ class TownScreen:
         self.hero = game.hero
         self.clock = clock or pygame.time.Clock()
         self.running = True
+
+        # Off-screen surface for dirty rectangle updates
+        self.offscreen = pygame.Surface(self.screen.get_size())
+        self.dirty_rects: List[pygame.Rect] = [self.offscreen.get_rect()]
         self.town_pos = town_pos or (0, 0)
         if self.town_pos == (0, 0):
             logger.warning(
@@ -206,6 +210,12 @@ class TownScreen:
             self.send_queue.clear()
             return True
         return False
+
+    def _invalidate(self, rect: Optional[pygame.Rect] = None) -> None:
+        """Mark a region of the town screen as needing redraw."""
+        if rect is None:
+            rect = self.offscreen.get_rect()
+        self.dirty_rects.append(rect)
 
     # ------------------------------------------------------------------ utils
     def _compute_layout(self) -> Dict[str, pygame.Rect]:
@@ -472,24 +482,38 @@ class TownScreen:
                 t = getattr(evt, "type", None)
                 if t == pygame.QUIT:
                     self.running = False
+                    self._invalidate()
                 elif t == pygame.KEYDOWN:
                     if evt.key in (pygame.K_ESCAPE, pygame.K_b):
                         self._close_all_overlays()
                         self.running = False
+                        self._invalidate()
                     elif evt.key == pygame.K_w and not self._overlay_active():
                         self._advance_week()
+                        self._invalidate()
                 elif t == pygame.MOUSEMOTION:
                     self.mouse_pos = evt.pos
+                    self._invalidate()
                 elif t == pygame.MOUSEWHEEL:
                     if not self._overlay_active():
                         self.building_scroll += evt.y * 20
+                        self._invalidate()
                 elif t == pygame.MOUSEBUTTONDOWN:
                     self._on_mousedown(evt.pos, evt.button)
+                    self._invalidate()
                 elif t == pygame.MOUSEBUTTONUP:
                     self._on_mouseup(evt.pos, evt.button)
+                    self._invalidate()
 
-            self.draw()
-            pygame.display.flip()
+            if self.dirty_rects:
+                orig = self.screen
+                self.screen = self.offscreen
+                self.draw()
+                self.screen = orig
+                for r in self.dirty_rects:
+                    orig.blit(self.offscreen, r, r)
+                pygame.display.update(self.dirty_rects)
+                self.dirty_rects.clear()
             self.clock.tick(60)
 
     def _on_mousedown(self, pos: Tuple[int,int], button: int) -> None:
@@ -985,7 +1009,7 @@ class TownScreen:
                     running = False
                     break
             overlay.draw()
-            pygame.display.flip()
+            pygame.display.update()
             clock.tick(60)
 
     # ----------------------------------------------------------- Castle overlay
