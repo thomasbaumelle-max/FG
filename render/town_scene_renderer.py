@@ -60,7 +60,12 @@ class TownSceneRenderer:
         # Draw buildings according to their current state
         for building in self.scene.buildings:
             state = states.get(building.id, "unbuilt")
-            img = self._building_imgs.get(building.id, {}).get(state)
+            building_states = self._building_imgs.get(building.id, {})
+            img = building_states.get(state)
+
+            if img is None:
+                img = next(iter(building_states.values()), None)
+
             if img is not None:
                 surface.blit(img, building.pos)
 
