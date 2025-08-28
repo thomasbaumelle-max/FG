@@ -8,6 +8,7 @@ import random
 import pygame
 import constants
 import theme
+from loaders import icon_loader as IconLoader
 from ui.widgets.icon_button import IconButton
 from .combat_screen import BUTTON_H, MARGIN as HUD_MARGIN
 from .entities import apply_defence
@@ -360,11 +361,7 @@ def draw(combat, frame: int = 0) -> None:
             y_icon = stack_rect.bottom + spacing
             for idx, eff in enumerate(effects):
                 icon_id = getattr(eff, "icon", None) or f"status_{eff.name}"
-                img = combat.assets.get(f"icons/{icon_id}.png")
-                if img is None:
-                    img = pygame.Surface((icon_size, icon_size), pygame.SRCALPHA)
-                elif img.get_size() != (icon_size, icon_size):
-                    img = pygame.transform.smoothscale(img, (icon_size, icon_size))
+                img = IconLoader.get(icon_id, icon_size)
                 rect_icon = pygame.Rect(
                     x_start + idx * (icon_size + spacing), y_icon, icon_size, icon_size
                 )
