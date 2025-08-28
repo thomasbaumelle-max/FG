@@ -7,5 +7,7 @@
   {"id": "focus", "image": "vfx/focus.png"},
   {"id": "shield_block", "image": "vfx/shield_block.png"},
   {"id": "charge", "image": "vfx/charge.png"},
-  {"id": "dragon_breath", "image": "vfx/dragon_breath.png"}
+  {"id": "dragon_breath", "image": "vfx/dragon_breath.png"},
+  {"id": "morale_fx", "image": "icons/stat_morale.png"},
+  {"id": "luck_fx", "image": "icons/stat_luck.png"}
 ]
