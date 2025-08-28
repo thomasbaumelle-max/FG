@@ -6,6 +6,7 @@ import pygame
 import theme
 import settings
 from loaders.i18n import load_locale
+from loaders import icon_loader as IconLoader
 
 
 class SpellbookOverlay:
@@ -32,13 +33,40 @@ class SpellbookOverlay:
         self._label_rects: list[tuple[pygame.Rect, str]] = []
         self._tab_rects: list[tuple[pygame.Rect, str]] = []
 
-        # mapping for non-combat spell details (cost and level)
-        self.spell_info: dict[str, dict[str, int | None]] = {}
+        # mapping for non-combat spell details (cost, level and icon)
+        self.spell_info: dict[str, dict[str, int | None | str | None]] = {}
+
+        schools = self._load_spell_data()
 
         if not self.town and self.combat is not None:
             self.spell_names = sorted(self.combat.hero_spells.keys())
         else:
-            self._load_town_spells()
+            self._load_town_spells(schools)
+
+    def _load_spell_data(self) -> dict:
+        base = os.path.dirname(os.path.dirname(__file__))
+        path = os.path.join(base, "assets", "spells", "spells.json")
+        try:
+            with open(path, "r", encoding="utf-8") as fh:
+                data = json.load(fh)
+        except Exception:
+            data = {}
+        self.default_icon = data.get("default_icon")
+        schools = data.get("schools", {})
+        for school, levels in schools.items():
+            for lvl_num, lvl in levels.items():
+                for group in lvl.values():
+                    for entry in group:
+                        nm = entry.get("name") or entry.get("id")
+                        if not nm:
+                            continue
+                        info = self.spell_info.setdefault(nm, {})
+                        info.setdefault("cost", entry.get("cost"))
+                        info.setdefault(
+                            "level", int(lvl_num) if str(lvl_num).isdigit() else None
+                        )
+                        info["icon"] = entry.get("icon")
+        return schools
 
     # ------------------------------------------------------------------ helpers
     @property
@@ -92,17 +120,8 @@ class SpellbookOverlay:
             y -= h
         surface.blit(tip, (x, y))
 
-    def _load_town_spells(self) -> None:
+    def _load_town_spells(self, schools: dict) -> None:
         """Load spells grouped by school for town view."""
-        base = os.path.dirname(os.path.dirname(__file__))
-        path = os.path.join(base, "assets", "spells", "spells.json")
-        try:
-            with open(path, "r", encoding="utf-8") as fh:
-                data = json.load(fh)
-        except Exception:
-            data = {}
-
-        schools = data.get("schools", {})
         self.school_spells: dict[str, list[str]] = {}
         all_names: set[str] = set()
         for school, levels in schools.items():
@@ -115,10 +134,6 @@ class SpellbookOverlay:
                             continue
                         names.append(nm)
                         all_names.add(nm)
-                        self.spell_info[nm] = {
-                            "cost": entry.get("cost"),
-                            "level": int(lvl_num) if str(lvl_num).isdigit() else None,
-                        }
             self.school_spells[school] = sorted(set(names))
         self.categories = sorted(self.school_spells.keys())
         self.current_cat = 0
@@ -214,11 +229,14 @@ class SpellbookOverlay:
             x = grid_x + col * (self.ICON + self.GAP)
             y = grid_y + row * (self.ICON + self.GAP)
             rect = pygame.Rect(x, y, self.ICON, self.ICON)
-            pygame.draw.rect(overlay, (*self.BG, 0), rect)
+
+            info = self.spell_info.get(name, {})
+            icon_id = info.get("icon") or self.default_icon or "spell_default"
+            icon = IconLoader.get(icon_id, self.ICON)
+            overlay.blit(icon, (x, y))
             theme.draw_frame(overlay, rect)
 
             # text info
-            info = self.spell_info.get(name, {})
             if self.combat is not None:
                 lvl = self.combat.hero_spells.get(name)
                 spec = getattr(self.combat, "spell_defs", {}).get(name)

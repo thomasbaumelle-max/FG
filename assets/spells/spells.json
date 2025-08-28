@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "default_icon": "spell_default",
   "schema": {
     "entry": {
       "id": "string",
@@ -19,7 +20,8 @@
       "tags": [
         "keywords"
       ],
-      "fx_asset": "string or null"
+      "fx_asset": "string or null",
+      "icon": "string or null"
     }
   },
   "aliases": {

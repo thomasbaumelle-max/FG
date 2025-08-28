@@ -15,6 +15,7 @@
   "action_swap": "assets/icons/action_swap.png",
   "action_use_ability": "assets/icons/action_use_ability.png",
   "action_wait": "assets/icons/action_wait.png",
+  "spell_default": "assets/icons/spell_default.png",
   "end_turn": "assets/icons/end_turn.png",
 
   "poi_artifact": "assets/icons/artifact.png",
