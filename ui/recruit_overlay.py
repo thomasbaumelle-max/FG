@@ -80,8 +80,18 @@ def open(
     except Exception:
         recruit_portrait = None
     recruit_stats = RECRUITABLE_UNITS.get(unit_id)
-    recruit_rect = pygame.Rect(0, 0, 380, 240)
-    recruit_rect.center = screen.get_rect().center
+
+    # Main panel placement -------------------------------------------------
+    MARGIN = 16
+    recruit_rect = pygame.Rect(0, 0, 440, 280)
+    screen_rect = screen.get_rect()
+    min_w = recruit_rect.width + 2 * MARGIN
+    min_h = recruit_rect.height + 2 * MARGIN
+    if screen_rect.width < min_w or screen_rect.height < min_h:
+        screen_rect = pygame.Rect(0, 0, max(screen_rect.width, min_w), max(screen_rect.height, min_h))
+    recruit_rect.center = screen_rect.center
+
+    # Widgets --------------------------------------------------------------
     btn_min = pygame.Rect(0, 0, 28, 28)
     btn_minus = pygame.Rect(0, 0, 28, 28)
     btn_plus = pygame.Rect(0, 0, 28, 28)
@@ -89,15 +99,19 @@ def open(
     slider_rect = pygame.Rect(0, 0, 72, 8)
     btn_buy = pygame.Rect(0, 0, 120, 32)
     btn_close = pygame.Rect(0, 0, 24, 24)
-    y = recruit_rect.y + recruit_rect.height - 44
-    x = recruit_rect.x + 16
-    btn_min.topleft = (x, y)
-    btn_minus.topleft = (x + 32, y)
-    slider_rect.topleft = (x + 64, y + 10)
-    btn_plus.topleft = (slider_rect.right + 8, y)
-    btn_max.topleft = (btn_plus.right + 4, y)
-    btn_buy.topleft = (recruit_rect.right - btn_buy.width - 16, y)
-    btn_close.topleft = (recruit_rect.right - 28, recruit_rect.y + 8)
+
+    control_y = recruit_rect.bottom - MARGIN - btn_min.height
+    x = recruit_rect.x + MARGIN
+    btn_min.topleft = (x, control_y)
+    btn_minus.topleft = (btn_min.right + 4, control_y)
+    slider_rect.topleft = (btn_minus.right + 4, control_y + (btn_min.height - slider_rect.height) // 2)
+    btn_plus.topleft = (slider_rect.right + 8, control_y)
+    btn_max.topleft = (btn_plus.right + 4, control_y)
+    btn_buy.topleft = (
+        recruit_rect.right - btn_buy.width - MARGIN,
+        recruit_rect.bottom - MARGIN - btn_buy.height,
+    )
+    btn_close.topleft = (recruit_rect.right - btn_close.width - MARGIN, recruit_rect.y + MARGIN)
     clock = clock or pygame.time.Clock()
     background = screen.copy()
     running = True
@@ -144,9 +158,12 @@ def open(
         pygame.draw.rect(screen, theme.PALETTE["panel"], r, border_radius=8)
         pygame.draw.rect(screen, theme.PALETTE["accent"], r, theme.FRAME_WIDTH, border_radius=8)
         title = f"Recruit {unit_id} – {struct_id.replace('_', ' ').title()}"
-        screen.blit(font_big.render(title, True, theme.PALETTE["text"]), (r.x + 16, r.y + 12))
+        screen.blit(
+            font_big.render(title, True, theme.PALETTE["text"]),
+            (r.x + MARGIN, r.y + MARGIN),
+        )
         portrait_size = 96
-        portrait_rect = pygame.Rect(r.x + 16, r.y + 40, portrait_size, portrait_size)
+        portrait_rect = pygame.Rect(r.x + MARGIN, r.y + 40, portrait_size, portrait_size)
         pygame.draw.rect(screen, theme.PALETTE["accent"], portrait_rect, theme.FRAME_WIDTH)
         inner_portrait = portrait_rect.inflate(-4, -4)
         if recruit_portrait:
@@ -188,9 +205,9 @@ def open(
         cost = _unit_cost(unit_id, recruit_count)
         can_afford = _can_afford(hero, cost)
         cost_label = font.render(f"Cost x{recruit_count}:", True, theme.PALETTE["text"])
-        cost_y = portrait_rect.bottom + 24
-        screen.blit(cost_label, (r.x + 16, cost_y))
-        xx = r.x + 16 + cost_label.get_width() + 8
+        cost_y = max(portrait_rect.bottom + 24, control_y - 40)
+        screen.blit(cost_label, (r.x + MARGIN, cost_y))
+        xx = r.x + MARGIN + cost_label.get_width() + 8
         for res, amt in cost.items():
             icon = IconLoader.get(RESOURCE_ICONS.get(res, res), 24)
             screen.blit(icon, (xx, cost_y))
