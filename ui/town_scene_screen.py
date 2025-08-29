@@ -150,11 +150,11 @@ class TownSceneScreen:
                 )
         return True
 
-    def run(self, debug: bool = False) -> bool:
+    def run(self, debug: bool = False) -> bool | None:
         if not (self.renderer.scene.layers or self.renderer.scene.buildings):
             return False
         running = True
-        handled = False
+        result: bool | None = None
         fast_tests = os.environ.get("FG_FAST_TESTS") == "1"
         while running:
             dt = self.clock.tick(getattr(constants, "FPS", 60)) / 1000.0
@@ -167,8 +167,12 @@ class TownSceneScreen:
                     key = getattr(event, "key", None)
                     if key == pygame.K_ESCAPE:
                         running = False
+                        result = None
                     elif key == pygame.K_F1:
                         debug = not debug
+                    elif key == pygame.K_F2:
+                        running = False
+                        result = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if any(rect.collidepoint(event.pos) for rect in layout.values()):
                         continue
@@ -177,7 +181,7 @@ class TownSceneScreen:
                         if hotspot and _point_in_poly(event.pos, hotspot):
                             if self.on_building_click(building):
                                 running = False
-                                handled = True
+                                result = True
                             break
             self.renderer.draw(self.screen, self.building_states, debug=debug)
             if self.town is not None:
@@ -222,7 +226,7 @@ class TownSceneScreen:
                 self.res_bar.update(dt)
                 self.res_bar.draw(self.screen, layout["resbar"])
             pygame.display.flip()
-        return handled
+        return result
 
     def _compute_layout(self) -> dict[str, pygame.Rect]:
         """Compute rectangles for UI elements."""
