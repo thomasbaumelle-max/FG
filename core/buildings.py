@@ -250,7 +250,16 @@ class Town(Building):
 
     def structure_cost(self, name: str) -> Dict[str, int]:
         info = self.structures.get(name, {})
-        return dict(info.get("cost", {})) if isinstance(info, dict) else {}
+        cost: Dict[str, int] = {}
+        if isinstance(info, dict):
+            data = info.get("cost", {})
+            if isinstance(data, dict):
+                cost = dict(data)
+        if not cost:
+            asset = building_loader.BUILDINGS.get(name)
+            if asset is not None:
+                cost = dict(getattr(asset, "upgrade_cost", {}))
+        return {res: int(val) for res, val in cost.items()}
 
     def recruitable_units(self, name: str) -> List[str]:
         info = self.structures.get(name)
