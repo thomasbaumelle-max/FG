@@ -256,5 +256,11 @@ There are many directions to expand the game.  Some possibilities include:
 - Multiple heroes, fog of war and a quest system.
 - Packaging the project so it can be installed as a Python package.
 
+
+## Additional Guides
+
+- [Contributor Guide](docs/contributor_guide.md) – repository layout, build steps and contribution standards.
+- [Modding Guide](docs/modding_guide.md) – asset manifests, plugin APIs and scripting hooks.
+
 Contributions and suggestions are welcome!
 
