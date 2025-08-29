@@ -5,7 +5,14 @@ import logging
 import pygame
 from core import economy
 from loaders import icon_loader as IconLoader
-from . import market_screen
+from . import (
+    market_screen,
+    castle_overlay,
+    tavern_overlay,
+    bounty_overlay,
+    recruit_overlay,
+    spellbook_overlay,
+)
 from render.town_scene_renderer import TownSceneRenderer
 from core.entities import (
     Hero,
@@ -757,33 +764,9 @@ class TownScreen:
 
     # ------------------------------------------------------- recruit overlay UI
     def _open_recruit_overlay(self, struct_id: str, unit_id: str) -> None:
-        self.recruit_open = True
-        self.recruit_struct = struct_id
-        self.recruit_unit = unit_id
-        self.recruit_max = self.town.stock.get(unit_id, 0)
-        self.recruit_count = min(1, self.recruit_max)
-        portrait_path = os.path.join(
-            "assets",
-            "units",
-            "portrait",
-            f"{unit_id.lower()}_portrait.png",
+        recruit_overlay.open(
+            self.screen, self.game, self.town, self.hero, self.clock, struct_id, unit_id
         )
-        try:
-            self.recruit_portrait = pygame.image.load(portrait_path).convert_alpha()
-        except Exception:
-            self.recruit_portrait = None
-        self.recruit_stats = RECRUITABLE_UNITS.get(unit_id)
-        W, H = self.screen.get_size()
-        self.recruit_rect.center = (W // 2, H // 2)
-        y = self.recruit_rect.y + self.recruit_rect.height - 44
-        x = self.recruit_rect.x + 16
-        self.btn_min.topleft = (x, y)
-        self.btn_minus.topleft = (x + 32, y)
-        self.slider_rect.topleft = (x + 64, y + 10)
-        self.btn_plus.topleft = (self.slider_rect.right + 8, y)
-        self.btn_max.topleft = (self.btn_plus.right + 4, y)
-        self.btn_buy.topleft = (self.recruit_rect.right - self.btn_buy.width - 16, y)
-        self.btn_close.topleft = (self.recruit_rect.right - 28, self.recruit_rect.y + 8)
 
     def _draw_recruit_overlay(self) -> None:
         s = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
@@ -1122,10 +1105,7 @@ class TownScreen:
 
     # ----------------------------------------------------------- Tavern overlay
     def _open_tavern_overlay(self) -> None:
-        self.tavern_open = True
-        self.tavern_msg = ""
-        W, H = self.screen.get_size()
-        self.tavern_rect.center = (W // 2, H // 2)
+        tavern_overlay.open(self.screen, self.game, self.town, self.hero, self.clock)
 
     def _draw_tavern_overlay(self) -> None:
         s = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
@@ -1199,33 +1179,17 @@ class TownScreen:
 
     # ----------------------------------------------------------- Bounty overlay
     def _open_bounty_overlay(self) -> None:
-        # Reuse the game's quest overlay
-        self.game.open_journal(self.screen)
+        bounty_overlay.open(self.screen, self.game, self.town, self.hero, self.clock)
 
     # -------------------------------------------------------- Spellbook overlay
     def _open_spellbook_overlay(self) -> None:
-        try:  # pragma: no cover - allow running without package context
-            from ui.spellbook_overlay import SpellbookOverlay
-        except ImportError:  # pragma: no cover
-            from .spellbook_overlay import SpellbookOverlay  # type: ignore
-
-        overlay = SpellbookOverlay(self.screen, town=True)
-        clock = pygame.time.Clock()
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if overlay.handle_event(event):
-                    running = False
-                    break
-            overlay.draw()
-            pygame.display.update()
-            clock.tick(60)
+        spellbook_overlay.open(
+            self.screen, self.game, self.town, self.hero, self.clock
+        )
 
     # ----------------------------------------------------------- Castle overlay
     def _open_castle_overlay(self) -> None:
-        self.castle_open = True
-        W, H = self.screen.get_size()
-        self.castle_rect.center = (W // 2, H // 2)
+        castle_overlay.open(self.screen, self.game, self.town, self.hero, self.clock)
 
     def _draw_castle_overlay(self) -> None:
         s = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
