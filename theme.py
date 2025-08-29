@@ -22,6 +22,8 @@ PALETTE = {
     "panel": (60, 50, 40),       # brown panels
     "accent": (210, 180, 90),    # golden highlights
     "text": (230, 230, 230),     # near white text
+    "warning": (210, 90, 70),    # alerts and destructive actions
+    "disabled": (120, 120, 120), # unavailable UI elements
 }
 
 # Frame colours for different UI states
