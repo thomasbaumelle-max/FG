@@ -4,6 +4,7 @@ import pygame
 import theme
 from typing import List
 from core.world import ENEMY_UNIT_IMAGES
+from core.entities import estimate_stack_label
 
 
 class EnemyStackOverlay:
@@ -11,18 +12,6 @@ class EnemyStackOverlay:
 
     BG = theme.PALETTE.get("background", (40, 42, 50))
     TEXT = theme.PALETTE.get("text", (230, 230, 230))
-
-    COUNT_LABELS = [
-        (4, "a few"),
-        (9, "several"),
-        (19, "pack"),
-        (49, "lots"),
-        (99, "horde"),
-        (249, "throng"),
-        (499, "swarm"),
-        (999, "zounds"),
-        (float("inf"), "legion"),
-    ]
 
     def __init__(self, screen: pygame.Surface, assets, units) -> None:
         self.screen = screen
@@ -38,13 +27,6 @@ class EnemyStackOverlay:
             return True
         return False
 
-    @classmethod
-    def _count_label(cls, count: int) -> str:
-        for limit, label in cls.COUNT_LABELS:
-            if count <= limit:
-                return label
-        return cls.COUNT_LABELS[-1][1]
-
     def draw(self) -> None:
         icon_size = 32
         rows: List[tuple] = []
@@ -59,7 +41,7 @@ class EnemyStackOverlay:
                 except Exception:
                     icon = pygame.transform.scale(icon, (icon_size, icon_size))
             name = self.font.render(unit.stats.name, True, self.TEXT)
-            count = self.font.render(self._count_label(unit.count), True, self.TEXT)
+            count = self.font.render(estimate_stack_label(unit.count), True, self.TEXT)
             row_h = max(
                 icon.get_height() if icon else 0,
                 name.get_height(),
