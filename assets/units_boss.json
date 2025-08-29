@@ -1,0 +1,26 @@
+[
+  {
+    "id": "ancient_dragon",
+    "name": "Ancient Dragon",
+    "realm": "scarletia_volcanic",
+    "spawn_chance": 0.1,
+    "stats": {
+      "name": "Ancient Dragon",
+      "max_hp": 300,
+      "attack_min": 25,
+      "attack_max": 35,
+      "defence_melee": 10,
+      "defence_ranged": 8,
+      "defence_magic": 12,
+      "speed": 4,
+      "attack_range": 1,
+      "initiative": 12,
+      "sheet": "units",
+      "hero_frames": [0, 0],
+      "enemy_frames": [0, 0]
+    },
+    "drop": ["artifact_dragon_scale"],
+    "image": "units/ancient_dragon.png"
+  }
+]
+

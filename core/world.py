@@ -32,7 +32,7 @@ from core.entities import (
     UnitCarrier,
 )
 from core.buildings import create_building, Town, Building
-from core import economy
+from core import economy, bosses
 from render.autotile import AutoTileRenderer
 try:  # flora loader is optional for tests without pygame
     from loaders.flora_loader import FloraLoader, PropInstance
@@ -51,6 +51,13 @@ from core.ai.creature_ai import (
 
 
 logger = logging.getLogger(__name__)
+
+# Load boss definitions at import time so they are available for map
+# generation functions.  Errors are silently ignored and simply result in an
+# empty definition mapping which is sufficient for tests.
+_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+_BOSS_CTX = Context(_BASE_PATH, [os.path.join(_BASE_PATH, "assets")])
+bosses.load_boss_definitions(_BOSS_CTX)
 
 
 # Type hints for optional flora integration
@@ -428,6 +435,10 @@ class WorldMap:
 
         if self._is_marine_map():
             self._scatter_ocean_features(random)
+
+        # Populate the world with boss lairs according to their individual
+        # spawn chances.
+        bosses.spawn_boss_lairs(self, random)
 
         # Per-player fog of war state. ``visible`` marks tiles currently seen,
         # while ``explored`` remembers tiles that have ever been seen.  Entries
