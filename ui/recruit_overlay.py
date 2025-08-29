@@ -47,7 +47,9 @@ def open(
     font = pygame.font.SysFont(FONT_NAME, 18)
     font_small = pygame.font.SysFont(FONT_NAME, 14)
     font_big = pygame.font.SysFont(FONT_NAME, 20, bold=True)
-    recruit_max = town.stock.get(unit_id, 0)
+    info = town.get_dwelling_info(struct_id).get(unit_id, (0, 0))
+    recruit_max = info[0]
+    growth = info[1]
     recruit_count = min(1, recruit_max)
     portrait_path = os.path.join(
         "assets",
@@ -81,6 +83,10 @@ def open(
     clock = clock or pygame.time.Clock()
     running = True
     while running:
+        info = town.get_dwelling_info(struct_id).get(unit_id, (0, 0))
+        recruit_max = info[0]
+        growth = info[1]
+        recruit_count = min(recruit_count, recruit_max)
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN and event.key in (pygame.K_ESCAPE, pygame.K_b):
                 running = False
@@ -110,7 +116,6 @@ def open(
                                 hero.apply_bonuses_to_army()
                             if hasattr(game, "_publish_resources"):
                                 game._publish_resources()
-                            running = False
         # draw overlay
         s = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
         s.fill((0, 0, 0, 160))
@@ -143,6 +148,11 @@ def open(
                     (portrait_rect.right + 10, yy),
                 )
                 yy += 18
+        stock_txt = f"Stock: {recruit_max} / +{growth} par semaine"
+        screen.blit(
+            font_small.render(stock_txt, True, COLOR_ACCENT),
+            (portrait_rect.x, portrait_rect.bottom + 4),
+        )
         cost = _unit_cost(unit_id, recruit_count)
         cost_str = " / ".join(f"{k}:{v}" for k, v in cost.items()) if cost else "Free"
         can_afford = _can_afford(hero, cost)
