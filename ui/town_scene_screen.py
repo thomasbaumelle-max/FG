@@ -18,6 +18,7 @@ from . import (
     tavern_overlay,
     bounty_overlay,
     recruit_overlay,
+    multi_recruit_overlay,
     spellbook_overlay,
     build_structure_overlay,
 )
@@ -153,15 +154,26 @@ class TownSceneScreen:
         else:
             units = self.town.recruitable_units(sid)
             if units:
-                recruit_overlay.open(
-                    self.screen,
-                    self.game,
-                    self.town,
-                    hero,
-                    self.clock,
-                    sid,
-                    units[0],
-                )
+                if len(units) > 1:
+                    multi_recruit_overlay.open(
+                        self.screen,
+                        self.game,
+                        self.town,
+                        hero,
+                        self.clock,
+                        sid,
+                        units,
+                    )
+                else:
+                    recruit_overlay.open(
+                        self.screen,
+                        self.game,
+                        self.town,
+                        hero,
+                        self.clock,
+                        sid,
+                        units[0],
+                    )
         return True
 
     def run(self, debug: bool = False) -> bool | None:
