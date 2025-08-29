@@ -1341,6 +1341,29 @@ class Game:
             self.path_costs = calc_costs(path)
             self.path_target = (mx, my)
 
+    def tile_at_pixel(self, pos: Tuple[int, int]) -> Optional[Tile]:
+        """Return the tile under the given screen position if any."""
+        world_rect = None
+        if hasattr(self, "main_screen") and self.main_screen.widgets:
+            world_rect = self.main_screen.widgets.get("1")
+        if world_rect:
+            if not world_rect.collidepoint(pos):
+                return None
+        else:
+            if pos[1] >= getattr(self.ui_panel_rect, "y", 0):
+                return None
+        mx = int(
+            (pos[0] - (world_rect.x if world_rect else 0) - self.offset_x)
+            / (constants.TILE_SIZE * self.zoom)
+        )
+        my = int(
+            (pos[1] - (world_rect.y if world_rect else 0) - self.offset_y)
+            / (constants.TILE_SIZE * self.zoom)
+        )
+        if not self.world.in_bounds(mx, my):
+            return None
+        return self.world.grid[my][mx]
+
     def hover_probe(self, x: int, y: int) -> Optional[Tuple[str, str]]:
         """Return information about the world element under the cursor.
 
@@ -1505,6 +1528,10 @@ class Game:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button in (1, 2):
                         self.handle_world_click(event.pos)
+                    elif event.button == 3:
+                        tile = self.tile_at_pixel(event.pos)
+                        if tile and getattr(tile, "enemy_units", None):
+                            self.open_enemy_stack_overlay(tile.enemy_units)
             # Advance queued movement then draw world
             self.update_movement()
             self.screen.fill(theme.PALETTE["background"])
@@ -3150,6 +3177,26 @@ class Game:
             self.hero.army = []
         self.refresh_army_list()
         return True
+
+    def open_enemy_stack_overlay(self, units: List[Unit]) -> None:
+        """Show an overlay with basic information about ``units``."""
+        from ui.enemy_stack_overlay import EnemyStackOverlay
+
+        overlay = EnemyStackOverlay(self.screen, self.assets, units)
+        clock = pygame.time.Clock()
+        running = True
+        fast_tests = os.environ.get("FG_FAST_TESTS") == "1"
+        while running:
+            events = pygame.event.get()
+            if not events and fast_tests:
+                break
+            for event in events:
+                if overlay.handle_event(event):
+                    running = False
+                    break
+            overlay.draw()
+            pygame.display.flip()
+            clock.tick(constants.FPS)
 
     def open_pause_menu(self) -> Tuple[bool, pygame.Surface]:
         from ui.menu import pause_menu  # local import to avoid circular
