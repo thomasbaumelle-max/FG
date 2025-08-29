@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from builtins import open as builtin_open
 import pygame
 import theme
 import settings
@@ -50,7 +51,7 @@ class SpellbookOverlay:
         base = os.path.dirname(os.path.dirname(__file__))
         path = os.path.join(base, "assets", "spells", "spells.json")
         try:
-            with open(path, "r", encoding="utf-8") as fh:
+            with builtin_open(path, "r", encoding="utf-8") as fh:
                 data = json.load(fh)
         except Exception:
             data = {}
@@ -291,3 +292,18 @@ class SpellbookOverlay:
         self.screen.blit(overlay, (offset_x, offset_y))
         if self.info_overlay is not None:
             self.info_overlay.draw()
+
+
+def open(screen: pygame.Surface, game, town, hero, clock) -> None:
+    """Display the spellbook overlay."""
+    overlay = SpellbookOverlay(screen, town=True)
+    clock = clock or pygame.time.Clock()
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if overlay.handle_event(event):
+                running = False
+                break
+        overlay.draw()
+        pygame.display.update()
+        clock.tick(60)

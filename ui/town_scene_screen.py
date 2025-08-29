@@ -12,7 +12,14 @@ from loaders.town_scene_loader import TownScene, TownBuilding
 from render.town_scene_renderer import TownSceneRenderer
 from core import economy
 from state.game_state import PlayerResources
-from . import market_screen
+from . import (
+    market_screen,
+    castle_overlay,
+    tavern_overlay,
+    bounty_overlay,
+    recruit_overlay,
+    spellbook_overlay,
+)
 from .town_common import (
     draw_army_row,
     draw_label,
@@ -116,24 +123,28 @@ class TownSceneScreen:
             return False
 
         # Already built -> open corresponding panel
-        ts = TownScreen(self.screen, self.game, self.town, clock=self.clock)
         if sid == "market":
             market_screen.open(self.screen, self.game, self.town, hero, self.clock)
         elif sid == "castle":
-            ts._open_castle_overlay()
-            ts.run()
+            castle_overlay.open(self.screen, self.game, self.town, hero, self.clock)
         elif sid == "tavern":
-            ts._open_tavern_overlay()
-            ts.run()
+            tavern_overlay.open(self.screen, self.game, self.town, hero, self.clock)
         elif sid == "bounty_board":
-            ts._open_bounty_overlay()
+            bounty_overlay.open(self.screen, self.game, self.town, hero, self.clock)
         elif sid == "magic_school":
-            ts._open_spellbook_overlay()
+            spellbook_overlay.open(self.screen, self.game, self.town, hero, self.clock)
         else:
             units = self.town.recruitable_units(sid)
             if units:
-                ts._open_recruit_overlay(sid, units[0])
-                ts.run()
+                recruit_overlay.open(
+                    self.screen,
+                    self.game,
+                    self.town,
+                    hero,
+                    self.clock,
+                    sid,
+                    units[0],
+                )
         return True
 
     def run(self, debug: bool = False) -> bool:
