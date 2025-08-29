@@ -2,14 +2,18 @@
   {
     "id": "market",
     "cost": {},
-    "prereq": [],
+    "prereq": [
+      "tavern"
+    ],
     "desc": "Trade resources at fluctuating rates.",
     "image": "buildings/market.png"
   },
   {
     "id": "castle",
     "cost": {},
-    "prereq": [],
+    "prereq": [
+      "market"
+    ],
     "desc": "Central keep; manage all recruitments.",
     "image": "buildings/castle.png"
   },
@@ -23,21 +27,27 @@
   {
     "id": "caravansary",
     "cost": {},
-    "prereq": [],
+    "prereq": [
+      "market"
+    ],
     "desc": "Organize caravans between towns.",
     "image": "buildings/market.png"
   },
   {
     "id": "bounty_board",
     "cost": {},
-    "prereq": [],
+    "prereq": [
+      "tavern"
+    ],
     "desc": "Pick up bounties and quests.",
     "image": "buildings/market.png"
   },
   {
     "id": "magic_school",
     "cost": {},
-    "prereq": [],
+    "prereq": [
+      "castle"
+    ],
     "desc": "Browse and study all known spells.",
     "image": "buildings/magic_school.png"
   }

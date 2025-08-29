@@ -5,7 +5,9 @@
       "wood": 5,
       "stone": 5
     },
-    "prereq": [],
+    "prereq": [
+      "tavern"
+    ],
     "dwelling": {
       "Swordsman": 5,
       "Spearman": 3
