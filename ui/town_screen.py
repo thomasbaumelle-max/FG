@@ -6,7 +6,7 @@ import pygame
 from core import economy
 from loaders import icon_loader as IconLoader
 from . import (
-    market_screen,
+    market_overlay,
     castle_overlay,
     tavern_overlay,
     bounty_overlay,
@@ -650,7 +650,7 @@ class TownScreen:
                     self._publish_resources()
         else:
             if sid == "market":
-                market_screen.open(
+                market_overlay.open(
                     self.screen, self.game, self.town, self.hero, self.clock
                 )
             elif sid == "castle":

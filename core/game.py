@@ -2321,9 +2321,9 @@ class Game:
                     self.screen, tile.building, self.clock, self.hero, econ_b
                 )
                 if isinstance(tile.building, Shipyard):
-                    from ui import shipyard_screen
+                    from ui import shipyard_overlay
 
-                    shipyard_screen.open(
+                    shipyard_overlay.open(
                         self.screen, self, tile.building, self.clock
                     )
         # Collect flora
@@ -2535,9 +2535,9 @@ class Game:
                 self.screen, building, self.clock, self.hero, econ_b
             )
             if isinstance(building, Shipyard):
-                from ui import shipyard_screen
+                from ui import shipyard_overlay
 
-                shipyard_screen.open(self.screen, self, building, self.clock)
+                shipyard_overlay.open(self.screen, self, building, self.clock)
             return "leave"
 
         font = theme.get_font(32) or pygame.font.SysFont(None, 32)

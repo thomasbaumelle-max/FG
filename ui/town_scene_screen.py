@@ -13,7 +13,7 @@ from render.town_scene_renderer import TownSceneRenderer
 from core import economy
 from state.game_state import PlayerResources
 from . import (
-    market_screen,
+    market_overlay,
     castle_overlay,
     tavern_overlay,
     bounty_overlay,
@@ -127,7 +127,7 @@ class TownSceneScreen:
 
         # Already built -> open corresponding panel
         if sid == "market":
-            market_screen.open(self.screen, self.game, self.town, hero, self.clock)
+            market_overlay.open(self.screen, self.game, self.town, hero, self.clock)
         elif sid == "castle":
             castle_overlay.open(self.screen, self.game, self.town, hero, self.clock)
         elif sid == "tavern":
