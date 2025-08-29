@@ -33,8 +33,9 @@ def open(screen: pygame.Surface, game, town, hero, clock) -> None:
             "army": [Unit(RECRUITABLE_UNITS["archer"], 10, "hero")],
         },
     ]
-    running = True
     clock = clock or pygame.time.Clock()
+    background = screen.copy()
+    running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN and event.key in (pygame.K_ESCAPE, pygame.K_b):
@@ -65,6 +66,7 @@ def open(screen: pygame.Surface, game, town, hero, clock) -> None:
                 if not handled and not tavern_rect.collidepoint(event.pos):
                     running = False
         # draw
+        screen.blit(background, (0, 0))
         s = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
         s.fill((0, 0, 0, 160))
         screen.blit(s, (0, 0))

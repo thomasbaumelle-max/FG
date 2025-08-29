@@ -99,6 +99,7 @@ def open(
     btn_buy.topleft = (recruit_rect.right - btn_buy.width - 16, y)
     btn_close.topleft = (recruit_rect.right - 28, recruit_rect.y + 8)
     clock = clock or pygame.time.Clock()
+    background = screen.copy()
     running = True
     while running:
         info = town.get_dwelling_info(struct_id).get(unit_id, (0, 0))
@@ -135,6 +136,7 @@ def open(
                             if hasattr(game, "_publish_resources"):
                                 game._publish_resources()
         # draw overlay
+        screen.blit(background, (0, 0))
         s = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
         s.fill((*theme.PALETTE["background"], 160))
         screen.blit(s, (0, 0))
