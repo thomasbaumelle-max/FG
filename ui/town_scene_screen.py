@@ -19,6 +19,7 @@ from . import (
     bounty_overlay,
     recruit_overlay,
     spellbook_overlay,
+    build_structure_overlay,
 )
 from .town_common import (
     draw_army_row,
@@ -111,8 +112,10 @@ class TownSceneScreen:
         if not self.town.is_structure_built(sid):
             if self.town.built_today:
                 return False
-            cost = self.town.structure_cost(sid)
-            if TownScreen._can_afford(hero, cost):
+            confirmed = build_structure_overlay.open(
+                self.screen, self.town, hero, sid, self.clock
+            )
+            if confirmed:
                 player = economy.PlayerEconomy()
                 player.resources.update(getattr(hero, "resources", {}))
                 player.resources["gold"] = getattr(hero, "gold", 0)
