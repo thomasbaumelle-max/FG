@@ -1014,7 +1014,7 @@ class WorldMap:
             tile.enemy_units = units
             cid = units[0].stats.name
             _, guard = CREATURE_BEHAVIOUR.get(cid, (CreatureBehavior.GUARDIAN, 3))
-            ai = GuardianAI(x, y, units, guard)
+            ai = GuardianAI(x, y, units, guard, rng.randint(1, 10))
             self.creatures.append(ai)
 
         # spawn roaming stacks near frontiers
@@ -1036,7 +1036,7 @@ class WorldMap:
             tile.enemy_units = units
             cid = units[0].stats.name
             _, guard = CREATURE_BEHAVIOUR.get(cid, (CreatureBehavior.ROAMER, 3))
-            ai = RoamingAI(x, y, units, guard)
+            ai = RoamingAI(x, y, units, guard, rng.randint(1, 10))
             self.creatures.append(ai)
             placed += 1
 
@@ -1124,9 +1124,9 @@ class WorldMap:
             cid = units[0].stats.name
             mode, guard = CREATURE_BEHAVIOUR.get(cid, (CreatureBehavior.ROAMER, 3))
             if mode is CreatureBehavior.GUARDIAN:
-                ai = GuardianAI(x, y, units, guard)
+                ai = GuardianAI(x, y, units, guard, rng.randint(1, 10))
             else:
-                ai = RoamingAI(x, y, units, guard)
+                ai = RoamingAI(x, y, units, guard, rng.randint(1, 10))
             self.creatures.append(ai)
 
     def _create_starting_area(self) -> None:

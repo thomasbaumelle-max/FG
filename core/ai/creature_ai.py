@@ -31,6 +31,7 @@ class CreatureAI:
     y: int
     units: List[Unit]
     behavior: CreatureBehavior
+    aggressiveness: int = 5
     spawn: Tuple[int, int] = field(init=False)
 
     def __post_init__(self) -> None:  # pragma: no cover - trivial
@@ -49,8 +50,15 @@ class GuardianAI(CreatureAI):
 
     guard_range: int = 0
 
-    def __init__(self, x: int, y: int, units: List[Unit], guard_range: int = 0):
-        super().__init__(x, y, units, CreatureBehavior.GUARDIAN)
+    def __init__(
+        self,
+        x: int,
+        y: int,
+        units: List[Unit],
+        guard_range: int = 0,
+        aggressiveness: int = 5,
+    ):
+        super().__init__(x, y, units, CreatureBehavior.GUARDIAN, aggressiveness)
         self.guard_range = guard_range
 
     def update(self, world, hero_pos: Tuple[int, int], hero_strength: int) -> None:
@@ -60,7 +68,10 @@ class GuardianAI(CreatureAI):
         dist = abs(hx - self.x) + abs(hy - self.y)
         if dist > self.guard_range:
             return  # stay put
-        pursuing = self._strength() >= hero_strength
+        my_strength = self._strength()
+        pursuing = my_strength >= hero_strength
+        if not pursuing:
+            pursuing = random.randint(1, 10) <= self.aggressiveness
         dx = 1 if hx > self.x else -1 if hx < self.x else 0
         dy = 1 if hy > self.y else -1 if hy < self.y else 0
         if not pursuing:
@@ -88,8 +99,15 @@ class RoamingAI(CreatureAI):
 
     patrol_radius: int = 3
 
-    def __init__(self, x: int, y: int, units: List[Unit], patrol_radius: int = 3):
-        super().__init__(x, y, units, CreatureBehavior.ROAMER)
+    def __init__(
+        self,
+        x: int,
+        y: int,
+        units: List[Unit],
+        patrol_radius: int = 3,
+        aggressiveness: int = 5,
+    ):
+        super().__init__(x, y, units, CreatureBehavior.ROAMER, aggressiveness)
         self.patrol_radius = patrol_radius
 
     def update(self, world, hero_pos: Tuple[int, int], hero_strength: int) -> None:
@@ -101,6 +119,8 @@ class RoamingAI(CreatureAI):
         target = None
         if dist <= self.patrol_radius:
             pursuing = my_strength >= hero_strength
+            if not pursuing:
+                pursuing = random.randint(1, 10) <= self.aggressiveness
             dx = 1 if hx > self.x else -1 if hx < self.x else 0
             dy = 1 if hy > self.y else -1 if hy < self.y else 0
             if not pursuing:
