@@ -82,13 +82,16 @@ def open(
         # cost row
         x = panel.x + 16
         y = panel.y + 90
-        for res in ["gold", "wood", "stone", "crystal"]:
-            if res in cost:
-                icon = icon_loader.get(f"resource_{res}", 24)
-                screen.blit(icon, (x, y))
-                amt = font.render(str(cost[res]), True, COLOR_TEXT)
-                screen.blit(amt, (x + 28, y + 4))
-                x += 80
+        if cost:
+            for res in ["gold", "wood", "stone", "crystal"]:
+                if res in cost:
+                    icon = icon_loader.get(f"resource_{res}", 24)
+                    screen.blit(icon, (x, y))
+                    amt = font.render(str(cost[res]), True, COLOR_TEXT)
+                    screen.blit(amt, (x + 28, y + 4))
+                    x += 80
+        else:
+            screen.blit(font.render("Gratuit", True, COLOR_TEXT), (x, y + 4))
 
         # prerequisites
         y += 40
@@ -104,7 +107,10 @@ def open(
                 )
                 y += 20
         else:
-            screen.blit(font_small.render("None", True, COLOR_TEXT), (panel.x + 32, y))
+            screen.blit(
+                font_small.render("Aucun prérequis", True, COLOR_TEXT),
+                (panel.x + 32, y),
+            )
 
         can_build = _can_afford(hero, cost) and not locked and all(
             town.is_structure_built(p) for p in prereq
