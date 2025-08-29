@@ -24,6 +24,9 @@ from . import (
 from .town_common import (
     draw_army_row,
     draw_label,
+    draw_slot_highlight,
+    draw_drag_ghost,
+    SLOT_COUNT,
     ROW_H,
     RESBAR_H,
     TOPBAR_H,
@@ -79,6 +82,14 @@ class TownSceneScreen:
         self.town = town
         self.hero = getattr(game, "hero", None) if game else None
         self.army_units = getattr(self.hero, "army", []) if self.hero else []
+
+        self.garrison_slots: list[pygame.Rect] = []
+        self.hero_slots: list[pygame.Rect] = []
+        self.drag_active = False
+        self.drag_src: tuple[str, int] = ("", -1)
+        self.drag_unit = None
+        self.drag_offset = (0, 0)
+        self.mouse_pos = (0, 0)
 
         self.font = pygame.font.SysFont(FONT_NAME, 18)
         self.font_small = pygame.font.SysFont(FONT_NAME, 14)
@@ -176,7 +187,40 @@ class TownSceneScreen:
                     elif key == pygame.K_F2:
                         running = False
                         result = False
+                elif event.type == pygame.MOUSEMOTION:
+                    self.mouse_pos = event.pos
                 elif event.type == pygame.MOUSEBUTTONDOWN:
+                    self.mouse_pos = event.pos
+                    handled = False
+                    if self.town is not None:
+                        for i, r in enumerate(self.hero_slots):
+                            if r.collidepoint(event.pos) and i < len(self.army_units):
+                                self.drag_active = True
+                                self.drag_src = ("hero", i)
+                                self.drag_unit = self.army_units[i]
+                                self.drag_offset = (
+                                    event.pos[0] - r.x,
+                                    event.pos[1] - r.y,
+                                )
+                                handled = True
+                                break
+                        if not handled:
+                            for i, r in enumerate(self.garrison_slots):
+                                if (
+                                    r.collidepoint(event.pos)
+                                    and i < len(getattr(self.town, "garrison", []))
+                                ):
+                                    self.drag_active = True
+                                    self.drag_src = ("garrison", i)
+                                    self.drag_unit = self.town.garrison[i]
+                                    self.drag_offset = (
+                                        event.pos[0] - r.x,
+                                        event.pos[1] - r.y,
+                                    )
+                                    handled = True
+                                    break
+                    if handled:
+                        continue
                     if any(rect.collidepoint(event.pos) for rect in layout.values()):
                         continue
                     for building in self.renderer.scene.buildings:
@@ -186,6 +230,24 @@ class TownSceneScreen:
                                 running = False
                                 result = True
                             break
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    self.mouse_pos = event.pos
+                    if self.drag_active and self.drag_unit:
+                        dropped = False
+                        for i, r in enumerate(self.hero_slots):
+                            if r.collidepoint(event.pos):
+                                dropped = True
+                                self._drop_to("hero", i)
+                                break
+                        if not dropped:
+                            for i, r in enumerate(self.garrison_slots):
+                                if r.collidepoint(event.pos):
+                                    dropped = True
+                                    self._drop_to("garrison", i)
+                                    break
+                        self.drag_active = False
+                        self.drag_unit = None
+                        self.drag_src = ("", -1)
             self.renderer.draw(self.screen, self.building_states, debug=debug)
             if self.town is not None:
                 pygame.draw.rect(self.screen, COLOR_PANEL, layout["top_bar"])
@@ -212,24 +274,76 @@ class TownSceneScreen:
                     "Visiting Hero",
                     layout["hero_row"].inflate(-8, -ROW_H + 24).move(8, 4),
                 )
-                draw_army_row(
+                self.garrison_slots = draw_army_row(
                     self.screen,
                     self.font,
                     self.font_small,
                     getattr(self.town, "garrison", []),
                     layout["garrison_row"],
                 )
-                draw_army_row(
+                self.hero_slots = draw_army_row(
                     self.screen,
                     self.font,
                     self.font_small,
                     self.army_units,
                     layout["hero_row"],
                 )
+                if self.drag_active:
+                    row, idx = self.drag_src
+                    if row == "hero" and idx < len(self.hero_slots):
+                        draw_slot_highlight(self.screen, self.hero_slots[idx])
+                    elif row == "garrison" and idx < len(self.garrison_slots):
+                        draw_slot_highlight(self.screen, self.garrison_slots[idx])
                 self.res_bar.update(dt)
                 self.res_bar.draw(self.screen, layout["resbar"])
+                if self.drag_active and self.drag_unit:
+                    gx = self.mouse_pos[0] - self.drag_offset[0]
+                    gy = self.mouse_pos[1] - self.drag_offset[1]
+                    draw_drag_ghost(
+                        self.screen,
+                        self.font,
+                        self.font_small,
+                        self.drag_unit,
+                        (gx, gy),
+                    )
             pygame.display.flip()
         return result
+
+    def _drop_to(self, target_row: str, index: int) -> None:
+        src_row, src_idx = self.drag_src
+        if not self.town or src_row not in ("hero", "garrison") or src_idx < 0:
+            return
+        if target_row == src_row and index == src_idx:
+            return
+        src_list = self.army_units if src_row == "hero" else self.town.garrison
+        dst_list = self.army_units if target_row == "hero" else self.town.garrison
+        if index > SLOT_COUNT - 1:
+            index = SLOT_COUNT - 1
+        unit = src_list[src_idx]
+        merge_target = None
+        for u in dst_list:
+            if dst_list is src_list and u is unit:
+                continue
+            if getattr(u, "stats", None) is getattr(unit, "stats", None):
+                merge_target = u
+                break
+        if merge_target:
+            merge_target.count += unit.count
+            src_list.pop(src_idx)
+        else:
+            if len(dst_list) < SLOT_COUNT:
+                unit = src_list.pop(src_idx)
+                if target_row == src_row and src_idx < index:
+                    index -= 1
+                if index <= len(dst_list):
+                    dst_list.insert(index, unit)
+                else:
+                    dst_list.append(unit)
+            else:
+                dst_list[index], src_list[src_idx] = src_list[src_idx], dst_list[index]
+        if self.hero is not None and (src_row == "hero" or target_row == "hero"):
+            if hasattr(self.hero, "apply_bonuses_to_army"):
+                self.hero.apply_bonuses_to_army()
 
     def _compute_layout(self) -> dict[str, pygame.Rect]:
         """Compute rectangles for UI elements."""

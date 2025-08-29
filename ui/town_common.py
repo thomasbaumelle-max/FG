@@ -68,6 +68,37 @@ def draw_army_row(
     return slots
 
 
+def draw_slot_highlight(
+    surface: pygame.Surface,
+    rect: pygame.Rect,
+    *,
+    color: tuple[int, int, int] = COLOR_ACCENT,
+    width: int = 3,
+) -> None:
+    """Draw a highlight around ``rect`` on ``surface``."""
+    pygame.draw.rect(surface, color, rect, width, border_radius=6)
+
+
+def draw_drag_ghost(
+    surface: pygame.Surface,
+    font: pygame.font.Font,
+    font_small: pygame.font.Font,
+    unit: object,
+    pos: tuple[int, int],
+) -> None:
+    """Render a translucent ghost of ``unit`` at ``pos`` (top-left)."""
+    ghost = pygame.Rect(pos[0], pos[1], 140, 64)
+    pygame.draw.rect(surface, (60, 64, 80, 230), ghost, border_radius=6)
+    pygame.draw.rect(surface, (120, 120, 140), ghost, 2, border_radius=6)
+    name = getattr(unit.stats, "name", "Unit")
+    cnt = getattr(unit, "count", 1)
+    surface.blit(font.render(name, True, COLOR_TEXT), (ghost.x + 8, ghost.y + 8))
+    surface.blit(
+        font_small.render(f"x{cnt}", True, COLOR_ACCENT),
+        (ghost.x + 8, ghost.y + 34),
+    )
+
+
 __all__ = [
     "SLOT_COUNT",
     "SLOT_PAD",
@@ -81,4 +112,6 @@ __all__ = [
     "COLOR_ACCENT",
     "draw_label",
     "draw_army_row",
+    "draw_slot_highlight",
+    "draw_drag_ghost",
 ]
