@@ -1,7 +1,7 @@
 [
   {
     "id": "market",
-    "cost": {},
+    "cost": {"gold": 1000},
     "prereq": [
       "tavern"
     ],
@@ -10,7 +10,7 @@
   },
   {
     "id": "castle",
-    "cost": {},
+    "cost": {"gold": 5000, "wood": 20, "stone": 20},
     "prereq": [
       "market"
     ],
@@ -19,14 +19,14 @@
   },
   {
     "id": "tavern",
-    "cost": {},
+    "cost": {"gold": 500},
     "prereq": [],
     "desc": "Hire new heroes.",
     "image": "buildings/tavern.png"
   },
   {
     "id": "caravansary",
-    "cost": {},
+    "cost": {"gold": 1500, "wood": 5},
     "prereq": [
       "market"
     ],
@@ -35,7 +35,7 @@
   },
   {
     "id": "bounty_board",
-    "cost": {},
+    "cost": {"gold": 1000},
     "prereq": [
       "tavern"
     ],
@@ -44,7 +44,7 @@
   },
   {
     "id": "magic_school",
-    "cost": {},
+    "cost": {"gold": 2000, "crystal": 5},
     "prereq": [
       "castle"
     ],
