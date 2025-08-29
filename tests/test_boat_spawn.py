@@ -20,7 +20,7 @@ def test_shipyard_purchases_spawn_boat(monkeypatch, pygame_stub):
     from core.entities import Hero
     from core.buildings import Shipyard
     from loaders.boat_loader import BoatDef
-    from ui.shipyard_screen import ShipyardScreen
+    from ui.shipyard_overlay import _buy_boat
 
     wm = WorldMap(
         width=2,
@@ -37,7 +37,6 @@ def test_shipyard_purchases_spawn_boat(monkeypatch, pygame_stub):
 
     hero = Hero(0, 0, [])
     game = types.SimpleNamespace(world=wm, hero=hero, boat_defs={"barge": BoatDef("barge", 4, 7, {}, "barge.png")})
-    ss = types.SimpleNamespace(game=game, shipyard=shipyard)
-    ShipyardScreen._buy_boat(ss, game.boat_defs["barge"])
+    _buy_boat(game, shipyard, game.boat_defs["barge"])
     assert wm.grid[0][1].boat is not None
 
