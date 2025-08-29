@@ -288,6 +288,29 @@ class Town(Building):
             return {}
         return {uid: self.stock.get(uid, 0) for uid in growth.keys()}
 
+    def get_dwelling_info(self, struct_id: str) -> Dict[str, Tuple[int, int]]:
+        """Return current stock and weekly growth for units of ``struct_id``.
+
+        Parameters
+        ----------
+        struct_id:
+            Identifier of the structure providing the dwelling.
+
+        Returns
+        -------
+        Dict[str, Tuple[int, int]]
+            Mapping of unit identifiers to a tuple ``(stock, growth)``.
+        """
+
+        info = self.structures.get(struct_id, {})
+        growth = info.get("dwelling", {}) if isinstance(info, dict) else {}
+        if not isinstance(growth, dict):
+            return {}
+        return {
+            uid: (self.stock.get(uid, 0), int(amount))
+            for uid, amount in growth.items()
+        }
+
     def list_all_recruitables(self) -> List[str]:
         """Toutes les unités débloquées par les structures construites."""
         out: List[str] = []
