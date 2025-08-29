@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, Optional, Set, List, Tuple, Union
 
 import constants
+import settings
 from core.economy import DEFAULT_MARKET_RATES
 from loaders import building_loader
 from loaders.building_loader import BuildingAsset
@@ -233,8 +234,11 @@ class Town(Building):
                 self.structures[sid] = info
                 self.ui_order.append(sid)
 
-        # Tavern is present by default in every town
-        self.built_structures: Set[str] = {"tavern"}
+        if settings.SUPER_USER_MODE:
+            self.built_structures: Set[str] = set(self.structures.keys())
+        else:
+            # Tavern is present by default in every town
+            self.built_structures: Set[str] = {"tavern"}
         self.garrison: List["Unit"] = []
         self.stock: Dict[str, int] = {}
 
@@ -463,8 +467,16 @@ class Town(Building):
         if (
             info is None
             or structure in self.built_structures
-            or self.built_today
-            or (econ_building is not None and econ_building.construction_done)
+            or (
+                not settings.SUPER_USER_MODE
+                and (
+                    self.built_today
+                    or (
+                        econ_building is not None
+                        and econ_building.construction_done
+                    )
+                )
+            )
         ):
             return False
         prereq = info.get("prereq", []) if isinstance(info, dict) else []
@@ -473,10 +485,11 @@ class Town(Building):
         cost: Dict[str, int] = info.get("cost", {})  # type: ignore[assignment]
         from core import economy as econ
 
-        if not econ.can_afford(player, cost):
-            return False
+        if not settings.SUPER_USER_MODE:
+            if not econ.can_afford(player, cost):
+                return False
 
-        econ.pay(player, cost)
+            econ.pay(player, cost)
 
         hero.gold = player.resources.get("gold", hero.gold)
         for res, amount in player.resources.items():
@@ -484,7 +497,8 @@ class Town(Building):
                 continue
             hero.resources[res] = amount
         self.built_structures.add(structure)
-        self.built_today = True
+        if not settings.SUPER_USER_MODE:
+            self.built_today = True
         if econ_building is not None:
             econ.build_structure(econ_building, structure)
         growth = info.get("dwelling", {}) if isinstance(info, dict) else {}
@@ -571,7 +585,7 @@ class Town(Building):
                 g.count += unit.count
                 hero.army.pop(index)
                 return True
-        if len(self.garrison) >= 7:
+        if not settings.SUPER_USER_MODE and len(self.garrison) >= 7:
             return False
         self.garrison.append(hero.army.pop(index))
         return True
@@ -586,7 +600,7 @@ class Town(Building):
                 self.garrison.pop(index)
                 hero.apply_bonuses_to_army()
                 return True
-        if len(hero.army) >= 7:
+        if not settings.SUPER_USER_MODE and len(hero.army) >= 7:
             return False
         hero.army.append(self.garrison.pop(index))
         hero.apply_bonuses_to_army()

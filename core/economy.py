@@ -2,6 +2,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any, Set, Tuple
 
+import settings
+
 # Ressources par défaut (tu peux en ajouter)
 DEFAULT_RESOURCES = ("gold", "wood", "stone", "crystal")
 
@@ -153,7 +155,12 @@ def trade(
 
 def build_structure(b: Building, sid: str) -> bool:
     """Marque ``sid`` comme construit pour ``b`` si possible."""
-    if b.construction_done or sid in b.built_structures:
+    if sid in b.built_structures:
+        return False
+    if settings.SUPER_USER_MODE:
+        b.built_structures.add(sid)
+        return True
+    if b.construction_done:
         return False
     b.built_structures.add(sid)
     b.construction_done = True
