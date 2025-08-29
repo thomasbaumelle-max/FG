@@ -3296,7 +3296,7 @@ class Game:
                 if callable(run):
                     debug_scene = os.environ.get("FG_TOWN_DEBUG") == "1"
                     handled = run(debug=debug_scene)
-                    if handled:
+                    if handled is not False:
                         return
             except Exception as exc:
                 logger.warning("Failed to load town scene %s: %s", scene_path, exc)
