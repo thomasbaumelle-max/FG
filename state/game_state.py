@@ -107,7 +107,7 @@ class GameState:
     economy: GameEconomyState = field(default_factory=GameEconomyState)
 
     def _advance_towns_week(self) -> None:
-        """Trigger weekly updates for all towns on the world map."""
+        """Trigger weekly updates for world entities such as towns and mobs."""
         if not self.world:
             return
         for town in getattr(self.world, "towns", []):
@@ -117,6 +117,8 @@ class GameState:
                 econ_player = self.economy.players[owner]
                 if hasattr(town, "recruit"):
                     town.recruit(econ_player)
+        if hasattr(self.world, "grow_creatures_weekly"):
+            self.world.grow_creatures_weekly()
 
     def next_day(self) -> None:
         """Advance the game by one day applying economic effects."""

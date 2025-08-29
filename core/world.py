@@ -1428,6 +1428,22 @@ class WorldMap:
             if hasattr(town, "advance_day"):
                 town.advance_day(hero, self)
 
+    def grow_creatures_weekly(self) -> None:
+        """Increase the size of all neutral creature stacks.
+
+        Each stack grows by 10% of its current size (minimum of one unit) to
+        simulate neutral dwellings spawning reinforcements over time.  The
+        update mutates the unit stacks in place so tiles referencing the same
+        list automatically see the new counts.
+        """
+
+        for creature in self.creatures:
+            for unit in creature.units:
+                if unit.count <= 0:
+                    continue
+                growth = max(1, unit.count // 10)
+                unit.count += growth
+
 
     def find_building_pos(self, building: Building) -> Optional[Tuple[int, int]]:
         """Search ``self.grid`` for ``building`` and return its coordinates.
