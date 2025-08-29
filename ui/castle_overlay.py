@@ -19,8 +19,9 @@ def open(screen: pygame.Surface, game, town, hero, clock) -> None:
     castle_rect = pygame.Rect(0, 0, 860, 520)
     castle_rect.center = screen.get_rect().center
     castle_unit_cards: List[Tuple[str, pygame.Rect]] = []
-    running = True
     clock = clock or pygame.time.Clock()
+    background = screen.copy()
+    running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN and event.key in (pygame.K_ESCAPE, pygame.K_b):
@@ -28,9 +29,11 @@ def open(screen: pygame.Surface, game, town, hero, clock) -> None:
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 for uid, rc in castle_unit_cards:
                     if rc.collidepoint(event.pos):
+                        screen.blit(background, (0, 0))
                         recruit_overlay.open(screen, game, town, hero, clock, "castle", uid)
                         break
         # draw overlay
+        screen.blit(background, (0, 0))
         s = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
         s.fill((0, 0, 0, 170))
         screen.blit(s, (0, 0))

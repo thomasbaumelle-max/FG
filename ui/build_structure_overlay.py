@@ -52,6 +52,7 @@ def open(
     btn_cancel.topright = (panel.right - 16, panel.bottom - 48)
 
     clock = clock or pygame.time.Clock()
+    background = screen.copy()
 
     running = True
     while running:
@@ -68,6 +69,7 @@ def open(
                         return True
 
         # draw overlay
+        screen.blit(background, (0, 0))
         s = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
         s.fill((0, 0, 0, 160))
         screen.blit(s, (0, 0))
