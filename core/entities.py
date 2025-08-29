@@ -35,6 +35,40 @@ if cf is not None:
                 setattr(stub_factory, attr, getattr(stub_module, attr))
 
 
+# Qualitative descriptions for stack sizes used by various UI overlays.
+STACK_COUNT_LABELS = [
+    (4, "a few"),
+    (9, "several"),
+    (19, "pack"),
+    (49, "lots"),
+    (99, "horde"),
+    (249, "throng"),
+    (499, "swarm"),
+    (999, "zounds"),
+    (float("inf"), "legion"),
+]
+
+
+def estimate_stack_label(count: int) -> str:
+    """Return a qualitative label describing a stack size.
+
+    Parameters
+    ----------
+    count:
+        Number of creatures in the stack.
+
+    Returns
+    -------
+    str
+        Human-friendly label estimating the stack size.
+    """
+
+    for limit, label in STACK_COUNT_LABELS:
+        if count <= limit:
+            return label
+    return STACK_COUNT_LABELS[-1][1]
+
+
 class EquipmentSlot(Enum):
     """Possible equipment locations for heroes and units."""
 
