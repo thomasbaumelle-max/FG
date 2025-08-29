@@ -125,12 +125,20 @@ class SpellbookOverlay:
         surface.blit(tip, (x, y))
 
     def _load_town_spells(self, schools: dict) -> None:
-        """Load spells grouped by school for town view."""
-        self.school_spells: dict[str, list[str]] = {}
+        """Load spells grouped by school and level for town view."""
+        # structure: {school: {level: [names]}}
+        self.school_spells: dict[str, dict[int, list[str]]] = {}
         all_names: set[str] = set()
         for school, levels in schools.items():
-            names: list[str] = []
+            lvl_map: dict[int, list[str]] = {}
             for lvl_num, lvl in levels.items():
+                try:
+                    lvl_idx = int(lvl_num)
+                except (TypeError, ValueError):
+                    continue
+                if lvl_idx < 1 or lvl_idx > 4:
+                    continue
+                names: list[str] = []
                 for group in lvl.values():
                     for entry in group:
                         nm = entry.get("name") or entry.get("id")
@@ -138,20 +146,26 @@ class SpellbookOverlay:
                             continue
                         names.append(nm)
                         all_names.add(nm)
-            self.school_spells[school] = sorted(set(names))
+                if names:
+                    lvl_map[lvl_idx] = sorted(set(names))
+            self.school_spells[school] = lvl_map
+
         self.categories = sorted(self.school_spells.keys())
         self.current_cat = 0
+        self.spell_names = []
         if self.categories:
             for idx, cat in enumerate(self.categories):
-                spells = self.school_spells.get(cat, [])
-                if spells:
+                spells_by_level = self.school_spells.get(cat, {})
+                names = [nm for lst in spells_by_level.values() for nm in lst]
+                if names:
                     self.current_cat = idx
-                    self.spell_names = spells
+                    self.spell_names = names
                     break
-            else:
-                self.spell_names = []
         else:
             self.spell_names = sorted(all_names)
+
+        # ensure town view fits on a single page
+        self.PER_PAGE = max(len(self.spell_names), 1)
 
     # ------------------------------------------------------------------ events
     def handle_event(self, event: pygame.event.Event) -> bool:
@@ -177,7 +191,11 @@ class SpellbookOverlay:
                     for idx, (rect, cat) in enumerate(self._tab_rects):
                         if rect.collidepoint(event.pos):
                             self.current_cat = idx
-                            self.spell_names = self.school_spells.get(cat, [])
+                            spells_by_level = self.school_spells.get(cat, {})
+                            self.spell_names = [
+                                nm for lst in spells_by_level.values() for nm in lst
+                            ]
+                            self.PER_PAGE = max(len(self.spell_names), 1)
                             self.page = 0
                             return False
                 for rect, name in self._label_rects:
@@ -238,43 +256,103 @@ class SpellbookOverlay:
             self.screen.blit(overlay, (offset_x, offset_y))
             return
 
-        # Grid drawing
         grid_x = 20
         font_small = theme.get_font(14) or pygame.font.SysFont(None, 14)
-        for idx, name in enumerate(self.spell_names[start:end]):
-            col = idx % self.GRID_COLS
-            row = idx // self.GRID_COLS
-            x = grid_x + col * (self.ICON + self.GAP)
-            y = grid_y + row * (self.ICON + self.GAP)
-            rect = pygame.Rect(x, y, self.ICON, self.ICON)
 
-            info = self.spell_info.get(name, {})
-            icon_id = info.get("icon") or self.default_icon or "spell_default"
-            icon = IconLoader.get(icon_id, self.ICON)
-            overlay.blit(icon, (x, y))
-            theme.draw_frame(overlay, rect)
+        if self.town:
+            level_spells = {}
+            if self.categories:
+                level_spells = self.school_spells.get(
+                    self.categories[self.current_cat], {}
+                )
+            y = grid_y
+            for lvl in range(1, 5):
+                names = level_spells.get(lvl, [])
+                if not names:
+                    y += self.ICON + self.GAP * 2
+                    continue
+                lvl_surf = font_small.render(f"L{lvl}", True, self.TEXT)
+                overlay.blit(
+                    lvl_surf,
+                    (grid_x, y + (self.ICON - lvl_surf.get_height()) // 2),
+                )
+                x = grid_x + lvl_surf.get_width() + self.GAP * 2
+                for name in names:
+                    rect = pygame.Rect(x, y, self.ICON, self.ICON)
 
-            # text info
-            if self.combat is not None:
-                lvl = self.combat.hero_spells.get(name)
-                spec = getattr(self.combat, "spell_defs", {}).get(name)
-                cost = getattr(spec, "cost_mana", None) if spec else None
-            else:
-                lvl = info.get("level")
-                cost = info.get("cost")
+                    info = self.spell_info.get(name, {})
+                    icon_id = info.get("icon") or self.default_icon or "spell_default"
+                    icon = IconLoader.get(icon_id, self.ICON)
+                    overlay.blit(icon, (x, y))
+                    theme.draw_frame(overlay, rect)
 
-            name_surf = font_small.render(name, True, self.TEXT)
-            overlay.blit(name_surf, (x + 2, y + 2))
-            if cost is not None:
-                cost_surf = font_small.render(str(cost), True, self.TEXT)
-                overlay.blit(cost_surf, (x + 2, y + self.ICON - cost_surf.get_height() - 2))
-            if lvl is not None:
-                lvl_surf = font_small.render(str(lvl), True, self.TEXT)
-                overlay.blit(lvl_surf, (x + self.ICON - lvl_surf.get_width() - 2, y + self.ICON - lvl_surf.get_height() - 2))
+                    lvl_val = info.get("level")
+                    cost = info.get("cost")
 
-            self._label_rects.append((rect.move(offset_x, offset_y), name))
+                    name_surf = font_small.render(name, True, self.TEXT)
+                    overlay.blit(name_surf, (x + 2, y + 2))
+                    if cost is not None:
+                        cost_surf = font_small.render(str(cost), True, self.TEXT)
+                        overlay.blit(
+                            cost_surf,
+                            (x + 2, y + self.ICON - cost_surf.get_height() - 2),
+                        )
+                    if lvl_val is not None:
+                        lvl_surf = font_small.render(str(lvl_val), True, self.TEXT)
+                        overlay.blit(
+                            lvl_surf,
+                            (
+                                x + self.ICON - lvl_surf.get_width() - 2,
+                                y + self.ICON - lvl_surf.get_height() - 2,
+                            ),
+                        )
 
-        if self.num_pages > 1:
+                    self._label_rects.append((rect.move(offset_x, offset_y), name))
+                    x += self.ICON + self.GAP
+                y += self.ICON + self.GAP * 2
+        else:
+            for idx, name in enumerate(self.spell_names[start:end]):
+                col = idx % self.GRID_COLS
+                row = idx // self.GRID_COLS
+                x = grid_x + col * (self.ICON + self.GAP)
+                y = grid_y + row * (self.ICON + self.GAP)
+                rect = pygame.Rect(x, y, self.ICON, self.ICON)
+
+                info = self.spell_info.get(name, {})
+                icon_id = info.get("icon") or self.default_icon or "spell_default"
+                icon = IconLoader.get(icon_id, self.ICON)
+                overlay.blit(icon, (x, y))
+                theme.draw_frame(overlay, rect)
+
+                # text info
+                if self.combat is not None:
+                    lvl = self.combat.hero_spells.get(name)
+                    spec = getattr(self.combat, "spell_defs", {}).get(name)
+                    cost = getattr(spec, "cost_mana", None) if spec else None
+                else:
+                    lvl = info.get("level")
+                    cost = info.get("cost")
+
+                name_surf = font_small.render(name, True, self.TEXT)
+                overlay.blit(name_surf, (x + 2, y + 2))
+                if cost is not None:
+                    cost_surf = font_small.render(str(cost), True, self.TEXT)
+                    overlay.blit(
+                        cost_surf, (x + 2, y + self.ICON - cost_surf.get_height() - 2)
+                    )
+                if lvl is not None:
+                    lvl_surf = font_small.render(str(lvl), True, self.TEXT)
+                    overlay.blit(
+                        lvl_surf,
+                        (
+                            x + self.ICON - lvl_surf.get_width() - 2,
+                            y + self.ICON - lvl_surf.get_height() - 2,
+                        ),
+                    )
+
+                self._label_rects.append((rect.move(offset_x, offset_y), name))
+
+        if self.num_pages > 1 and not self.town:
             pg = self.font.render(f"{self.page + 1}/{self.num_pages}", True, self.TEXT)
             overlay.blit(pg, (w - pg.get_width() - 10, h - pg.get_height() - 10))
 
