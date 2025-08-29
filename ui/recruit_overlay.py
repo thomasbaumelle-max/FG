@@ -5,11 +5,29 @@ import os
 import pygame
 
 from core.entities import RECRUITABLE_UNITS
-from .town_common import COLOR_TEXT, COLOR_ACCENT
+import theme
+from loaders import icon_loader as IconLoader
 
 FONT_NAME = None
-COLOR_WARN = (210, 90, 70)
-COLOR_DISABLED = (120, 120, 120)
+COLOR_WARN = theme.PALETTE["warning"]
+COLOR_DISABLED = theme.PALETTE["disabled"]
+
+STAT_ICONS = {
+    "hp": "stat_hp",
+    "attack": "stat_attack_melee",
+    "defence_melee": "stat_defence_melee",
+    "defence_ranged": "stat_defence_ranged",
+    "defence_magic": "stat_defence_magic",
+    "speed": "stat_speed",
+    "initiative": "stat_initiative",
+}
+
+RESOURCE_ICONS = {
+    "gold": "resource_gold",
+    "wood": "resource_wood",
+    "stone": "resource_stone",
+    "crystal": "resource_crystal",
+}
 
 
 def _unit_cost(unit_id: str, count: int) -> Dict[str, int]:
@@ -62,7 +80,7 @@ def open(
     except Exception:
         recruit_portrait = None
     recruit_stats = RECRUITABLE_UNITS.get(unit_id)
-    recruit_rect = pygame.Rect(0, 0, 360, 190)
+    recruit_rect = pygame.Rect(0, 0, 380, 240)
     recruit_rect.center = screen.get_rect().center
     btn_min = pygame.Rect(0, 0, 28, 28)
     btn_minus = pygame.Rect(0, 0, 28, 28)
@@ -118,57 +136,73 @@ def open(
                                 game._publish_resources()
         # draw overlay
         s = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
-        s.fill((0, 0, 0, 160))
+        s.fill((*theme.PALETTE["background"], 160))
         screen.blit(s, (0, 0))
         r = recruit_rect
-        pygame.draw.rect(screen, (40, 42, 50), r, border_radius=8)
-        pygame.draw.rect(screen, (110, 110, 120), r, 2, border_radius=8)
+        pygame.draw.rect(screen, theme.PALETTE["panel"], r, border_radius=8)
+        pygame.draw.rect(screen, theme.PALETTE["accent"], r, theme.FRAME_WIDTH, border_radius=8)
         title = f"Recruit {unit_id} – {struct_id.replace('_', ' ').title()}"
-        screen.blit(font_big.render(title, True, COLOR_TEXT), (r.x + 16, r.y + 12))
-        portrait_rect = pygame.Rect(r.x + 16, r.y + 40, 72, 72)
+        screen.blit(font_big.render(title, True, theme.PALETTE["text"]), (r.x + 16, r.y + 12))
+        portrait_size = 96
+        portrait_rect = pygame.Rect(r.x + 16, r.y + 40, portrait_size, portrait_size)
+        pygame.draw.rect(screen, theme.PALETTE["accent"], portrait_rect, theme.FRAME_WIDTH)
+        inner_portrait = portrait_rect.inflate(-4, -4)
         if recruit_portrait:
             portrait = recruit_portrait
-            if portrait.get_size() != (72, 72):
-                portrait = pygame.transform.scale(portrait, (72, 72))
-            screen.blit(portrait, portrait_rect)
+            if portrait.get_size() != inner_portrait.size:
+                portrait = pygame.transform.scale(portrait, inner_portrait.size)
+            screen.blit(portrait, inner_portrait)
         else:
-            pygame.draw.rect(screen, (70, 72, 84), portrait_rect)
+            pygame.draw.rect(screen, theme.PALETTE["panel"], inner_portrait)
         st = recruit_stats
         if st:
-            lines = [
-                f"HP {st.max_hp}",
-                f"DMG {st.attack_min}-{st.attack_max}",
-                f"DEF M/R/Mg {st.defence_melee}/{st.defence_ranged}/{st.defence_magic}",
-                f"SPD {st.speed}  INIT {st.initiative}",
+            stats = [
+                ("hp", str(st.max_hp)),
+                ("attack", f"{st.attack_min}-{st.attack_max}"),
+                ("defence_melee", str(st.defence_melee)),
+                ("defence_ranged", str(st.defence_ranged)),
+                ("defence_magic", str(st.defence_magic)),
+                ("speed", str(st.speed)),
+                ("initiative", str(st.initiative)),
             ]
             yy = portrait_rect.y
-            for line in lines:
+            for key, value in stats:
+                icon = IconLoader.get(STAT_ICONS[key], 24)
+                screen.blit(icon, (portrait_rect.right + 10, yy))
+                txt = font_small.render(value, True, theme.PALETTE["text"])
                 screen.blit(
-                    font_small.render(line, True, COLOR_TEXT),
-                    (portrait_rect.right + 10, yy),
+                    txt,
+                    (
+                        portrait_rect.right + 10 + icon.get_width() + 4,
+                        yy + (icon.get_height() - txt.get_height()) // 2,
+                    ),
                 )
-                yy += 18
+                yy += max(icon.get_height(), txt.get_height()) + 4
         stock_txt = f"Stock: {recruit_max} / +{growth} par semaine"
         screen.blit(
-            font_small.render(stock_txt, True, COLOR_ACCENT),
+            font_small.render(stock_txt, True, theme.PALETTE["accent"]),
             (portrait_rect.x, portrait_rect.bottom + 4),
         )
         cost = _unit_cost(unit_id, recruit_count)
-        cost_str = " / ".join(f"{k}:{v}" for k, v in cost.items()) if cost else "Free"
         can_afford = _can_afford(hero, cost)
-        col = COLOR_TEXT if can_afford else COLOR_WARN
-        screen.blit(
-            font.render(f"Cost x{recruit_count}: {cost_str}", True, col),
-            (r.x + 16, r.y + 120),
-        )
-        pygame.draw.rect(screen, (60, 62, 72), btn_min, border_radius=4)
-        pygame.draw.rect(screen, (60, 62, 72), btn_minus, border_radius=4)
-        pygame.draw.rect(screen, (60, 62, 72), slider_rect, border_radius=4)
+        cost_label = font.render(f"Cost x{recruit_count}:", True, theme.PALETTE["text"])
+        cost_y = portrait_rect.bottom + 24
+        screen.blit(cost_label, (r.x + 16, cost_y))
+        xx = r.x + 16 + cost_label.get_width() + 8
+        for res, amt in cost.items():
+            icon = IconLoader.get(RESOURCE_ICONS.get(res, res), 24)
+            screen.blit(icon, (xx, cost_y))
+            txt = font.render(str(amt), True, theme.PALETTE["text"] if can_afford else COLOR_WARN)
+            screen.blit(txt, (xx + icon.get_width() + 4, cost_y + (icon.get_height() - txt.get_height()) // 2))
+            xx += icon.get_width() + txt.get_width() + 12
+        pygame.draw.rect(screen, theme.PALETTE["panel"], btn_min, border_radius=4)
+        pygame.draw.rect(screen, theme.PALETTE["panel"], btn_minus, border_radius=4)
+        pygame.draw.rect(screen, theme.PALETTE["panel"], slider_rect, border_radius=4)
         if recruit_max > 0:
             filled = int(slider_rect.width * recruit_count / recruit_max)
             pygame.draw.rect(
                 screen,
-                (80, 160, 80),
+                theme.PALETTE["accent"],
                 pygame.Rect(
                     slider_rect.x,
                     slider_rect.y,
@@ -177,16 +211,16 @@ def open(
                 ),
                 border_radius=4,
             )
-        pygame.draw.rect(screen, (60, 62, 72), btn_plus, border_radius=4)
-        pygame.draw.rect(screen, (60, 62, 72), btn_max, border_radius=4)
-        btn_col = (70, 140, 70) if recruit_count > 0 and can_afford else COLOR_DISABLED
+        pygame.draw.rect(screen, theme.PALETTE["panel"], btn_plus, border_radius=4)
+        pygame.draw.rect(screen, theme.PALETTE["panel"], btn_max, border_radius=4)
+        btn_col = theme.PALETTE["accent"] if recruit_count > 0 and can_afford else COLOR_DISABLED
         pygame.draw.rect(screen, btn_col, btn_buy, border_radius=4)
-        screen.blit(font_small.render("min", True, COLOR_TEXT), (btn_min.x + 3, btn_min.y + 5))
-        screen.blit(font_big.render("-", True, COLOR_TEXT), (btn_minus.x + 8, btn_minus.y + 2))
-        screen.blit(font_big.render("+", True, COLOR_TEXT), (btn_plus.x + 6, btn_plus.y + 2))
-        screen.blit(font_small.render("max", True, COLOR_TEXT), (btn_max.x + 2, btn_max.y + 5))
-        screen.blit(font_big.render("Recruit", True, COLOR_TEXT), (btn_buy.x + 12, btn_buy.y + 2))
-        pygame.draw.rect(screen, (90, 50, 50), btn_close, border_radius=4)
-        screen.blit(font.render("x", True, COLOR_TEXT), (btn_close.x + 7, btn_close.y + 3))
+        screen.blit(font_small.render("min", True, theme.PALETTE["text"]), (btn_min.x + 3, btn_min.y + 5))
+        screen.blit(font_big.render("-", True, theme.PALETTE["text"]), (btn_minus.x + 8, btn_minus.y + 2))
+        screen.blit(font_big.render("+", True, theme.PALETTE["text"]), (btn_plus.x + 6, btn_plus.y + 2))
+        screen.blit(font_small.render("max", True, theme.PALETTE["text"]), (btn_max.x + 2, btn_max.y + 5))
+        screen.blit(font_big.render("Recruit", True, theme.PALETTE["text"]), (btn_buy.x + 12, btn_buy.y + 2))
+        pygame.draw.rect(screen, theme.PALETTE["warning"], btn_close, border_radius=4)
+        screen.blit(font.render("x", True, theme.PALETTE["text"]), (btn_close.x + 7, btn_close.y + 3))
         pygame.display.update()
         clock.tick(60)
