@@ -27,6 +27,8 @@ def open(
     hero,
     struct_id: str,
     clock: pygame.time.Clock | None = None,
+    *,
+    locked: bool = False,
 ) -> bool:
     """Open an overlay to confirm construction of ``struct_id``.
 
@@ -60,7 +62,7 @@ def open(
                 if btn_cancel.collidepoint(event.pos):
                     return False
                 if btn_build.collidepoint(event.pos):
-                    if _can_afford(hero, cost) and not town.built_today and all(
+                    if _can_afford(hero, cost) and not locked and all(
                         town.is_structure_built(p) for p in prereq
                     ):
                         return True
@@ -104,7 +106,7 @@ def open(
         else:
             screen.blit(font_small.render("None", True, COLOR_TEXT), (panel.x + 32, y))
 
-        can_build = _can_afford(hero, cost) and not town.built_today and all(
+        can_build = _can_afford(hero, cost) and not locked and all(
             town.is_structure_built(p) for p in prereq
         )
         btn_col = (70, 140, 70) if can_build else COLOR_DISABLED
@@ -118,6 +120,16 @@ def open(
             font_big.render("Annuler", True, COLOR_TEXT),
             (btn_cancel.x + 12, btn_cancel.y + 2),
         )
+
+        if locked:
+            screen.blit(
+                font_small.render(
+                    "Vous avez déjà construit un bâtiment aujourd’hui",
+                    True,
+                    COLOR_WARN,
+                ),
+                (panel.x + 16, btn_build.y - 28),
+            )
 
         pygame.display.update()
         clock.tick(60)

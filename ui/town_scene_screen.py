@@ -110,10 +110,13 @@ class TownSceneScreen:
 
         # Build structure if not yet built
         if not self.town.is_structure_built(sid):
-            if self.town.built_today:
-                return False
             confirmed = build_structure_overlay.open(
-                self.screen, self.town, hero, sid, self.clock
+                self.screen,
+                self.town,
+                hero,
+                sid,
+                self.clock,
+                locked=self.town.built_today,
             )
             if confirmed:
                 player = economy.PlayerEconomy()
