@@ -217,16 +217,7 @@ class MainScreen:
         res_turn_rect = world_layout.dock_bottom(bar_h, margin=M)
         world_rect = world_layout.remaining()
 
-        # Split horizontal pour resources/turn
-        res_w = int(res_turn_rect.width * 0.7) - M // 2
-        turn_w = res_turn_rect.width - res_w - M
-        res_rect = pygame.Rect(res_turn_rect.x, res_turn_rect.y, res_w, res_turn_rect.height)
-        turn_rect = pygame.Rect(
-            res_rect.x + res_rect.width + M,
-            res_turn_rect.y,
-            turn_w,
-            res_turn_rect.height,
-        )
+        res_rect, turn_rect = Layout(res_turn_rect).split_h(0.7, margin=M)
 
         # Colonne de droite : minimap en haut, puis 2 panneaux juxtaposés (hero_list | buttons),
         # puis l'armée dessous qui prend tout le reste.
@@ -268,14 +259,12 @@ class MainScreen:
             mid_rect = side_layout.dock_top(mid_h, margin=M)
             army_rect = side_layout.remaining()
 
-            split_w = (mid_rect.width - M) // 2
-            hero_list_rect = pygame.Rect(mid_rect.x, mid_rect.y, split_w, mid_rect.height)
-            buttons_rect = pygame.Rect(
-                hero_list_rect.x + hero_list_rect.width + M,
-                mid_rect.y,
-                split_w,
-                mid_rect.height,
-            )
+            mid_layout = Layout(mid_rect)
+            hero_list_rect = mid_layout.anchor(0.5, 1.0, anchor="topleft")
+            buttons_rect = mid_layout.anchor(0.5, 1.0, anchor="topright")
+            hero_list_rect.width -= M // 2
+            buttons_rect.width -= M // 2
+            buttons_rect.x += M // 2
         else:
             hero_list_rect = side_layout.dock_top(mid_h, margin=M)
             buttons_rect = side_layout.dock_bottom(btn_total_h, margin=0)

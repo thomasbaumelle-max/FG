@@ -53,3 +53,15 @@ def test_buttons_remain_adjacent_with_short_height():
     assert buttons_rect.y == hero_rect.y
     assert buttons_rect.x == hero_rect.x + hero_rect.width + margin
     assert buttons_rect.width == hero_rect.width
+
+
+@pytest.mark.serial
+@pytest.mark.parametrize("size", [(1024, 768), (1600, 900), (1920, 1080)])
+def test_resource_turn_ratio(size):
+    game = _dummy_game(*size)
+    ms = MainScreen(game)
+    res = ms.widgets["3"]
+    turn = ms.widgets["3b"]
+    total = res.width + turn.width + 8
+    ratio = res.width / total
+    assert abs(ratio - 0.7) < 0.02
