@@ -1068,6 +1068,7 @@ class Combat:
             unit.acted = True
             unit.skip_turn = False
         if unit.acted and unit.extra_turns > 0:
+            self.show_effect("morale_fx", (unit.x, unit.y))
             unit.extra_turns -= 1
             unit.acted = False
             return
@@ -1105,7 +1106,6 @@ class Combat:
         if outcome > 0:
             unit.extra_turns = 1
             self.add_log(f"{unit.stats.name} is inspired and gains an extra action!")
-            self.show_effect("morale_fx", (unit.x, unit.y))
         elif outcome < 0:
             unit.skip_turn = True
             self.add_log(f"{unit.stats.name} falters and loses its action!")
