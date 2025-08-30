@@ -5,6 +5,14 @@ import json, math, os
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Tuple, Optional
 
+import constants
+try:
+    import pygame
+except Exception:  # pragma: no cover - optional in tests
+    pygame = None
+from loaders.asset_manager import AssetManager
+from core.fx import FXQueue, AnimatedFX, load_animation
+
 Effect = Dict[str, Any]
 
 @dataclass
@@ -98,8 +106,24 @@ def _dist(a: Tuple[int, int], b: Tuple[int, int]) -> int:
     """Manhattan distance (adjust if using another metric)."""
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
+
+
+def _trigger_fx(fx_queue: FXQueue | None, assets: AssetManager | None, asset: str, pos: Tuple[int, int]) -> None:
+    """Render an FX animation at grid ``pos`` if possible."""
+    if not fx_queue or not assets or pygame is None:
+        return
+    frame_time = 1 / constants.FPS
+    frames = load_animation(assets, asset, constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE)
+    if not frames:
+        return
+    px = pos[0] * constants.COMBAT_TILE_SIZE + constants.COMBAT_TILE_SIZE // 2
+    py = pos[1] * constants.COMBAT_TILE_SIZE + constants.COMBAT_TILE_SIZE // 2
+    img_pos = pygame.math.Vector2(px, py) if hasattr(pygame, "math") else (px, py)
+    duration = frame_time * len(frames)
+    fx_queue.add(AnimatedFX(pos=img_pos, duration=duration, frames=frames, frame_time=frame_time, z=200))
+
 def cast_fireball(spell: Spell, caster_xy: Tuple[int, int], power: int, target_xy: Tuple[int, int],
-                  units_at: List[Tuple[int, Tuple[int, int]]]) -> List[Effect]:
+                  units_at: List[Tuple[int, Tuple[int, int]]], fx_queue: FXQueue | None = None, assets: AssetManager | None = None) -> List[Effect]:
     """Cast a fireball and return resulting effects.
 
     ``units_at`` is ``[(unit_id, xy), ...]`` for all units on the battlefield.
@@ -116,6 +140,7 @@ def cast_fireball(spell: Spell, caster_xy: Tuple[int, int], power: int, target_x
             val = int(base + per*power)
             fx.append({"type": "damage", "target": uid, "value": val, "element": elem})
     fx.append({"type": "fx", "asset": spell.data.get("fx_asset","effects/explosion_small"), "pos": target_xy})
+    _trigger_fx(fx_queue, assets, spell.data.get("fx_asset", "effects/explosion_small"), target_xy)
     return fx
 
 def cast_chain_lightning(spell: Spell, caster_xy: Tuple[int, int], power: int, first_target_id: int,
@@ -173,10 +198,12 @@ def cast_heal(spell: Spell, power: int, target_id: int) -> List[Effect]:
         },
     ]
 
-def cast_ice_wall(spell: Spell, target_line: List[Tuple[int, int]]) -> List[Effect]:
+def cast_ice_wall(spell: Spell, target_line: List[Tuple[int, int]], fx_queue: FXQueue | None = None, assets: AssetManager | None = None) -> List[Effect]:
     """Spawn an ice wall along ``target_line`` (length <= wall_length)."""
     fx: List[Effect] = [{"type": "fx", "asset": spell.data.get("fx_asset", "effects/ice_wall"),
                          "tiles": target_line}]
+    for tile in target_line:
+        _trigger_fx(fx_queue, assets, spell.data.get("fx_asset", "effects/ice_wall"), tile)
     for xy in target_line[: int(spell.data.get("wall_length", 3))]:
         fx.append({"type": "spawn", "entity": "ice_wall", "pos": xy,
                    "hp": int(spell.data.get("spawn", {}).get("hp", 20)),
