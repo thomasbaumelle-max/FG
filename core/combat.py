@@ -1442,7 +1442,8 @@ class Combat:
                             print("Choose an action first.")
                             continue
                         if self.selected_action == 'move':
-                            dist = abs(cx - self.selected_unit.x) + abs(cy - self.selected_unit.y)
+                            x0, y0 = self.selected_unit.x, self.selected_unit.y
+                            dist = self.hex_distance((x0, y0), (cx, cy))
                             move_speed = self.selected_unit.stats.speed
                             if 'charge' in self.selected_unit.stats.abilities:
                                 move_speed *= 2
@@ -1455,8 +1456,13 @@ class Combat:
                                 and (cx, cy) not in self.ice_walls
                                 and dist <= move_speed
                             ):
+                                path = combat_rules.blocking_squares((x0, y0), (cx, cy))
+                                path.append((cx, cy))
+                                total_time = dist * 0.2
+                                step_time = total_time / len(path) if path else 0.0
                                 print(f"Moving {self.selected_unit.stats.name} to {(cx, cy)}")
-                                self.move_unit(self.selected_unit, cx, cy)
+                                for nx, ny in path:
+                                    self.move_unit(self.selected_unit, nx, ny, duration=step_time)
                                 if self.get_status(self.selected_unit, 'charge'):
                                     # allow attack after move
                                     self.selected_action = None
