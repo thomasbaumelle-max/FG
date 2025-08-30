@@ -1,5 +1,4 @@
 from __future__ import annotations
-import json
 import os
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, Optional, Set, List, Tuple, Union
@@ -198,29 +197,8 @@ class Town(Building):
         else:
             self.name = name
 
-        path = os.path.join(os.path.dirname(__file__), "..", "assets", "town_buildings.json")
-        try:
-            with open(path, "r", encoding="utf-8") as fh:
-                data = json.load(fh)
-        except Exception:  # pragma: no cover - fallback if file missing
-            data = []
-
         self.structures: Dict[str, Dict[str, object]] = {}
-        order: List[str] = []
-        for entry in data:
-            sid = entry.get("id")
-            if not sid:
-                continue
-            order.append(sid)
-            self.structures[sid] = {
-                "cost": entry.get("cost", {}),
-                "desc": entry.get("desc", ""),
-                "prereq": entry.get("prereq", []),
-                "image": entry.get("image", ""),
-                # dwelling dict: {unit_id: growth_per_week}
-                "dwelling": entry.get("dwelling", {}),
-            }
-        self.ui_order = order
+        self.ui_order: List[str] = []
 
         if faction_id:
             repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))

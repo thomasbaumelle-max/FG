@@ -1,13 +1,13 @@
 """Loader for faction-specific town building manifests."""
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict
 
 from .core import Context, read_json
 
 # Mapping of faction identifiers to their town building manifest paths
 FACTION_TOWN_BUILDING_MANIFESTS: Dict[str, str] = {
-    "red_knights": "buildings/buildings_red_knights.json",
+    "red_knights": "towns/red_knights/town.json",
     "sylvan": "buildings/buildings_sylvan.json",
     "solaceheim": "buildings/buildings_solaceheim.json",
 }
@@ -23,9 +23,14 @@ def load_town_buildings(ctx: Context, manifest: str) -> Dict[str, Dict[str, obje
     """
 
     try:
-        entries: List[Dict[str, object]] = read_json(ctx, manifest)
+        data = read_json(ctx, manifest)
     except Exception:
         return {}
+
+    if isinstance(data, dict):
+        entries = data.get("buildings", [])
+    else:
+        entries = data
 
     defs: Dict[str, Dict[str, object]] = {}
     for entry in entries:

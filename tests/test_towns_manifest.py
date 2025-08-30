@@ -3,7 +3,7 @@ from pathlib import Path
 
 
 def test_towns_red_knights_manifest_schema() -> None:
-    path = Path("assets/towns/towns_red_knights.json")
+    path = Path("assets/towns/red_knights/town.json")
     data = json.loads(path.read_text())
 
     assert data["size"] == [1920, 1080]

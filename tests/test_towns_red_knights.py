@@ -6,7 +6,7 @@ MIN_HGAP = 50
 MIN_VGAP = 80
 
 def test_building_bounding_boxes_spacing():
-    path = Path("assets/towns/towns_red_knights.json")
+    path = Path("assets/towns/red_knights/town.json")
     data = json.loads(path.read_text())
     bboxes = {}
     for b in data["buildings"]:
