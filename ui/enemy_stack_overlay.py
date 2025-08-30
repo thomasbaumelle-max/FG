@@ -42,33 +42,51 @@ class EnemyStackOverlay:
                     icon = pygame.transform.scale(icon, (icon_size, icon_size))
             name = self.font.render(unit.stats.name, True, self.TEXT)
             count = self.font.render(estimate_stack_label(unit.count), True, self.TEXT)
-            row_h = max(
+            stats_txt = (
+                f"HP {unit.stats.max_hp}  "
+                f"ATK {unit.stats.attack_min}-{unit.stats.attack_max}  "
+                f"DEF {unit.stats.defence_melee}/{unit.stats.defence_ranged}/{unit.stats.defence_magic}  "
+                f"SPD {unit.stats.speed}"
+            )
+            stats = self.font.render(stats_txt, True, self.TEXT)
+            line1_h = max(
                 icon.get_height() if icon else 0,
                 name.get_height(),
                 count.get_height(),
             )
-            row_w = (
+            row_h = line1_h + stats.get_height() + 4
+            line1_w = (
                 (icon.get_width() if icon else 0)
                 + 8
                 + name.get_width()
                 + 8
                 + count.get_width()
             )
+            stats_w = (icon.get_width() if icon else 0) + 8 + stats.get_width()
+            row_w = max(line1_w, stats_w)
             max_w = max(max_w, row_w)
-            rows.append((icon, name, count, row_h))
+            rows.append((icon, name, count, stats, line1_h, row_h))
         width = max_w + 20
-        height = sum(r[3] + 6 for r in rows) + 20
+        height = sum(r[5] + 6 for r in rows) + 20
         surface = pygame.Surface((width, height), pygame.SRCALPHA)
         surface.fill((*self.BG, 230))
         theme.draw_frame(surface, surface.get_rect())
         y = 10
-        for icon, name, count, row_h in rows:
+        for icon, name, count, stats, line1_h, row_h in rows:
             x = 10
             if icon:
-                surface.blit(icon, (x, y + (row_h - icon.get_height()) // 2))
+                surface.blit(icon, (x, y + (line1_h - icon.get_height()) // 2))
                 x += icon.get_width() + 8
-            surface.blit(name, (x, y + (row_h - name.get_height()) // 2))
-            surface.blit(count, (width - count.get_width() - 10, y + (row_h - count.get_height()) // 2))
+            surface.blit(name, (x, y + (line1_h - name.get_height()) // 2))
+            surface.blit(
+                count,
+                (
+                    width - count.get_width() - 10,
+                    y + (line1_h - count.get_height()) // 2,
+                ),
+            )
+            stats_x = 10 + ((icon.get_width() + 8) if icon else 0)
+            surface.blit(stats, (stats_x, y + line1_h + 4))
             y += row_h + 6
         sw, sh = self.screen.get_size()
         x = (sw - width) // 2
