@@ -1075,6 +1075,8 @@ class Combat:
             unit.acted = False
             return
 
+        unit.morale_pending = False
+
         # Decrement ice wall durations
         for pos in list(self.ice_walls):
             self.ice_walls[pos] -= 1
@@ -1104,9 +1106,12 @@ class Combat:
 
     def check_morale(self, unit: Unit) -> None:
         """Apply morale effects to a unit at the start of its turn."""
+        if unit.morale_pending:
+            return
         outcome = combat_rules.roll_morale(unit.stats.morale)
         if outcome > 0:
             unit.extra_turns = 1
+            unit.morale_pending = True
             self.add_log(f"{unit.stats.name} is inspired and gains an extra action!")
         elif outcome < 0:
             unit.skip_turn = True

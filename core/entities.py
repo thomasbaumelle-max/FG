@@ -203,6 +203,8 @@ class Unit:
         self.skip_turn: bool = False
         # Number of additional turns the unit may immediately take
         self.extra_turns: int = 0
+        # Whether a morale bonus extra action is pending
+        self.morale_pending: bool = False
         # Remaining retaliations available this round
         self.retaliations_left: int = stats.retaliations_per_round
         # Direction the unit is facing as a (dx, dy) vector
