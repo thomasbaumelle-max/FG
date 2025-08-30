@@ -527,6 +527,11 @@ class Game:
                         upgrade_cost=dict(getattr(b, "upgrade_cost", {})),
                         production_per_level=dict(getattr(b, "production_per_level", {})),
                     )
+                    # Keep built structures in sync so towns appear fully
+                    # constructed when super user mode is enabled.
+                    built = getattr(b, "built_structures", None)
+                    if built:
+                        econ_b.built_structures = set(built)
                     self.state.economy.buildings.append(econ_b)
                     self._econ_building_map[b] = econ_b
         # Enemy faction setup
@@ -1519,6 +1524,16 @@ class Game:
                                 self.hero.y,
                                 radius=max(self.world.width, self.world.height),
                             )
+                            # Instantly construct all town structures when
+                            # toggling super user mode during a session.
+                            for row in self.world.grid:
+                                for tile in row:
+                                    b = tile.building
+                                    if isinstance(b, Town):
+                                        b.built_structures = set(b.structures.keys())
+                                        econ_b = self._econ_building_map.get(b)
+                                        if econ_b:
+                                            econ_b.built_structures = set(b.built_structures)
                         continue
                     elif event.key == pygame.K_F11:
                         pygame.display.toggle_fullscreen()
@@ -1530,8 +1545,14 @@ class Game:
                         self.handle_world_click(event.pos)
                     elif event.button == 3:
                         tile = self.tile_at_pixel(event.pos)
-                        if tile and getattr(tile, "enemy_units", None):
-                            self.open_enemy_stack_overlay(tile.enemy_units)
+                        if tile:
+                            units = None
+                            if tile.enemy_units:
+                                units = tile.enemy_units
+                            elif tile.building and getattr(tile.building, "garrison", None):
+                                units = tile.building.garrison
+                            if units:
+                                self.open_enemy_stack_overlay(units)
             # Advance queued movement then draw world
             self.update_movement()
             self.screen.fill(theme.PALETTE["background"])
