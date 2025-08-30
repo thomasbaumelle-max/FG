@@ -16,7 +16,7 @@
     },
     {
       "id": "foreground",
-      "image": "towns/red_knights/foreground.png,
+      "image": "towns/red_knights/foreground.png",
       "parallax": 1.2
     }
   ],
