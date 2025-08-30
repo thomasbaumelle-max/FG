@@ -51,6 +51,36 @@ def test_positive_morale_grants_extra_turn(monkeypatch, simple_combat):
     assert len(combat.fx_queue._events) == before + 1
 
 
+def test_morale_not_rechecked_after_extra_turn(monkeypatch, simple_combat):
+    hero_stats = replace(SWORDSMAN_STATS, morale=1)
+    hero = Unit(hero_stats, 1, "hero")
+    enemy = Unit(SWORDSMAN_STATS, 1, "enemy")
+    pygame.init()
+    assets = {"morale_fx": pygame.Surface((1, 1))}
+    combat = simple_combat([hero], [enemy], assets=assets)
+    hero_unit = combat.hero_units[0]
+    enemy_unit = combat.enemy_units[0]
+    combat.turn_order = [hero_unit, enemy_unit]
+    combat.current_index = 0
+    calls = {"count": 0}
+
+    def fake_random() -> float:
+        calls["count"] += 1
+        return 0.0
+
+    monkeypatch.setattr(random, "random", fake_random)
+    combat.check_morale(hero_unit)
+    assert hero_unit.extra_turns == 1
+    hero_unit.acted = True
+    combat.advance_turn()
+    assert hero_unit.extra_turns == 0
+    hero_unit.acted = True
+    combat.advance_turn()
+    assert calls["count"] == 1
+    assert hero_unit.extra_turns == 0
+    assert combat.turn_order[combat.current_index] is enemy_unit
+
+
 def test_negative_morale_skips_turn(monkeypatch, simple_combat):
     hero_stats = replace(SWORDSMAN_STATS, morale=-1)
     hero = Unit(hero_stats, 1, 'hero')
