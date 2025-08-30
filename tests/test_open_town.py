@@ -178,20 +178,6 @@ def test_open_town_passes_scene_states(monkeypatch, pygame_stub):
         "ui.town_scene_screen",
         types.SimpleNamespace(TownSceneScreen=DummySceneScreen),
     )
-
-    class DummyTownScreen:
-        def __init__(self, *args, **kwargs):
-            pass
-
-        def run(self):
-            pass
-
-    monkeypatch.setitem(
-        sys.modules,
-        "ui.town_screen",
-        types.SimpleNamespace(TownScreen=DummyTownScreen),
-    )
-
     game.open_town(town)
 
     assert captured["states"] == {

@@ -3,10 +3,7 @@ os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
 
 import pygame
 import importlib, sys
-import types
 
-import sys
-import types
 from core.buildings import Town
 from core.world import WorldMap
 from core.entities import Hero
@@ -105,104 +102,3 @@ def test_recruit_into_visiting_army():
     assert any(u.stats.name == 'Swordsman' and u.count == 3 for u in visiting.army)
     assert hero.gold == 1000 - 50 * 3  # payment taken from controlling hero
     assert not town.garrison
-
-
-def test_townscreen_recruit_with_hero_goes_to_garrison(monkeypatch, pygame_stub):
-    pg = pygame_stub(
-        KEYDOWN=2,
-        MOUSEBUTTONDOWN=1,
-        K_u=117,
-        K_ESCAPE=27,
-        transform=types.SimpleNamespace(smoothscale=lambda img, size: img),
-    )
-    monkeypatch.setattr(pg.Rect, "collidepoint", lambda self, pos: True)
-    monkeypatch.setattr(
-        pg.Surface, "get_size", lambda self: (self.get_width(), self.get_height())
-    )
-    monkeypatch.setitem(sys.modules, "pygame", pg)
-    monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
-    from ui.town_screen import TownScreen
-
-    town = Town(faction_id="red_knights")
-    hero = Hero(0, 0, [])
-    hero.resources['wood'] = 5
-    hero.resources['stone'] = 5
-    hero.gold = 1000
-    player = economy.PlayerEconomy()
-    player.resources['wood'] = 5
-    player.resources['stone'] = 5
-    player.resources['gold'] = 1000
-    assert town.build_structure('barracks', hero, player)
-    town.next_week()
-
-    game = types.SimpleNamespace(hero=hero)
-    screen = pg.display.set_mode((1, 1))
-    ts = TownScreen(screen, game, town, None, None, (0, 0))
-    ts.recruit_open = True
-    ts.recruit_unit = 'Swordsman'
-    ts.recruit_count = 1
-    ts.recruit_max = 10
-    # Only the buy button should report a click
-    ts.btn_close.collidepoint = lambda pos: False
-    ts.btn_min.collidepoint = lambda pos: False
-    ts.btn_minus.collidepoint = lambda pos: False
-    ts.btn_plus.collidepoint = lambda pos: False
-    ts.btn_max.collidepoint = lambda pos: False
-    ts.slider_rect.collidepoint = lambda pos: False
-    ts.btn_buy.collidepoint = lambda pos: True
-    ts._on_overlay_mousedown((0, 0), 1)
-
-    assert any(u.stats.name == 'Swordsman' for u in town.garrison)
-    assert not hero.army
-    assert hero.gold == 1000 - 50
-
-
-def test_townscreen_recruit_visiting_army(monkeypatch, pygame_stub):
-    pg = pygame_stub(
-        KEYDOWN=2,
-        MOUSEBUTTONDOWN=1,
-        K_u=117,
-        K_ESCAPE=27,
-        transform=types.SimpleNamespace(smoothscale=lambda img, size: img),
-    )
-    monkeypatch.setattr(pg.Rect, "collidepoint", lambda self, pos: True)
-    monkeypatch.setattr(
-        pg.Surface, "get_size", lambda self: (self.get_width(), self.get_height())
-    )
-    monkeypatch.setitem(sys.modules, "pygame", pg)
-    monkeypatch.setitem(sys.modules, "pygame.draw", pg.draw)
-    from ui.town_screen import TownScreen
-    from core.entities import Army
-
-    town = Town(faction_id="red_knights")
-    hero = Hero(1, 0, [])
-    hero.resources['wood'] = 5
-    hero.resources['stone'] = 5
-    hero.gold = 1000
-    player = economy.PlayerEconomy()
-    player.resources['wood'] = 5
-    player.resources['stone'] = 5
-    player.resources['gold'] = 1000
-    assert town.build_structure('barracks', hero, player)
-    town.next_week()
-
-    visiting = Army(0, 0, [], ap=4)
-    game = types.SimpleNamespace(hero=hero)
-    screen = pg.display.set_mode((1, 1))
-    ts = TownScreen(screen, game, town, visiting, None, (0, 0))
-    ts.recruit_open = True
-    ts.recruit_unit = 'Swordsman'
-    ts.recruit_count = 1
-    ts.recruit_max = 10
-    ts.btn_close.collidepoint = lambda pos: False
-    ts.btn_min.collidepoint = lambda pos: False
-    ts.btn_minus.collidepoint = lambda pos: False
-    ts.btn_plus.collidepoint = lambda pos: False
-    ts.btn_max.collidepoint = lambda pos: False
-    ts.slider_rect.collidepoint = lambda pos: False
-    ts.btn_buy.collidepoint = lambda pos: True
-    ts._on_overlay_mousedown((0, 0), 1)
-
-    assert any(u.stats.name == 'Swordsman' for u in visiting.units)
-    assert not town.garrison
-    assert hero.gold == 1000 - 50

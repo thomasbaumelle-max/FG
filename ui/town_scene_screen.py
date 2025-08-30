@@ -32,8 +32,9 @@ from .town_common import (
     RESBAR_H,
     TOPBAR_H,
     GAP,
+    FONT_NAME,
+    COLOR_PANEL,
 )
-from .town_screen import TownScreen, FONT_NAME, COLOR_PANEL
 from .widgets.resources_bar import ResourcesBar
 
 
