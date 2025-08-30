@@ -1797,7 +1797,7 @@ class Combat:
         rect = self.cell_rect(*pos)
         if hasattr(frames[0], "get_size"):
             w, h = frames[0].get_size()
-            scale = min(rect.width / w, rect.height / h, 1.0)
+            scale = min(self.hex_width / w, self.hex_height / h)
             if scale != 1.0 and hasattr(pygame, "transform"):
                 frames = [
                     pygame.transform.smoothscale(f, (int(w * scale), int(h * scale)))
