@@ -8,6 +8,6 @@
   {"id": "shield_block", "image": "vfx/shield_block.png", "frame_width": 64, "frame_height": 64, "frame_time": 0.1},
   {"id": "charge", "image": "vfx/charge.png", "frame_width": 64, "frame_height": 64, "frame_time": 0.1},
   {"id": "dragon_breath", "image": "vfx/dragon_breath.png", "frame_width": 64, "frame_height": 64, "frame_time": 0.1},
-  {"id": "morale_fx", "image": "icons/stat_morale.png", "frame_width": 64, "frame_height": 64, "frame_time": 0.1},
+  {"id": "morale_fx", "image": "icons/stat_morale.png", "frame_width": 128, "frame_height": 128, "frame_time": 0.1},
   {"id": "luck_fx", "image": "icons/stat_luck.png", "frame_width": 64, "frame_height": 64, "frame_time": 0.1}
 ]
