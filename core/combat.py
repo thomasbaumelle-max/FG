@@ -27,6 +27,7 @@ import pygame
 import audio
 import constants
 import theme
+import settings
 from ui import combat_summary
 from core import combat_ai, combat_render
 from core.entities import Unit, UnitStats, apply_defence, ARTIFACT_CATALOG, Item, Hero
@@ -199,6 +200,7 @@ class Combat:
         hero_faction: Optional[FactionDef] = None,
         fortification: Optional[Fortification] = None,
         siege_actions: Optional[List[SiegeAction]] = None,
+        timings: Optional[Dict[str, float]] = None,
     ) -> None:
         self.screen = screen
         self.assets = assets
@@ -208,6 +210,9 @@ class Combat:
         # Track initial enemy count to award experience
         self._initial_enemy_count = sum(u.count for u in self.enemy_units)
         self.units: List[CombatUnit] = self.hero_units + self.enemy_units
+        self.timings: Dict[str, float] = settings.COMBAT_TIMINGS.copy()
+        if timings:
+            self.timings.update(timings)
         self.hero_faction = hero_faction
         if hero_faction:
             for u in self.hero_units:
@@ -865,6 +870,7 @@ class Combat:
                 unit.effects.remove(effect)
 
     def resolve_attack(self, attacker: Unit, defender: Unit, attack_type: str) -> int:
+        self._wait(self.timings.get("attack", 0.0))
         # Orientation and distance for flanking
         dx = defender.x - attacker.x
         dy = defender.y - attacker.y
@@ -980,6 +986,7 @@ class Combat:
     # Spell effect implementations
 
     def spell_heal(self, caster: Unit, target: Unit, level: int) -> None:
+        self._wait(self.timings.get("cast", 0.0))
         spell = self.spell_defs.get("heal")
         if not spell:
             return
@@ -993,9 +1000,11 @@ class Combat:
             st.ability_states["heal"].cooldown = st.ability_states["heal"].cooldown_max
 
     def spell_buff(self, _: Unit, target: Unit, level: int) -> None:
+        self._wait(self.timings.get("cast", 0.0))
         target.attack_bonus += 2 * level
 
     def spell_fireball(self, caster: Unit, pos: Tuple[int, int], level: int) -> None:
+        self._wait(self.timings.get("cast", 0.0))
         x, y = pos
         self.animate_projectile("fireball", (caster.x, caster.y), pos)
         dmg = 30 * level
@@ -1013,12 +1022,14 @@ class Combat:
             st.ability_states["fireball"].cooldown = st.ability_states["fireball"].cooldown_max
 
     def spell_teleport(self, _: Unit, data: Tuple[Unit, Tuple[int, int]], level: int) -> None:  # noqa: ARG002
+        self._wait(self.timings.get("cast", 0.0))
         unit, (x, y) = data
         if 0 <= x < constants.COMBAT_GRID_WIDTH and 0 <= y < constants.COMBAT_GRID_HEIGHT:
             if self.grid[y][x] is None and (x, y) not in self.obstacles:
                 self.move_unit(unit, x, y)
 
     def spell_chain_lightning(self, caster: Unit, pos: Tuple[int, int], level: int) -> None:
+        self._wait(self.timings.get("cast", 0.0))
         dmg = 25 * level
         self.animate_projectile("chain_lightning", (caster.x, caster.y), pos)
         self.damage_area(caster, pos, 1, dmg, 'shock')
@@ -1027,6 +1038,7 @@ class Combat:
             st.ability_states["chain_lightning"].cooldown = st.ability_states["chain_lightning"].cooldown_max
 
     def spell_ice_wall(self, caster: Unit, pos: Tuple[int, int], level: int) -> None:  # noqa: ARG002
+        self._wait(self.timings.get("cast", 0.0))
         spell = self.spell_defs.get("ice_wall")
         if not spell:
             return
@@ -1039,18 +1051,22 @@ class Combat:
             st.ability_states["ice_wall"].cooldown = st.ability_states["ice_wall"].cooldown_max
 
     def spell_focus(self, _: Unit, target: Unit, level: int) -> None:  # noqa: ARG002
+        self._wait(self.timings.get("cast", 0.0))
         self.show_effect("focus", (target.x, target.y))
         self.add_status(target, 'focus', 1)
 
     def spell_shield_block(self, _: Unit, target: Unit, level: int) -> None:  # noqa: ARG002
+        self._wait(self.timings.get("cast", 0.0))
         self.show_effect("shield_block", (target.x, target.y))
         self.add_status(target, 'shield_block', 1)
 
     def spell_charge(self, caster: Unit, target: Unit, level: int) -> None:  # noqa: ARG002
+        self._wait(self.timings.get("cast", 0.0))
         self.show_effect("charge", (target.x, target.y))
         self.add_status(target, 'charge', 1)
 
     def spell_dragon_breath(self, caster: Unit, pos: Tuple[int, int], level: int) -> None:
+        self._wait(self.timings.get("cast", 0.0))
         dmg = 40 * level
         self.animate_projectile("dragon_breath", (caster.x, caster.y), pos)
         cx, cy = pos
@@ -1465,7 +1481,7 @@ class Combat:
                             ):
                                 path = combat_rules.blocking_squares((x0, y0), (cx, cy))
                                 path.append((cx, cy))
-                                total_time = dist * 0.3
+                                total_time = dist * self.timings.get("movement", 0.3)
                                 step_time = total_time / len(path) if path else 0.0
                                 print(f"Moving {self.selected_unit.stats.name} to {(cx, cy)}")
                                 for nx, ny in path:
@@ -1723,6 +1739,14 @@ class Combat:
         if rt:
             rt.moved_tiles_this_turn += 1
 
+    def _wait(self, duration: float) -> None:
+        """Pause for ``duration`` seconds if a display surface exists."""
+        if duration <= 0 or not hasattr(pygame, "time"):
+            return
+        if not pygame.display.get_surface():
+            return
+        pygame.time.wait(int(duration * 1000))
+
 
     def remove_unit_from_grid(self, unit: Unit) -> None:
         """Remove ``unit`` from all combat structures.
@@ -1733,6 +1757,7 @@ class Combat:
         The helper now removes the unit from the grid, the global unit
         collection, the side specific lists and the current turn order.
         """
+        self._wait(self.timings.get("death", 0.0))
         if unit.x is not None and unit.y is not None:
             self.grid[unit.y][unit.x] = None
 
@@ -1771,7 +1796,7 @@ class Combat:
 
         start_rect = self.cell_rect(*start)
         end_rect = self.cell_rect(*end)
-        duration = 10 / constants.FPS
+        duration = self.timings.get("projectile", 10 / constants.FPS)
         if hasattr(pygame, "math"):
             start_pos = pygame.math.Vector2(start_rect.center)
             end_pos = pygame.math.Vector2(end_rect.center)

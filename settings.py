@@ -97,6 +97,17 @@ ANIMATION_SPEED: float = _get_float(
     "FG_ANIMATION_SPEED", "animation_speed", 1.0
 )
 
+# Default durations for combat animations (in seconds)
+COMBAT_TIMINGS: Dict[str, float] = {
+    "movement": _get_float("FG_COMBAT_MOVE_TIME", "combat_move_time", 0.3),
+    "attack": _get_float("FG_COMBAT_ATTACK_TIME", "combat_attack_time", 0.25),
+    "cast": _get_float("FG_COMBAT_CAST_TIME", "combat_cast_time", 0.5),
+    "death": _get_float("FG_COMBAT_DEATH_TIME", "combat_death_time", 0.4),
+    "projectile": _get_float(
+        "FG_COMBAT_PROJECTILE_TIME", "combat_projectile_time", 10 / 30
+    ),
+}
+
 # Enable a reading-friendly mode for tooltips
 TOOLTIP_READ_MODE: bool = _get_bool(
     "FG_TOOLTIP_READ_MODE", "tooltip_read_mode", False
@@ -146,6 +157,7 @@ __all__ = [
     "BIOME_CHUNK_TILES",
     "BIOME_CACHE_SIZE",
     "ANIMATION_SPEED",
+    "COMBAT_TIMINGS",
     "TOOLTIP_READ_MODE",
     "SUPER_USER_MODE",
     "KEYMAP",
