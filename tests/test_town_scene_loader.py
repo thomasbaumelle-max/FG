@@ -16,6 +16,10 @@ def test_load_town_scene_loads_assets(tmp_path):
                     "built": "b1.png",
                     "upgraded": "b1_up.png",
                 },
+                "image": "icon.png",
+                "cost": {"gold": 100},
+                "prereq": ["tavern"],
+                "dwelling": {"Peasant": 1},
             }
         ],
     }
@@ -33,5 +37,9 @@ def test_load_town_scene_loads_assets(tmp_path):
 
     assert scene.size == (100, 80)
     assert [layer.id for layer in scene.layers] == ["bg"]
-    assert scene.buildings[0].states["built"] == "b1.png"
-    assert set(calls) == {"background.png", "b1.png", "b1_up.png"}
+    building = scene.buildings[0]
+    assert building.states["built"] == "b1.png"
+    assert building.cost == {"gold": 100}
+    assert building.prereq == ["tavern"]
+    assert building.dwelling == {"Peasant": 1}
+    assert set(calls) == {"background.png", "b1.png", "b1_up.png", "icon.png"}

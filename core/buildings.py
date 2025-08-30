@@ -8,8 +8,7 @@ import settings
 from core.economy import DEFAULT_MARKET_RATES
 from loaders import building_loader
 from loaders.building_loader import BuildingAsset
-from loaders.core import Context
-from loaders.town_building_loader import load_faction_town_buildings
+from loaders.core import Context, read_json
 
 if TYPE_CHECKING:  # pragma: no cover
     from core.entities import Hero, Unit
@@ -207,8 +206,35 @@ class Town(Building):
                 search_paths=[os.path.join(repo_root, "assets")],
                 asset_loader=None,
             )
-            extras = load_faction_town_buildings(ctx, faction_id)
-            for sid, info in extras.items():
+            manifest = os.path.join("towns", faction_id, "town.json")
+            try:
+                data = read_json(ctx, manifest)
+            except Exception:
+                data = {}
+            entries = data.get("buildings", []) if isinstance(data, dict) else []
+            for entry in entries:
+                sid = entry.get("id")
+                if not sid:
+                    continue
+                cost = entry.get("cost", {})
+                if isinstance(cost, dict):
+                    cost = {k: int(v) for k, v in cost.items()}
+                else:
+                    cost = {}
+                dwelling = entry.get("dwelling", {})
+                if isinstance(dwelling, dict):
+                    dwelling = {k: int(v) for k, v in dwelling.items()}
+                else:
+                    dwelling = {}
+                prereq = entry.get("prereq", entry.get("requires", []))
+                prereq = list(prereq) if isinstance(prereq, (list, tuple)) else []
+                info = {
+                    "cost": cost,
+                    "dwelling": dwelling,
+                    "requires": prereq,
+                    "image": entry.get("image", ""),
+                    "desc": entry.get("desc", ""),
+                }
                 self.structures[sid] = info
                 self.ui_order.append(sid)
 

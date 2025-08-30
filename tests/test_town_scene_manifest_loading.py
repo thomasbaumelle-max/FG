@@ -29,4 +29,5 @@ def test_load_towns_red_knights_scene():
         "layers/90_foreground.png",
         "buildings_scaled/barracks_unbuilt.png",
         "buildings_scaled/barracks_built.png",
+        "../../buildings/red_knights/barracks.png",
     }
