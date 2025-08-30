@@ -1,5 +1,5 @@
 [
-  {"id": "fireball", "image": "vfx/fireball.png"},
+  {"id": "fireball", "image": "vfx/fireball.png", "frame_time": 0.05},
   {"id": "arrow", "image": "vfx/arrow.png"},
   {"id": "chain_lightning", "image": "vfx/chain_lightning.png"},
   {"id": "ice_wall", "image": "vfx/ice_wall.png"},
