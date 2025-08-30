@@ -33,6 +33,11 @@ class TownBuilding:
     hotspot: List[Tuple[int, int]] = field(default_factory=list)
     tooltip: str = ""
     z_index: int = 0
+    cost: Dict[str, int] = field(default_factory=dict)
+    prereq: List[str] = field(default_factory=list)
+    dwelling: Dict[str, int] = field(default_factory=dict)
+    image: str = ""
+    desc: str = ""
 
 
 @dataclass
@@ -84,16 +89,35 @@ def load_town_scene(path: str, assets: Any | None = None) -> TownScene:
     buildings: List[TownBuilding] = []
     for entry in data.get("buildings", []):
         states = dict(entry.get("states", {}))
+        img_path = entry.get("image", "")
         if assets is not None:
             for img in states.values():
                 try:
                     assets.get(img)
                 except Exception:
                     pass
+            if img_path:
+                try:
+                    assets.get(img_path)
+                except Exception:
+                    pass
         pos_list = entry.get("pos", [0, 0])
         pos = (int(pos_list[0]), int(pos_list[1])) if len(pos_list) >= 2 else (0, 0)
         hs = entry.get("hotspot")
         hotspot = [tuple(p) for p in hs] if hs else []
+
+        cost = entry.get("cost", {})
+        if isinstance(cost, dict):
+            cost = {k: int(v) for k, v in cost.items()}
+        else:
+            cost = {}
+        prereq = entry.get("prereq", entry.get("requires", []))
+        prereq = list(prereq) if isinstance(prereq, (list, tuple)) else []
+        dwelling = entry.get("dwelling", {})
+        if isinstance(dwelling, dict):
+            dwelling = {k: int(v) for k, v in dwelling.items()}
+        else:
+            dwelling = {}
 
         z_index = int(entry.get("z_index", 0))
         buildings.append(
@@ -105,6 +129,11 @@ def load_town_scene(path: str, assets: Any | None = None) -> TownScene:
                 hotspot=hotspot,
                 tooltip=entry.get("tooltip", ""),
                 z_index=z_index,
+                cost=cost,
+                prereq=prereq,
+                dwelling=dwelling,
+                image=img_path,
+                desc=entry.get("desc", ""),
             )
         )
 
