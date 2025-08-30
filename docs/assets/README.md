@@ -41,6 +41,25 @@ buildings, icons).
 "melee_range_overlay.png"
 "ranged_range_overlay.png"
 
+### VFX Manifest
+
+Visual effects are described in `assets/vfx/vfx.json`. Each entry contains the
+asset identifier, the image path and animation metadata:
+
+```json
+{
+  "id": "fireball",
+  "image": "vfx/fireball.png",
+  "frame_width": 64,
+  "frame_height": 64,
+  "frame_time": 0.05
+}
+```
+
+`frame_width` and `frame_height` specify how the spritesheet is sliced while
+`frame_time` controls the duration of each frame. Static images can simply use
+their full dimensions with any reasonable `frame_time`.
+
 ## Filenames of treasure/resources on the world map
 "treasure.png"
 

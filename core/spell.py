@@ -12,22 +12,7 @@ except Exception:  # pragma: no cover - optional in tests
     pygame = None
 from loaders.asset_manager import AssetManager
 from core.fx import FXQueue, AnimatedFX, FXEvent, load_animation
-from tools.load_manifest import load_manifest
-
-_VFX_MANIFEST: Dict[str, Dict[str, Any]] | None = None
-
-
-def _get_vfx_entry(asset: str) -> Dict[str, Any] | None:
-    """Return VFX manifest entry for ``asset`` if available."""
-    global _VFX_MANIFEST
-    if _VFX_MANIFEST is None:
-        repo_root = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
-        try:
-            entries = load_manifest(repo_root, os.path.join("assets", "vfx", "vfx.json"))
-        except Exception:
-            entries = []
-        _VFX_MANIFEST = {e.get("id", ""): e for e in entries}
-    return _VFX_MANIFEST.get(asset)
+from core.vfx_manifest import get_vfx_entry
 
 Effect = Dict[str, Any]
 
@@ -124,18 +109,25 @@ def _dist(a: Tuple[int, int], b: Tuple[int, int]) -> int:
 
 
 
-def _trigger_fx(fx_queue: FXQueue | None, assets: AssetManager | None, asset: str, pos: Tuple[int, int]) -> None:
+def _trigger_fx(
+    fx_queue: FXQueue | None,
+    assets: AssetManager | None,
+    asset: str,
+    pos: Tuple[int, int],
+) -> None:
     """Render an FX animation at grid ``pos`` if possible."""
     if not fx_queue or not assets or pygame is None:
         return
-    entry = _get_vfx_entry(asset)
+    entry = get_vfx_entry(asset)
     frame_time = entry.get("frame_time", 1 / constants.FPS) if entry else 1 / constants.FPS
+    fw = entry.get("frame_width", constants.COMBAT_TILE_SIZE) if entry else constants.COMBAT_TILE_SIZE
+    fh = entry.get("frame_height", constants.COMBAT_TILE_SIZE) if entry else constants.COMBAT_TILE_SIZE
     sheet = assets.get(asset)
     fallback = getattr(assets, "_fallback", None)
     if sheet is fallback:
         frames = [sheet]
     else:
-        frames = load_animation(assets, asset, constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE)
+        frames = load_animation(assets, asset, fw, fh)
         if not frames:
             return
     px = pos[0] * constants.COMBAT_TILE_SIZE + constants.COMBAT_TILE_SIZE // 2
@@ -143,7 +135,9 @@ def _trigger_fx(fx_queue: FXQueue | None, assets: AssetManager | None, asset: st
     img_pos = pygame.math.Vector2(px, py) if hasattr(pygame, "math") else (px, py)
     duration = frame_time * len(frames)
     if len(frames) > 1:
-        fx_queue.add(AnimatedFX(pos=img_pos, duration=duration, frames=frames, frame_time=frame_time, z=200))
+        fx_queue.add(
+            AnimatedFX(pos=img_pos, duration=duration, frames=frames, frame_time=frame_time, z=200)
+        )
     else:
         fx_queue.add(FXEvent(frames[0], img_pos, duration, z=200))
 

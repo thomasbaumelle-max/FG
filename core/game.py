@@ -36,6 +36,7 @@ from loaders.boat_loader import load_boats, BoatDef
 from loaders.scenario_loader import load_scenario
 from tools.artifact_manifest import load_artifact_manifest
 from tools.load_manifest import load_manifest
+from core.vfx_manifest import set_vfx_manifest
 from events import dispatch as dispatch_event
 from core.entities import (
     Hero,
@@ -179,6 +180,7 @@ class Game:
         constants.AI_DIFFICULTY = difficulty
         repo_root = os.path.dirname(os.path.dirname(__file__))
         self.assets = AssetManager(repo_root)
+        self.vfx_manifest: Dict[str, Dict[str, Any]] = {}
 
         search_paths = [os.path.join(repo_root, "assets")]
         extra = os.environ.get("FG_ASSETS_DIR")
@@ -793,11 +795,13 @@ class Game:
         )
 
         # Load visual effects declared in assets/vfx/vfx.json
-        load_manifest(
+        vfx_entries = load_manifest(
             repo_root,
             os.path.join("assets", "vfx", "vfx.json"),
             self.assets,
         )
+        self.vfx_manifest = {e.get("id", ""): e for e in vfx_entries if e.get("id")}
+        set_vfx_manifest(self.vfx_manifest)
 
         # Load artifact icons declared in assets/artifacts.json
         self.artifacts_manifest = load_artifact_manifest(repo_root, self.assets)

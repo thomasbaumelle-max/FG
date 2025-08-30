@@ -1,13 +1,13 @@
 [
-  {"id": "fireball", "image": "vfx/fireball.png", "frame_time": 0.05},
-  {"id": "arrow", "image": "vfx/arrow.png"},
-  {"id": "chain_lightning", "image": "vfx/chain_lightning.png"},
-  {"id": "ice_wall", "image": "vfx/ice_wall.png"},
-  {"id": "heal", "image": "vfx/heal.png"},
-  {"id": "focus", "image": "vfx/focus.png"},
-  {"id": "shield_block", "image": "vfx/shield_block.png"},
-  {"id": "charge", "image": "vfx/charge.png"},
-  {"id": "dragon_breath", "image": "vfx/dragon_breath.png"},
-  {"id": "morale_fx", "image": "icons/stat_morale.png"},
-  {"id": "luck_fx", "image": "icons/stat_luck.png"}
+  {"id": "fireball", "image": "vfx/fireball.png", "frame_width": 64, "frame_height": 64, "frame_time": 0.05},
+  {"id": "arrow", "image": "vfx/arrow.png", "frame_width": 64, "frame_height": 64, "frame_time": 0.1},
+  {"id": "chain_lightning", "image": "vfx/chain_lightning.png", "frame_width": 64, "frame_height": 64, "frame_time": 0.1},
+  {"id": "ice_wall", "image": "vfx/ice_wall.png", "frame_width": 64, "frame_height": 64, "frame_time": 0.1},
+  {"id": "heal", "image": "vfx/heal.png", "frame_width": 64, "frame_height": 64, "frame_time": 0.1},
+  {"id": "focus", "image": "vfx/focus.png", "frame_width": 64, "frame_height": 64, "frame_time": 0.1},
+  {"id": "shield_block", "image": "vfx/shield_block.png", "frame_width": 64, "frame_height": 64, "frame_time": 0.1},
+  {"id": "charge", "image": "vfx/charge.png", "frame_width": 64, "frame_height": 64, "frame_time": 0.1},
+  {"id": "dragon_breath", "image": "vfx/dragon_breath.png", "frame_width": 64, "frame_height": 64, "frame_time": 0.1},
+  {"id": "morale_fx", "image": "icons/stat_morale.png", "frame_width": 64, "frame_height": 64, "frame_time": 0.1},
+  {"id": "luck_fx", "image": "icons/stat_luck.png", "frame_width": 64, "frame_height": 64, "frame_time": 0.1}
 ]
