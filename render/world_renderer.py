@@ -132,15 +132,19 @@ class WorldRenderer:
                 self._prefetch_queue.task_done()
             except queue.Empty:
                 break
-        # Queue up all biome chunks for background generation so the
-        # renderer has them ready when needed.
+        # Prefetch only the chunk around the current camera position to
+        # avoid allocating surfaces for the entire map at once. Remaining
+        # chunks will be generated lazily as they enter view.
         chunk = settings.BIOME_CHUNK_TILES
+        tile = constants.TILE_SIZE
         world = self.world
+        cx = int(self.cam_x // (chunk * tile))
+        cy = int(self.cam_y // (chunk * tile))
         chunks_x = math.ceil(world.width / chunk)
         chunks_y = math.ceil(world.height / chunk)
-        for cy in range(chunks_y):
-            for cx in range(chunks_x):
-                self._queue_prefetch(cx, cy)
+        cx = max(0, min(chunks_x - 1, cx))
+        cy = max(0, min(chunks_y - 1, cy))
+        self._queue_prefetch(cx, cy)
 
     def invalidate_biome(self, x: int, y: int) -> None:
         """Invalidate the cached chunk containing tile ``(x, y)``."""
