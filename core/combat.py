@@ -40,8 +40,6 @@ except Exception:  # pragma: no cover
     FloraLoader = PropInstance = None  # type: ignore
 from loaders.biomes import BiomeTileset
 from loaders.asset_manager import AssetManager
-# Manifest loader for VFX metadata
-from tools.load_manifest import load_manifest
 # Battlefield definitions for background images and hero placement
 from loaders.battlefield_loader import BattlefieldDef
 # en haut de combat.py
@@ -57,21 +55,7 @@ from core.spell import (
 )
 from core.faction import FactionDef
 from ui.widgets.icon_button import IconButton
-
-_VFX_MANIFEST: Dict[str, Dict[str, Any]] | None = None
-
-
-def _get_vfx_entry(asset: str) -> Dict[str, Any] | None:
-    """Return VFX manifest entry for ``asset`` if available."""
-    global _VFX_MANIFEST
-    if _VFX_MANIFEST is None:
-        repo_root = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
-        try:
-            entries = load_manifest(repo_root, os.path.join("assets", "vfx", "vfx.json"))
-        except Exception:
-            entries = []
-        _VFX_MANIFEST = {e.get("id", ""): e for e in entries}
-    return _VFX_MANIFEST.get(asset)
+from core.vfx_manifest import get_vfx_entry
 
 # Units with explicit hero/enemy image overrides. Other units default to an
 # asset whose identifier matches ``UnitStats.name``.
@@ -1798,22 +1782,31 @@ class Combat:
 
     def show_effect(self, image_key: str, pos: Tuple[int, int]) -> None:
         """Display a static or animated effect image on the grid."""
-        entry = _get_vfx_entry(image_key)
+        entry = get_vfx_entry(image_key)
         frame_time = entry.get("frame_time", 1 / constants.FPS) if entry else 1 / constants.FPS
+        fw = entry.get("frame_width", constants.COMBAT_TILE_SIZE) if entry else constants.COMBAT_TILE_SIZE
+        fh = entry.get("frame_height", constants.COMBAT_TILE_SIZE) if entry else constants.COMBAT_TILE_SIZE
         sheet = self.assets.get(image_key)
         fallback = getattr(self.assets, "_fallback", None)
         if sheet is fallback:
             frames = [sheet]
         else:
-            frames = load_animation(self.assets, image_key, constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE)
+            frames = load_animation(self.assets, image_key, fw, fh)
             if not frames:
                 return
         rect = self.cell_rect(*pos)
-        w, h = frames[0].get_size()
-        scale = min(rect.width / w, rect.height / h, 1.0)
-        if scale != 1.0 and hasattr(pygame, "transform"):
-            frames = [pygame.transform.smoothscale(f, (int(w * scale), int(h * scale))) for f in frames]
-        center = rect.center
+        if hasattr(frames[0], "get_size"):
+            w, h = frames[0].get_size()
+            scale = min(rect.width / w, rect.height / h, 1.0)
+            if scale != 1.0 and hasattr(pygame, "transform"):
+                frames = [
+                    pygame.transform.smoothscale(f, (int(w * scale), int(h * scale)))
+                    for f in frames
+                ]
+        if hasattr(rect, "center"):
+            center = rect.center
+        else:
+            center = (rect.x + rect.width // 2, rect.y + rect.height // 2)
         img_pos = pygame.math.Vector2(center) if hasattr(pygame, "math") else center
         duration = frame_time * len(frames)
         if len(frames) > 1:

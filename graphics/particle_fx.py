@@ -106,7 +106,7 @@ def load_animation(
     """Load ``key`` from ``assets`` and slice into equally sized frames."""
 
     sheet = assets.get(key)
-    if sheet is None:
+    if sheet is None or not hasattr(sheet, "get_rect"):
         return []
     rect = sheet.get_rect()
     frames: List[pygame.Surface] = []
