@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from typing import Tuple
-import random
 
 import pygame
 import constants
@@ -11,7 +10,7 @@ import theme
 from loaders import icon_loader as IconLoader
 from ui.widgets.icon_button import IconButton
 from .combat_screen import BUTTON_H, MARGIN as HUD_MARGIN
-from .entities import apply_defence
+from .combat_rules import compute_damage, UnitView
 
 
 def draw_hex(
@@ -254,6 +253,7 @@ def draw(combat, frame: int = 0) -> None:
     combat.fx_queue.update_and_draw(combat.screen)
 
     hover_target = None
+    hover_damage = None
     if (
         combat.selected_unit
         and combat.selected_action in ("melee", "ranged")
@@ -265,6 +265,36 @@ def draw(combat, frame: int = 0) -> None:
             candidate = combat.grid[cy][cx]
             if candidate and candidate.side != combat.selected_unit.side:
                 hover_target = candidate
+                attacker = combat.selected_unit
+                att_view = UnitView(
+                    attacker.side,
+                    attacker.stats,
+                    attacker.x,
+                    attacker.y,
+                    attacker.retaliations_left,
+                    attacker.facing,
+                )
+                def_view = UnitView(
+                    candidate.side,
+                    candidate.stats,
+                    candidate.x,
+                    candidate.y,
+                    candidate.retaliations_left,
+                    candidate.facing,
+                )
+                dist = combat.hex_distance(
+                    (attacker.x, attacker.y), (candidate.x, candidate.y)
+                )
+                hover_damage = compute_damage(
+                    att_view,
+                    def_view,
+                    attack_type=combat.selected_action,
+                    distance=dist,
+                    obstacles=combat.obstacles,
+                )["value"]
+
+    combat.hover_target = hover_target
+    combat.hover_damage = hover_damage
 
     # Draw units
     status_buttons: dict[str, IconButton] = {}
@@ -348,10 +378,8 @@ def draw(combat, frame: int = 0) -> None:
         text_rect = text.get_rect(center=stack_rect.center)
         combat.screen.blit(text, text_rect)
 
-        if unit is hover_target:
-            base = combat.selected_unit.damage_output(rng=random.Random(0))
-            dmg = apply_defence(base, unit, combat.selected_action)
-            losses = min(unit.count, dmg // max(1, unit.stats.max_hp))
+        if unit is hover_target and hover_damage is not None:
+            losses = min(unit.count, hover_damage // max(1, unit.stats.max_hp))
             if losses > 0:
                 dmg_font = pygame.font.SysFont(None, int(14 * combat.zoom))
                 loss_text = dmg_font.render(f"-{losses}", True, constants.RED)

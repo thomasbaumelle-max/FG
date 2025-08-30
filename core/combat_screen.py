@@ -7,6 +7,8 @@ from pathlib import Path
 import pygame
 import theme
 import settings
+import constants
+from core.combat_rules import compute_damage, UnitView
 from ui.widgets.icon_button import IconButton
 from loaders import icon_loader as IconLoader
 from loaders.i18n import load_locale
@@ -146,7 +148,41 @@ class CombatHUD:
         grid_rect = pygame.Rect(combat.offset_x, combat.offset_y, grid_w, grid_h)
 
         right, bottom = self._panel_rects(screen, grid_rect, combat)
-        mouse_pos = getattr(getattr(pygame, "mouse", None), "get_pos", lambda: (0, 0))()
+
+        hover_target = getattr(combat, "hover_target", None)
+        hover_damage = None
+        if (
+            hover_target
+            and combat.selected_unit
+            and combat.selected_action in ("melee", "ranged")
+        ):
+            attacker = combat.selected_unit
+            att_view = UnitView(
+                attacker.side,
+                attacker.stats,
+                attacker.x,
+                attacker.y,
+                attacker.retaliations_left,
+                attacker.facing,
+            )
+            def_view = UnitView(
+                hover_target.side,
+                hover_target.stats,
+                hover_target.x,
+                hover_target.y,
+                hover_target.retaliations_left,
+                hover_target.facing,
+            )
+            dist = combat.hex_distance(
+                (attacker.x, attacker.y), (hover_target.x, hover_target.y)
+            )
+            hover_damage = compute_damage(
+                att_view,
+                def_view,
+                attack_type=combat.selected_action,
+                distance=dist,
+                obstacles=combat.obstacles,
+            )["value"]
 
         # Backgrounds
         screen.fill(theme.PALETTE.get("panel", (32, 34, 40)), right)
@@ -447,5 +483,7 @@ class CombatHUD:
         self.hovered_button = hovered
         if hovered:
             self._draw_tooltip(screen, hovered.get_tooltip())
+        elif hover_target and hover_damage is not None:
+            self._draw_tooltip(screen, f"{hover_damage}")
 
         return action_buttons, auto_button
