@@ -3298,7 +3298,7 @@ class Game:
         if town is not None:
             if scene_path is None:
                 scene_path = os.path.join(
-                    self.ctx.repo_root, "assets", "towns", "towns_red_knights.json"
+                    self.ctx.repo_root, "assets", "towns", "red_knights", "town.json"
                 )
             try:  # pragma: no cover - allow running without package context
                 from loaders.town_scene_loader import load_town_scene

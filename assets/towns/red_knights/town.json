@@ -50,7 +50,20 @@
           620
         ]
       ],
-      "z_index": 50
+      "z_index": 50,
+      "cost": {
+        "wood": 5,
+        "stone": 5
+      },
+      "prereq": [
+        "tavern"
+      ],
+      "dwelling": {
+        "Swordsman": 5,
+        "Spearman": 3
+      },
+      "desc": "Train basic melee troops.",
+      "image": "../../buildings/red_knights/barracks.png"
     },
     {
       "id": "archery_range",
@@ -81,7 +94,19 @@
           620
         ]
       ],
-      "z_index": 50
+      "z_index": 50,
+      "cost": {
+        "wood": 3,
+        "stone": 2
+      },
+      "prereq": [
+        "barracks"
+      ],
+      "dwelling": {
+        "Archer": 5
+      },
+      "desc": "Recruit ranged units.",
+      "image": "../../buildings/red_knights/archery_range.png"
     },
     {
       "id": "mage_guild",
@@ -112,7 +137,21 @@
           650
         ]
       ],
-      "z_index": 50
+      "z_index": 50,
+      "cost": {
+        "wood": 15,
+        "stone": 10,
+        "crystal": 5
+      },
+      "prereq": [
+        "archery_range"
+      ],
+      "dwelling": {
+        "Mage": 3,
+        "Priest": 2
+      },
+      "desc": "Initiates of arcane and divine arts.",
+      "image": "../../buildings/red_knights/mage_guild.png"
     },
     {
       "id": "hall_of_grandmasters",
@@ -143,7 +182,20 @@
           220
         ]
       ],
-      "z_index": 50
+      "z_index": 50,
+      "cost": {
+        "wood": 30,
+        "stone": 20,
+        "crystal": 10
+      },
+      "prereq": [
+        "stables"
+      ],
+      "dwelling": {
+        "Grandmaster_Warrior": 2
+      },
+      "desc": "Grandmaster Warrrior training.",
+      "image": "../../buildings/red_knights/hall_of_grandmasters.png"
     },
     {
       "id": "cavalry_stables",
@@ -174,7 +226,19 @@
           870
         ]
       ],
-      "z_index": 50
+      "z_index": 50,
+      "cost": {
+        "wood": 15,
+        "stone": 15
+      },
+      "prereq": [
+        "mage_guild"
+      ],
+      "dwelling": {
+        "Cavalry": 4
+      },
+      "desc": "Horses and cavalry training.",
+      "image": "../../buildings/red_knights/cavalry.png"
     },
     {
       "id": "dragon_lair",
@@ -205,7 +269,20 @@
           390
         ]
       ],
-      "z_index": 50
+      "z_index": 50,
+      "cost": {
+        "wood": 20,
+        "stone": 20,
+        "crystal": 15
+      },
+      "prereq": [
+        "mage_guild"
+      ],
+      "dwelling": {
+        "Dragon": 1
+      },
+      "desc": "A perilous lair to tame mighty dragons.",
+      "image": "../../buildings/red_knights/dragon_lair.png"
     },
     {
       "id": "market",
@@ -236,7 +313,16 @@
           570
         ]
       ],
-      "z_index": 40
+      "z_index": 40,
+      "cost": {
+        "gold": 1000
+      },
+      "prereq": [
+        "tavern"
+      ],
+      "dwelling": {},
+      "desc": "Trade resources at fluctuating rates.",
+      "image": "../../buildings/market.png"
     },
     {
       "id": "tavern",
@@ -267,7 +353,14 @@
           820
         ]
       ],
-      "z_index": 40
+      "z_index": 40,
+      "cost": {
+        "gold": 500
+      },
+      "prereq": [],
+      "dwelling": {},
+      "desc": "Hire new heroes.",
+      "image": "../../buildings/tavern.png"
     },
     {
       "id": "bounty_board",
@@ -298,7 +391,16 @@
           810
         ]
       ],
-      "z_index": 35
+      "z_index": 35,
+      "cost": {
+        "gold": 1000
+      },
+      "prereq": [
+        "tavern"
+      ],
+      "dwelling": {},
+      "desc": "Pick up bounties and quests.",
+      "image": "../../buildings/market.png"
     },
     {
       "id": "magic_school",
@@ -329,7 +431,17 @@
           150
         ]
       ],
-      "z_index": 55
+      "z_index": 55,
+      "cost": {
+        "gold": 2000,
+        "crystal": 5
+      },
+      "prereq": [
+        "castle"
+      ],
+      "dwelling": {},
+      "desc": "Browse and study all known spells.",
+      "image": "../../buildings/magic_school.png"
     },
     {
       "id": "caravansary",
@@ -360,7 +472,17 @@
           840
         ]
       ],
-      "z_index": 45
+      "z_index": 45,
+      "cost": {
+        "gold": 1500,
+        "wood": 5
+      },
+      "prereq": [
+        "market"
+      ],
+      "dwelling": {},
+      "desc": "Organize caravans between towns.",
+      "image": "../../buildings/market.png"
     },
     {
       "id": "castle",
@@ -391,7 +513,18 @@
           330
         ]
       ],
-      "z_index": 58
+      "z_index": 58,
+      "cost": {
+        "gold": 5000,
+        "wood": 20,
+        "stone": 20
+      },
+      "prereq": [
+        "market"
+      ],
+      "dwelling": {},
+      "desc": "Central keep; manage all recruitments.",
+      "image": "../../buildings/castle.png"
     }
   ]
 }

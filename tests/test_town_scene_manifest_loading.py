@@ -4,7 +4,7 @@ from loaders.town_scene_loader import load_town_scene
 
 
 def test_load_towns_red_knights_scene():
-    path = Path("assets/towns/towns_red_knights.json")
+    path = Path("assets/towns/red_knights/town.json")
 
     calls = []
 
