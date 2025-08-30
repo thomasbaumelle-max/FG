@@ -72,11 +72,14 @@ class AssetManager(dict):
         # assets.
         self._load_alpha_masks()
 
-    def get(self, key: str, default: Any = None) -> Any:
+    def get(self, key: str | None, default: Any = None) -> Any:
         """Return the image for ``key`` or a placeholder if missing."""
 
         if default is None:
             default = self._fallback
+
+        if not key:
+            return default
 
         name, ext = os.path.splitext(key)
         cache_key = name if ext else key
