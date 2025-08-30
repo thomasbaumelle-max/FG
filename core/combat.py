@@ -1474,6 +1474,7 @@ class Combat:
                                         dt = clock.tick(constants.FPS) / 1000.0
                                         frame = (frame + 1) % 60
                                         elapsed += dt
+
                                 if self.get_status(self.selected_unit, 'charge'):
                                     # allow attack after move
                                     self.selected_action = None
