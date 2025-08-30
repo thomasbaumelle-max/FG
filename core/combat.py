@@ -32,14 +32,14 @@ from core import combat_ai, combat_render
 from core.entities import Unit, UnitStats, apply_defence, ARTIFACT_CATALOG, Item, Hero
 from core.status_effects import StatusEffect
 from core import combat_rules
-from core.fx import FXEvent, FXQueue
+from core.fx import AnimatedFX, FXEvent, FXQueue, load_animation
 from siege import Fortification, SiegeAction
-from graphics.spritesheet import load_sprite_sheet
 try:  # flora support optional in tests
     from loaders.flora_loader import FloraLoader, PropInstance
 except Exception:  # pragma: no cover
     FloraLoader = PropInstance = None  # type: ignore
 from loaders.biomes import BiomeTileset
+from loaders.asset_manager import AssetManager
 # Battlefield definitions for background images and hero placement
 from loaders.battlefield_loader import BattlefieldDef
 # en haut de combat.py
@@ -182,7 +182,7 @@ class Combat:
     def __init__(
         self,
         screen: pygame.Surface,
-        assets: dict[str, pygame.Surface],
+        assets: AssetManager,
         hero_units: List[Unit],
         enemy_units: List[Unit],
         hero_mana: int = 3,
@@ -353,13 +353,7 @@ class Combat:
         # Load hit effect sprite sheets (explosions, sparks)
         self._hit_effect_sprites: Dict[str, List[pygame.Surface]] = {}
         for _kind in ("explosion", "spark"):
-            sheet = os.path.join("assets", "vfx", f"{_kind}.png")
-            try:
-                frames = load_sprite_sheet(
-                    sheet, constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE
-                )
-            except Exception:
-                frames = []
+            frames = load_animation(self.assets, f"vfx/{_kind}", constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE)
             self._hit_effect_sprites[_kind] = frames
         # Reference to hero for awarding loot
         self.hero = hero
@@ -1035,7 +1029,7 @@ class Combat:
             return
         length = int(spell.data.get("wall_length", 3))
         line = [(pos[0] + i, pos[1]) for i in range(length)]
-        effects = cast_ice_wall(spell, line)
+        effects = cast_ice_wall(spell, line, self.fx_queue, self.assets)
         self._apply_effects(effects, caster)
         st = self._rt(caster)
         if st and "ice_wall" in st.ability_states:
@@ -1774,41 +1768,35 @@ class Combat:
         if not frames:
             return
         rect = self.cell_rect(*pos)
-        # Use the first frame to avoid perturbing global RNG state during tests
-        img = frames[0]
-        w, h = img.get_size()
+        w, h = frames[0].get_size()
         scale = min(rect.width / w, rect.height / h, 1.0)
         if scale != 1.0 and hasattr(pygame, "transform"):
-            img = pygame.transform.smoothscale(img, (int(w * scale), int(h * scale)))
-        center = (
-            rect.x + rect.width // 2,
-            rect.y + rect.height // 2,
-        )
-        if hasattr(pygame, "math"):
-            img_pos = pygame.math.Vector2(center)
-        else:
-            img_pos = center
-        duration = 1 / constants.FPS
-        event = FXEvent(img, img_pos, duration, z=200)
+            frames = [pygame.transform.smoothscale(f, (int(w * scale), int(h * scale))) for f in frames]
+        center = rect.center
+        img_pos = pygame.math.Vector2(center) if hasattr(pygame, "math") else center
+        frame_time = 1 / constants.FPS
+        duration = frame_time * len(frames)
+        event = AnimatedFX(pos=img_pos, duration=duration, frames=frames, frame_time=frame_time, z=200)
         self.fx_queue.add(event)
 
     def show_effect(self, image_key: str, pos: Tuple[int, int]) -> None:
-        """Display a static effect image on the grid."""
-        img = self.assets.get(image_key)
-        if img is None:
+        """Display a static or animated effect image on the grid."""
+        frames = load_animation(self.assets, image_key, constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE)
+        if not frames:
             return
         rect = self.cell_rect(*pos)
-        w, h = img.get_size()
+        w, h = frames[0].get_size()
         scale = min(rect.width / w, rect.height / h, 1.0)
         if scale != 1.0 and hasattr(pygame, "transform"):
-            img = pygame.transform.smoothscale(img, (int(w * scale), int(h * scale)))
+            frames = [pygame.transform.smoothscale(f, (int(w * scale), int(h * scale))) for f in frames]
         center = rect.center
-        if hasattr(pygame, "math"):
-            img_pos = pygame.math.Vector2(center)
+        img_pos = pygame.math.Vector2(center) if hasattr(pygame, "math") else center
+        frame_time = 1 / constants.FPS
+        duration = frame_time * len(frames)
+        if len(frames) > 1:
+            event = AnimatedFX(pos=img_pos, duration=duration, frames=frames, frame_time=frame_time, z=100)
         else:
-            img_pos = center
-        duration = 1 / constants.FPS
-        event = FXEvent(img, img_pos, duration, z=100)
+            event = FXEvent(frames[0], img_pos, duration, z=100)
         self.fx_queue.add(event)
 
     def animate_attack(self, attacker: Unit, target: Unit, attack_type: str) -> None:
