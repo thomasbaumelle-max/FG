@@ -11,7 +11,23 @@ try:
 except Exception:  # pragma: no cover - optional in tests
     pygame = None
 from loaders.asset_manager import AssetManager
-from core.fx import FXQueue, AnimatedFX, load_animation
+from core.fx import FXQueue, AnimatedFX, FXEvent, load_animation
+from tools.load_manifest import load_manifest
+
+_VFX_MANIFEST: Dict[str, Dict[str, Any]] | None = None
+
+
+def _get_vfx_entry(asset: str) -> Dict[str, Any] | None:
+    """Return VFX manifest entry for ``asset`` if available."""
+    global _VFX_MANIFEST
+    if _VFX_MANIFEST is None:
+        repo_root = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
+        try:
+            entries = load_manifest(repo_root, os.path.join("assets", "vfx", "vfx.json"))
+        except Exception:
+            entries = []
+        _VFX_MANIFEST = {e.get("id", ""): e for e in entries}
+    return _VFX_MANIFEST.get(asset)
 
 Effect = Dict[str, Any]
 
@@ -112,15 +128,24 @@ def _trigger_fx(fx_queue: FXQueue | None, assets: AssetManager | None, asset: st
     """Render an FX animation at grid ``pos`` if possible."""
     if not fx_queue or not assets or pygame is None:
         return
-    frame_time = 1 / constants.FPS
-    frames = load_animation(assets, asset, constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE)
-    if not frames:
-        return
+    entry = _get_vfx_entry(asset)
+    frame_time = entry.get("frame_time", 1 / constants.FPS) if entry else 1 / constants.FPS
+    sheet = assets.get(asset)
+    fallback = getattr(assets, "_fallback", None)
+    if sheet is fallback:
+        frames = [sheet]
+    else:
+        frames = load_animation(assets, asset, constants.COMBAT_TILE_SIZE, constants.COMBAT_TILE_SIZE)
+        if not frames:
+            return
     px = pos[0] * constants.COMBAT_TILE_SIZE + constants.COMBAT_TILE_SIZE // 2
     py = pos[1] * constants.COMBAT_TILE_SIZE + constants.COMBAT_TILE_SIZE // 2
     img_pos = pygame.math.Vector2(px, py) if hasattr(pygame, "math") else (px, py)
     duration = frame_time * len(frames)
-    fx_queue.add(AnimatedFX(pos=img_pos, duration=duration, frames=frames, frame_time=frame_time, z=200))
+    if len(frames) > 1:
+        fx_queue.add(AnimatedFX(pos=img_pos, duration=duration, frames=frames, frame_time=frame_time, z=200))
+    else:
+        fx_queue.add(FXEvent(frames[0], img_pos, duration, z=200))
 
 def cast_fireball(spell: Spell, caster_xy: Tuple[int, int], power: int, target_xy: Tuple[int, int],
                   units_at: List[Tuple[int, Tuple[int, int]]], fx_queue: FXQueue | None = None, assets: AssetManager | None = None) -> List[Effect]:
