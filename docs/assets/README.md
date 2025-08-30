@@ -3,6 +3,10 @@
 This file serves as a summary of all the assets necessary
 for the project. This folder is divided into subfolders for categories such as buildings, units, vfx, etc.
 
+Town screen art is now stored under `assets/towns/<faction>/` where each
+faction keeps a `town.json` manifest and all related images (layers,
+buildings, icons).
+
 ## File names for units images
 "swordsman.png"
 "archer.png"
