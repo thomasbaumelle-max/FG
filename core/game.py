@@ -3200,7 +3200,7 @@ class Game:
         return True
 
     def open_enemy_stack_overlay(self, units: List[Unit]) -> None:
-        """Show an overlay with basic information about ``units``."""
+        """Show an overlay with size labels and core stats for ``units``."""
         from ui.enemy_stack_overlay import EnemyStackOverlay
 
         overlay = EnemyStackOverlay(self.screen, self.assets, units)
