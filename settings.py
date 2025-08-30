@@ -84,12 +84,12 @@ SCROLL_SPEED: int = _get_int("FG_SCROLL_SPEED", "scroll_speed", 20)
 
 # Number of tiles per cached biome chunk in the world renderer
 BIOME_CHUNK_TILES: int = _get_int(
-    "FG_BIOME_CHUNK_TILES", "biome_chunk_tiles", 32
+    "FG_BIOME_CHUNK_TILES", "biome_chunk_tiles", 16
 )
 
 # Maximum number of biome chunks stored in the cache
 BIOME_CACHE_SIZE: int = _get_int(
-    "FG_BIOME_CACHE_SIZE", "biome_cache_size", 64
+    "FG_BIOME_CACHE_SIZE", "biome_cache_size", 32
 )
 
 # Animation speed multiplier for game visuals
