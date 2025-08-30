@@ -6,17 +6,17 @@
   "layers": [
     {
       "id": "sky",
-      "image": "layers/00_sky.png",
+      "image": "towns/red_knights/midground.png",
       "parallax": 0.2
     },
     {
       "id": "background",
-      "image": "layers/10_background.png",
+      "image": "towns/red_knights/background.png",
       "parallax": 0.5
     },
     {
       "id": "foreground",
-      "image": "layers/90_foreground.png",
+      "image": "towns/red_knights/foreground.png,
       "parallax": 1.2
     }
   ],
@@ -24,31 +24,13 @@
     {
       "id": "barracks",
       "layer": "foreground",
-      "pos": [
-        240,
-        600
-      ],
+      "pos": [400, 470],
       "states": {
-        "unbuilt": "buildings_scaled/barracks_unbuilt.png",
-        "built": "buildings_scaled/barracks_built.png"
+        "unbuilt": "towns/red_knights/buildings_scaled/barracks_unbuilt.png",
+        "built":   "towns/red_knights/buildings_scaled/barracks_built.png"
       },
       "hotspot": [
-        [
-          120,
-          470
-        ],
-        [
-          360,
-          470
-        ],
-        [
-          380,
-          600
-        ],
-        [
-          100,
-          620
-        ]
+        [410, 490], [600, 490], [600, 650], [410, 650]
       ],
       "z_index": 50,
       "cost": {
@@ -63,36 +45,17 @@
         "Spearman": 3
       },
       "desc": "Train basic melee troops.",
-      "image": "../../buildings/red_knights/barracks.png"
     },
     {
       "id": "archery_range",
       "layer": "foreground",
-      "pos": [
-        550,
-        590
-      ],
+      "pos": [150, 470],
       "states": {
-        "unbuilt": "buildings_scaled/archery_range_unbuilt.png",
-        "built": "buildings_scaled/archery_range_built.png"
+        "unbuilt": "towns/red_knights/buildings_scaled/archery_range_unbuilt.png",
+        "built":   "towns/red_knights/buildings_scaled/archery_range_built.png"
       },
       "hotspot": [
-        [
-          440,
-          470
-        ],
-        [
-          710,
-          470
-        ],
-        [
-          730,
-          615
-        ],
-        [
-          430,
-          620
-        ]
+        [160, 500], [350, 500], [350, 711], [160, 711]
       ],
       "z_index": 50,
       "cost": {
@@ -106,36 +69,17 @@
         "Archer": 5
       },
       "desc": "Recruit ranged units.",
-      "image": "../../buildings/red_knights/archery_range.png"
     },
     {
       "id": "mage_guild",
       "layer": "foreground",
-      "pos": [
-        920,
-        610
-      ],
+      "pos": [1380, 500],
       "states": {
-        "unbuilt": "buildings_scaled/mage_guild_unbuilt.png",
-        "built": "buildings_scaled/mage_guild_built.png"
+        "unbuilt": "towns/red_knights/buildings_scaled/mage_guild_unbuilt.png",
+        "built":   "towns/red_knights/buildings_scaled/mage_guild_built.png"
       },
       "hotspot": [
-        [
-          800,
-          470
-        ],
-        [
-          1060,
-          470
-        ],
-        [
-          1080,
-          630
-        ],
-        [
-          780,
-          650
-        ]
+        [1340, 540], [1530, 540], [1530, 700], [1380, 720]
       ],
       "z_index": 50,
       "cost": {
@@ -151,36 +95,17 @@
         "Priest": 2
       },
       "desc": "Initiates of arcane and divine arts.",
-      "image": "../../buildings/red_knights/mage_guild.png"
     },
     {
       "id": "hall_of_grandmasters",
       "layer": "foreground",
-      "pos": [
-        1070,
-        180
-      ],
+      "pos": [650, 490],
       "states": {
-        "unbuilt": "buildings_scaled/hall_of_grandmasters_unbuilt.png",
-        "built": "buildings_scaled/hall_of_grandmasters_built.png"
+        "unbuilt": "towns/red_knights/buildings_scaled/hall_of_grandmasters_unbuilt.png",
+        "built":   "towns/red_knights/buildings_scaled/hall_of_grandmasters_built.png"
       },
       "hotspot": [
-        [
-          960,
-          50
-        ],
-        [
-          1210,
-          50
-        ],
-        [
-          1230,
-          200
-        ],
-        [
-          940,
-          220
-        ]
+        [650, 500], [800, 520], [800, 660], [650, 660]
       ],
       "z_index": 50,
       "cost": {
@@ -200,31 +125,13 @@
     {
       "id": "cavalry_stables",
       "layer": "foreground",
-      "pos": [
-        660,
-        840
-      ],
+      "pos": [90, 210],
       "states": {
-        "unbuilt": "buildings_scaled/cavalry_stables_unbuilt.png",
-        "built": "buildings_scaled/cavalry_stables_built.png"
+        "unbuilt": "towns/red_knights/buildings_scaled/cavalry_stables_unbuilt.png",
+        "built":   "towns/red_knights/buildings_scaled/cavalry_stables_built.png"
       },
       "hotspot": [
-        [
-          550,
-          730
-        ],
-        [
-          800,
-          730
-        ],
-        [
-          815,
-          860
-        ],
-        [
-          540,
-          870
-        ]
+        [105, 250], [230, 250], [230, 380], [110, 380]
       ],
       "z_index": 50,
       "cost": {
@@ -238,36 +145,17 @@
         "Cavalry": 4
       },
       "desc": "Horses and cavalry training.",
-      "image": "../../buildings/red_knights/cavalry.png"
     },
     {
       "id": "dragon_lair",
       "layer": "foreground",
-      "pos": [
-        700,
-        330
-      ],
+      "pos": [1540, 40],
       "states": {
-        "unbuilt": "buildings_scaled/dragon_lair_unbuilt.png",
-        "built": "buildings_scaled/dragon_lair_built.png"
+        "unbuilt": "towns/red_knights/buildings_scaled/dragon_lair_unbuilt.png",
+        "built":   "towns/red_knights/buildings_scaled/dragon_lair_built.png"
       },
       "hotspot": [
-        [
-          570,
-          50
-        ],
-        [
-          880,
-          50
-        ],
-        [
-          890,
-          370
-        ],
-        [
-          550,
-          390
-        ]
+        [1530, 80], [1770, 80], [1770, 400], [1530, 400]
       ],
       "z_index": 50,
       "cost": {
@@ -282,36 +170,17 @@
         "Dragon": 1
       },
       "desc": "A perilous lair to tame mighty dragons.",
-      "image": "../../buildings/red_knights/dragon_lair.png"
     },
     {
       "id": "market",
       "layer": "foreground",
-      "pos": [
-        1190,
-        550
-      ],
+      "pos": [830, 550],
       "states": {
-        "unbuilt": "buildings_scaled/market_unbuilt.png",
-        "built": "buildings_scaled/market_built.png"
+        "unbuilt": "towns/red_knights/buildings_scaled/market_unbuilt.png",
+        "built":   "towns/red_knights/buildings_scaled/market_built.png"
       },
       "hotspot": [
-        [
-          1130,
-          470
-        ],
-        [
-          1310,
-          470
-        ],
-        [
-          1330,
-          560
-        ],
-        [
-          1130,
-          570
-        ]
+        [850, 590], [1020, 600], [1020, 750], [850, 750]
       ],
       "z_index": 40,
       "cost": {
@@ -322,36 +191,17 @@
       ],
       "dwelling": {},
       "desc": "Trade resources at fluctuating rates.",
-      "image": "../../buildings/market.png"
     },
     {
       "id": "tavern",
       "layer": "foreground",
-      "pos": [
-        190,
-        800
-      ],
+      "pos": [1090, 550],
       "states": {
-        "unbuilt": "buildings_scaled/tavern_unbuilt.png",
-        "built": "buildings_scaled/tavern_built.png"
+        "unbuilt": "towns/red_knights/buildings_scaled/tavern_unbuilt.png",
+        "built":   "towns/red_knights/buildings_scaled/tavern_built.png"
       },
       "hotspot": [
-        [
-          120,
-          730
-        ],
-        [
-          270,
-          730
-        ],
-        [
-          290,
-          815
-        ],
-        [
-          100,
-          820
-        ]
+        [1095, 575], [1245, 575], [1250, 700], [1100, 725]
       ],
       "z_index": 40,
       "cost": {
@@ -360,36 +210,17 @@
       "prereq": [],
       "dwelling": {},
       "desc": "Hire new heroes.",
-      "image": "../../buildings/tavern.png"
     },
     {
       "id": "bounty_board",
       "layer": "foreground",
-      "pos": [
-        410,
-        790
-      ],
+      "pos": [1170, 360],
       "states": {
-        "unbuilt": "buildings_scaled/bounty_board_unbuilt.png",
-        "built": "buildings_scaled/bounty_board_built.png"
+        "unbuilt": "towns/red_knights/buildings_scaled/bounty_board_unbuilt.png",
+        "built":   "towns/red_knights/buildings_scaled/bounty_board_built.png"
       },
       "hotspot": [
-        [
-          350,
-          730
-        ],
-        [
-          470,
-          730
-        ],
-        [
-          490,
-          800
-        ],
-        [
-          340,
-          810
-        ]
+        [1200, 380], [1320, 380], [1300, 525], [1200, 523]
       ],
       "z_index": 35,
       "cost": {
@@ -400,36 +231,17 @@
       ],
       "dwelling": {},
       "desc": "Pick up bounties and quests.",
-      "image": "../../buildings/market.png"
     },
     {
       "id": "magic_school",
       "layer": "foreground",
-      "pos": [
-        1370,
-        130
-      ],
+      "pos": [1500, 500],
       "states": {
-        "unbuilt": "buildings_scaled/magic_school_unbuilt.png",
-        "built": "buildings_scaled/magic_school_built.png"
+        "unbuilt": "towns/red_knights/buildings_scaled/magic_school_unbuilt.png",
+        "built":   "towns/red_knights/buildings_scaled/magic_school_built.png"
       },
       "hotspot": [
-        [
-          1290,
-          50
-        ],
-        [
-          1450,
-          50
-        ],
-        [
-          1470,
-          140
-        ],
-        [
-          1280,
-          150
-        ]
+        [1550, 550], [1700, 550], [1700, 700], [1550, 700]
       ],
       "z_index": 55,
       "cost": {
@@ -441,36 +253,17 @@
       ],
       "dwelling": {},
       "desc": "Browse and study all known spells.",
-      "image": "../../buildings/magic_school.png"
     },
     {
       "id": "caravansary",
       "layer": "foreground",
-      "pos": [
-        945,
-        810
-      ],
+      "pos": [420, 230],
       "states": {
-        "unbuilt": "buildings_scaled/caravansary_unbuilt.png",
-        "built": "buildings_scaled/caravansary_built.png"
+        "unbuilt": "towns/red_knights/buildings_scaled/caravansary_unbuilt.png",
+        "built":   "towns/red_knights/buildings_scaled/caravansary_built.png"
       },
       "hotspot": [
-        [
-          875,
-          730
-        ],
-        [
-          1045,
-          730
-        ],
-        [
-          1065,
-          830
-        ],
-        [
-          865,
-          840
-        ]
+        [450, 250], [660, 260], [660, 380], [450, 380]
       ],
       "z_index": 45,
       "cost": {
@@ -482,36 +275,17 @@
       ],
       "dwelling": {},
       "desc": "Organize caravans between towns.",
-      "image": "../../buildings/market.png"
     },
     {
       "id": "castle",
       "layer": "foreground",
-      "pos": [
-        300,
-        250
-      ],
+      "pos": [830, 150],
       "states": {
-        "unbuilt": "buildings_scaled/castle_unbuilt.png",
-        "built": "buildings_scaled/castle_built.png"
+        "unbuilt": "towns/red_knights/buildings_scaled/castle_unbuilt.png",
+        "built":   "towns/red_knights/buildings_scaled/castle_built.png"
       },
       "hotspot": [
-        [
-          120,
-          50
-        ],
-        [
-          480,
-          50
-        ],
-        [
-          500,
-          310
-        ],
-        [
-          100,
-          330
-        ]
+        [880, 220], [1180, 220], [1180, 520], [880, 530]
       ],
       "z_index": 58,
       "cost": {
@@ -524,7 +298,6 @@
       ],
       "dwelling": {},
       "desc": "Central keep; manage all recruitments.",
-      "image": "../../buildings/castle.png"
     }
   ]
 }
