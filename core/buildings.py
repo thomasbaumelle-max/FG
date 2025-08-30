@@ -232,7 +232,6 @@ class Town(Building):
                     "cost": cost,
                     "dwelling": dwelling,
                     "requires": prereq,
-                    "image": entry.get("image", ""),
                     "desc": entry.get("desc", ""),
                 }
                 self.structures[sid] = info

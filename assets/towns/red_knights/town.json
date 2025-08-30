@@ -44,7 +44,7 @@
         "Swordsman": 5,
         "Spearman": 3
       },
-      "desc": "Train basic melee troops.",
+      "desc": "Train basic melee troops."
     },
     {
       "id": "archery_range",
@@ -68,7 +68,7 @@
       "dwelling": {
         "Archer": 5
       },
-      "desc": "Recruit ranged units.",
+      "desc": "Recruit ranged units."
     },
     {
       "id": "mage_guild",
@@ -94,7 +94,7 @@
         "Mage": 3,
         "Priest": 2
       },
-      "desc": "Initiates of arcane and divine arts.",
+      "desc": "Initiates of arcane and divine arts."
     },
     {
       "id": "hall_of_grandmasters",
@@ -119,8 +119,7 @@
       "dwelling": {
         "Grandmaster_Warrior": 2
       },
-      "desc": "Grandmaster Warrrior training.",
-      "image": "../../buildings/red_knights/hall_of_grandmasters.png"
+      "desc": "Grandmaster Warrrior training."
     },
     {
       "id": "cavalry_stables",
@@ -144,7 +143,7 @@
       "dwelling": {
         "Cavalry": 4
       },
-      "desc": "Horses and cavalry training.",
+      "desc": "Horses and cavalry training."
     },
     {
       "id": "dragon_lair",
@@ -169,19 +168,19 @@
       "dwelling": {
         "Dragon": 1
       },
-      "desc": "A perilous lair to tame mighty dragons.",
+      "desc": "A perilous lair to tame mighty dragons."
     },
     {
       "id": "market",
       "layer": "foreground",
-      "pos": [830, 550],
+      "pos": [830, 570],
       "states": {
         "unbuilt": "towns/red_knights/buildings_scaled/market_unbuilt.png",
         "built":   "towns/red_knights/buildings_scaled/market_built.png"
       },
-      "hotspot": [
-        [850, 590], [1020, 600], [1020, 750], [850, 750]
-      ],
+        "hotspot": [
+          [850, 610], [1020, 610], [1020, 770], [850, 770]
+        ],
       "z_index": 40,
       "cost": {
         "gold": 1000
@@ -190,37 +189,37 @@
         "tavern"
       ],
       "dwelling": {},
-      "desc": "Trade resources at fluctuating rates.",
+      "desc": "Trade resources at fluctuating rates."
     },
     {
       "id": "tavern",
       "layer": "foreground",
-      "pos": [1090, 550],
+      "pos": [1090, 585],
       "states": {
         "unbuilt": "towns/red_knights/buildings_scaled/tavern_unbuilt.png",
         "built":   "towns/red_knights/buildings_scaled/tavern_built.png"
       },
-      "hotspot": [
-        [1095, 575], [1245, 575], [1250, 700], [1100, 725]
-      ],
+        "hotspot": [
+          [1095, 610], [1245, 610], [1250, 735], [1100, 760]
+        ],
       "z_index": 40,
       "cost": {
         "gold": 500
       },
       "prereq": [],
       "dwelling": {},
-      "desc": "Hire new heroes.",
+      "desc": "Hire new heroes."
     },
     {
       "id": "bounty_board",
       "layer": "foreground",
-      "pos": [1170, 360],
+      "pos": [1200, 360],
       "states": {
         "unbuilt": "towns/red_knights/buildings_scaled/bounty_board_unbuilt.png",
         "built":   "towns/red_knights/buildings_scaled/bounty_board_built.png"
       },
       "hotspot": [
-        [1200, 380], [1320, 380], [1300, 525], [1200, 523]
+        [1230, 380], [1350, 380], [1350, 460], [1230, 460]
       ],
       "z_index": 35,
       "cost": {
@@ -230,19 +229,19 @@
         "tavern"
       ],
       "dwelling": {},
-      "desc": "Pick up bounties and quests.",
+      "desc": "Pick up bounties and quests."
     },
     {
       "id": "magic_school",
       "layer": "foreground",
-      "pos": [1500, 500],
+      "pos": [1530, 500],
       "states": {
         "unbuilt": "towns/red_knights/buildings_scaled/magic_school_unbuilt.png",
         "built":   "towns/red_knights/buildings_scaled/magic_school_built.png"
       },
-      "hotspot": [
-        [1550, 550], [1700, 550], [1700, 700], [1550, 700]
-      ],
+        "hotspot": [
+          [1580, 550], [1730, 550], [1730, 700], [1580, 700]
+        ],
       "z_index": 55,
       "cost": {
         "gold": 2000,
@@ -252,7 +251,7 @@
         "castle"
       ],
       "dwelling": {},
-      "desc": "Browse and study all known spells.",
+      "desc": "Browse and study all known spells."
     },
     {
       "id": "caravansary",
@@ -274,7 +273,7 @@
         "market"
       ],
       "dwelling": {},
-      "desc": "Organize caravans between towns.",
+      "desc": "Organize caravans between towns."
     },
     {
       "id": "castle",
@@ -297,7 +296,7 @@
         "market"
       ],
       "dwelling": {},
-      "desc": "Central keep; manage all recruitments.",
+      "desc": "Central keep; manage all recruitments."
     }
   ]
 }

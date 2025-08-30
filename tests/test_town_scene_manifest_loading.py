@@ -24,10 +24,9 @@ def test_load_towns_red_knights_scene():
     ids = {b.id for b in scene.buildings}
     assert {"barracks", "archery_range", "mage_guild"} <= ids
     assert set(calls) >= {
-        "layers/00_sky.png",
-        "layers/10_background.png",
-        "layers/90_foreground.png",
-        "buildings_scaled/barracks_unbuilt.png",
-        "buildings_scaled/barracks_built.png",
-        "../../buildings/red_knights/barracks.png",
+        "towns/red_knights/midground.png",
+        "towns/red_knights/background.png",
+        "towns/red_knights/foreground.png",
+        "towns/red_knights/buildings_scaled/barracks_unbuilt.png",
+        "towns/red_knights/buildings_scaled/barracks_built.png",
     }
