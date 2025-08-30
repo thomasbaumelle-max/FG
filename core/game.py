@@ -1492,8 +1492,6 @@ class Game:
                         # Open hero inventory and skill tree
                         if self.show_inventory():
                             self.quit_to_menu = True
-                    elif event.key == pygame.K_u:
-                        self.open_town()
                     elif event.key == pygame.K_1:
                         self.hero.choose_skill('strength')
                     elif event.key == pygame.K_2:
@@ -1916,7 +1914,8 @@ class Game:
             econ_b = getattr(self, "_econ_building_map", {}).get(tile.building)
             if self._capture_tile(nx, ny, tile, self.hero, 0, econ_state, econ_b):
                 self._publish_resources()
-            self.open_town(tile.building, actor, town_pos=(nx, ny))
+            if self.path_target == (nx, ny):
+                self.open_town(tile.building, actor, town_pos=(nx, ny))
             return
         if not tile.is_passable():
             return
@@ -2023,7 +2022,8 @@ class Game:
             if self._capture_tile(self.hero.x, self.hero.y, tile, self.hero, 0, econ_state, econ_b):
                 self._publish_resources()
             if isinstance(tile.building, Town):
-                self.open_town(tile.building, actor, town_pos=(nx, ny))
+                if self.path_target == (nx, ny):
+                    self.open_town(tile.building, actor, town_pos=(nx, ny))
             else:
                 choice = self.prompt_building_interaction(tile.building)
                 if choice == "take" and tile.building.owner != 0:
@@ -2161,7 +2161,8 @@ class Game:
                     econ_b = getattr(self, "_econ_building_map", {}).get(town)
                     if self._capture_tile(nx, ny, tile, self.hero, 0, econ_state, econ_b):
                         self._publish_resources()
-                self.open_town(town, town_pos=(nx, ny))
+                if self.path_target == (nx, ny):
+                    self.open_town(town, town_pos=(nx, ny))
             else:
                 choice = self.prompt_building_interaction(tile.building)
                 if choice == "take" and tile.building.owner != 0:

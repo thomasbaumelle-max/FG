@@ -138,7 +138,7 @@ def test_handle_world_click_on_building_sets_path(monkeypatch, pygame_stub):
     assert game.move_queue == []
 
 
-def test_try_move_into_town_interacts_and_opens(monkeypatch, pygame_stub):
+def test_try_move_into_town_interacts_without_opening(monkeypatch, pygame_stub):
     game, town, Game, constants = setup_game_with_town(monkeypatch, pygame_stub)
     called = {}
     orig_interact = town.interact
@@ -151,7 +151,7 @@ def test_try_move_into_town_interacts_and_opens(monkeypatch, pygame_stub):
     monkeypatch.setattr(Game, "prompt_building_interaction", lambda self, b: called.setdefault('prompt', True))
     game.try_move_hero(1, 0)
     assert called.get('interact') is True
-    assert called.get('open') is True
+    assert 'open' not in called
     assert 'prompt' not in called
     assert game.hero.ap == 1
     assert (game.hero.x, game.hero.y) == (0, 0)
@@ -220,7 +220,7 @@ def test_try_move_into_owned_town_skips_interact(monkeypatch, pygame_stub):
     monkeypatch.setattr(Game, "prompt_building_interaction", lambda self, b: called.setdefault('prompt', True))
     game.try_move_hero(1, 0)
     assert 'interact' not in called
-    assert called.get('open') is True
+    assert 'open' not in called
     assert 'prompt' not in called
     assert game.hero.ap == 1
     assert (game.hero.x, game.hero.y) == (0, 0)
@@ -244,5 +244,5 @@ def test_try_move_into_owned_town_with_garrison_no_combat(monkeypatch, pygame_st
     )
     game.try_move_hero(1, 0)
     assert 'combat' not in called
-    assert called.get('open') is True
+    assert 'open' not in called
 
