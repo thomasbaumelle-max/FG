@@ -42,4 +42,5 @@ def test_load_town_scene_loads_assets(tmp_path):
     assert building.cost == {"gold": 100}
     assert building.prereq == ["tavern"]
     assert building.dwelling == {"Peasant": 1}
-    assert set(calls) == {"background.png", "b1.png", "b1_up.png", "icon.png"}
+    assert building.image == "icon.png"
+    assert set(calls) == {"background.png", "b1.png", "b1_up.png"}

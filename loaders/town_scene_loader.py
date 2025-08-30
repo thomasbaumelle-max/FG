@@ -36,7 +36,7 @@ class TownBuilding:
     cost: Dict[str, int] = field(default_factory=dict)
     prereq: List[str] = field(default_factory=list)
     dwelling: Dict[str, int] = field(default_factory=dict)
-    image: str = ""
+    image: str | None = None
     desc: str = ""
 
 
@@ -89,16 +89,11 @@ def load_town_scene(path: str, assets: Any | None = None) -> TownScene:
     buildings: List[TownBuilding] = []
     for entry in data.get("buildings", []):
         states = dict(entry.get("states", {}))
-        img_path = entry.get("image", "")
+        img_path = entry.get("image")
         if assets is not None:
             for img in states.values():
                 try:
                     assets.get(img)
-                except Exception:
-                    pass
-            if img_path:
-                try:
-                    assets.get(img_path)
                 except Exception:
                     pass
         pos_list = entry.get("pos", [0, 0])
