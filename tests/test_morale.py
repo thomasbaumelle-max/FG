@@ -26,9 +26,10 @@ def test_positive_morale_grants_extra_turn(monkeypatch, simple_combat):
     combat.check_morale(hero_unit)
     assert hero_unit.extra_turns == 1
     assert combat.log[-1] == "Swordsman is inspired and gains an extra action!"
-    assert len(combat.fx_queue._events) == before + 1
+    assert len(combat.fx_queue._events) == before
     hero_unit.acted = True
     combat.advance_turn()
+    assert len(combat.fx_queue._events) == before + 1
     assert hero_unit.extra_turns == 0
     assert not hero_unit.acted
     assert combat.turn_order[combat.current_index] is hero_unit
