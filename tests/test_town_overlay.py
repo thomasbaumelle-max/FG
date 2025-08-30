@@ -41,7 +41,7 @@ def test_overlay_lists_all_towns_and_uses_palette(monkeypatch, pygame_stub):
 
 
 @pytest.mark.serial
-def test_click_opens_town_screen(monkeypatch, pygame_stub):
+def test_click_opens_town_scene(monkeypatch, pygame_stub):
     event_queue = [
         [],
         [types.SimpleNamespace(type=1, button=1, pos=(0, 0))],
@@ -77,14 +77,28 @@ def test_click_opens_town_screen(monkeypatch, pygame_stub):
 
     opened = {}
 
-    class DummyTownScreen:
-        def __init__(self, screen, game_obj, town, army=None, clock=None, town_pos=None):
+    class DummySceneScreen:
+        def __init__(
+            self, screen, scene, assets, clock, building_states=None, game=None, town=None
+        ):
             opened["town"] = town
-        def run(self):
+
+        def run(self, debug=False):
             pass
 
     monkeypatch.setitem(
-        sys.modules, "ui.town_screen", types.SimpleNamespace(TownScreen=DummyTownScreen)
+        sys.modules,
+        "ui.town_scene_screen",
+        types.SimpleNamespace(TownSceneScreen=DummySceneScreen),
+    )
+    monkeypatch.setitem(
+        sys.modules,
+        "loaders.town_scene_loader",
+        types.SimpleNamespace(
+            load_town_scene=lambda path, assets: types.SimpleNamespace(
+                layers=[], buildings=[]
+            )
+        ),
     )
 
     game.open_town()

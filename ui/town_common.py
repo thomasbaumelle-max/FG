@@ -16,6 +16,10 @@ COLOR_SLOT_BG = (36, 38, 44)
 COLOR_SLOT_BD = (80, 80, 90)
 COLOR_TEXT = (240, 240, 240)
 COLOR_ACCENT = (210, 180, 80)
+COLOR_PANEL = (28, 30, 36)
+
+# Shared font name used across town interfaces
+FONT_NAME = None
 
 
 def draw_label(
@@ -110,6 +114,8 @@ __all__ = [
     "COLOR_SLOT_BD",
     "COLOR_TEXT",
     "COLOR_ACCENT",
+    "COLOR_PANEL",
+    "FONT_NAME",
     "draw_label",
     "draw_army_row",
     "draw_slot_highlight",

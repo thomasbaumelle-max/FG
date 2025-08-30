@@ -3288,39 +3288,25 @@ class Game:
         town_pos: Optional[Tuple[int, int]] = None,
         scene_path: Optional[str] = None,
     ) -> None:
-        """Open a town management screen or selection overlay.
+        """Open a town scene or selection overlay.
 
-        By default a scenic view defined by the ``towns_red_knights.json``
-        manifest is shown before the regular town interface.  Holding
-        ``Ctrl`` while triggering this method skips the scenic view and opens
-        the traditional interface directly.  Supplying ``town`` keeps the
-        previous behaviour of opening the full :class:`TownScreen`.  When no
-        ``town`` is given a :class:`TownOverlay` listing all player-owned towns
-        is shown.
+        When ``town`` is provided a scenic :class:`TownSceneScreen` is shown.
+        Without a ``town`` the player is presented with a ``TownOverlay`` to
+        choose one.
         """
 
-        if scene_path is None and town is not None:
-            fast_tests = os.environ.get("FG_FAST_TESTS") == "1"
-            mods = getattr(getattr(pygame, "key", None), "get_mods", lambda: 0)()
-            # ``pygame.key.get_mods`` is used here instead of relying on an
-            # event object so that modifier keys like Ctrl are honoured when the
-            # method is called from UI widgets.
-            if not fast_tests and not (mods & getattr(pygame, "KMOD_CTRL", 0)):
+        if town is not None:
+            if scene_path is None:
                 scene_path = os.path.join(
-                    self.ctx.repo_root,
-                    "assets",
-                    "towns",
-                    "towns_red_knights.json",
+                    self.ctx.repo_root, "assets", "towns", "towns_red_knights.json"
                 )
-
-        scene = None
-        if scene_path:
             try:  # pragma: no cover - allow running without package context
                 from loaders.town_scene_loader import load_town_scene
                 from ui.town_scene_screen import TownSceneScreen
-                scene = load_town_scene(scene_path, self.assets)
-                states = {}
-                if town is not None and scene is not None:
+
+                scene = load_town_scene(scene_path, self.assets) if scene_path else None
+                states: Dict[str, str] = {}
+                if scene is not None:
                     try:
                         states = {
                             b.id: (
@@ -3330,45 +3316,17 @@ class Game:
                         }
                     except Exception:
                         states = {}
+                    if getattr(town, "scene", None) is None:
+                        town.scene = scene
                 scn_screen = TownSceneScreen(
-                    self.screen,
-                    scene,
-                    self.assets,
-                    self.clock,
-                    states,
-                    self,
-                    town,
+                    self.screen, scene, self.assets, self.clock, states, self, town
                 )
                 run = getattr(scn_screen, "run", None)
                 if callable(run):
                     debug_scene = os.environ.get("FG_TOWN_DEBUG") == "1"
-                    handled = run(debug=debug_scene)
-                    if handled is not False:
-                        return
+                    run(debug=debug_scene)
             except Exception as exc:
                 logger.warning("Failed to load town scene %s: %s", scene_path, exc)
-                scene = None
-            if town is None:
-                return
-            if scene is not None and getattr(town, "scene", None) is None:
-                town.scene = scene
-
-        if town is not None:
-            if army is None and town_pos is not None and getattr(self, "hero", None):
-                tx, ty = town_pos
-                if (
-                    abs(self.hero.x - tx) <= 1
-                    and abs(self.hero.y - ty) <= 1
-                ):
-                    army = self.hero
-            try:  # pragma: no cover - allow running without package context
-                from .ui.town_screen import TownScreen
-            except ImportError:  # pragma: no cover
-                from ui.town_screen import TownScreen
-            screen = TownScreen(self.screen, self, town, army, None, town_pos)
-            run = getattr(screen, "run", None)
-            if callable(run):
-                run()
             return
 
         try:  # pragma: no cover - allow running without package context
@@ -3399,38 +3357,15 @@ class Game:
                 if result is True:
                     running = False
                 elif result:
-                    try:  # pragma: no cover - allow running without package context
-                        from .ui.town_screen import TownScreen
-                    except ImportError:  # pragma: no cover
-                        from ui.town_screen import TownScreen
-
-                    # ``TownOverlay`` may return either a ``Town`` instance or a
-                    # ``(Town, (x, y))`` tuple containing the town and its
-                    # coordinates.  Extract both pieces accordingly.
-                    town_obj: Town
-                    town_pos: Optional[Tuple[int, int]] = None
-                    army: Optional[Army] = None
-
-                    if isinstance(result, tuple) and len(result) == 2 and isinstance(result[0], Town):
-                        town_obj, town_pos = result
+                    if (
+                        isinstance(result, tuple)
+                        and len(result) == 2
+                        and isinstance(result[0], Town)
+                    ):
+                        town_obj = result[0]
                     else:
                         town_obj = result
-                        finder = getattr(getattr(self, "world", None), "find_building_pos", None)
-                        if callable(finder):
-                            town_pos = finder(town_obj)
-
-                    if (
-                        town_pos is not None
-                        and getattr(self, "hero", None)
-                    ):
-                        tx, ty = town_pos
-                        if abs(self.hero.x - tx) <= 1 and abs(self.hero.y - ty) <= 1:
-                            army = self.hero
-
-                    screen = TownScreen(self.screen, self, town_obj, army, None, town_pos)
-                    run = getattr(screen, "run", None)
-                    if callable(run):
-                        run()
+                    self.open_town(town_obj)
                     running = False
             overlay.draw()
             pygame.display.flip()
