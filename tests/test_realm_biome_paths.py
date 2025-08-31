@@ -25,7 +25,7 @@ def test_manifest_relative_paths_resolved(tmp_path):
             "id": "test_biome",
             "type": "forest",
             "description": "",
-            "path": "biomes/test_biome",
+            "path": "./biomes/test_biome",
             "variants": 1,
             "colour": [0, 0, 0],
             "flora": [],

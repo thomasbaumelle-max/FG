@@ -92,7 +92,7 @@ def test_loaded_biome_can_appear(tmp_path):
             "id": "test_biome",
             "type": "forest",
             "description": "",
-            "path": "realms/testrealm/biomes/test_biome",
+            "path": "./biomes/test_biome",
             "variants": 1,
             "colour": [0, 0, 0],
             "flora": [],

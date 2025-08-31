@@ -87,27 +87,6 @@ class BiomeCatalog:
                         rel = os.path.relpath(fn, base_abs).replace(os.sep, "/")
                         files.append(rel)
 
-        def _asset_exists(rel: str) -> bool:
-            """Return ``True`` if an image for ``rel`` exists in search paths."""
-
-            for base in ctx.search_paths:
-                base_abs = (
-                    base if os.path.isabs(base) else os.path.join(ctx.repo_root, base)
-                )
-                rel_path = rel
-                if os.path.isdir(os.path.join(base_abs, rel_path)):
-                    rel_path = os.path.join(rel_path, os.path.basename(rel_path))
-
-                png_file = os.path.join(base_abs, f"{rel_path}.png")
-                zero_file = os.path.join(base_abs, f"{rel_path}_0.png")
-                if os.path.isfile(png_file) or os.path.isfile(zero_file):
-                    return True
-
-                pattern = os.path.join(base_abs, f"{rel_path}_*.png")
-                if glob.glob(pattern):
-                    return True
-            return False
-
         biomes: Dict[str, Biome] = {}
         for path in files:
             data = read_json(ctx, path)
@@ -117,12 +96,31 @@ class BiomeCatalog:
                 colour = entry.get("colour", [0, 0, 0])
                 entry_path = entry.get("path", "")
                 if entry_path and not os.path.isabs(entry_path):
-                    candidate = os.path.normpath(os.path.join(base_dir, entry_path))
-                    if _asset_exists(candidate):
-                        entry_path = candidate
-                    else:
-                        entry_path = os.path.normpath(entry_path)
+                    entry_path = os.path.normpath(os.path.join(base_dir, entry_path))
                 entry_path = os.path.normpath(entry_path).replace(os.sep, "/")
+                if entry_path:
+                    img_rel = (
+                        entry_path if entry_path.endswith(".png") else f"{entry_path}.png"
+                    )
+                    found = False
+                    for base in ctx.search_paths:
+                        base_abs = (
+                            base if os.path.isabs(base) else os.path.join(ctx.repo_root, base)
+                        )
+                        if os.path.isfile(os.path.join(base_abs, img_rel)):
+                            found = True
+                            break
+                        if os.path.isfile(os.path.join(base_abs, f"{entry_path}_0.png")):
+                            found = True
+                            break
+                    if not found:
+                        msg = (
+                            f"Biome {entry['id']} missing image '{img_rel}' "
+                            f"(search_paths={list(ctx.search_paths)})"
+                        )
+                        logger.error(msg)
+                        if ctx.asset_loader:
+                            raise FileNotFoundError(msg)
                 biome = Biome(
                     id=entry["id"],
                     type=entry.get("type", ""),
