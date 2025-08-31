@@ -274,6 +274,7 @@ def draw(combat, frame: int = 0) -> None:
                     attacker.retaliations_left,
                     attacker.facing,
                 )
+                att_view.count = attacker.count
                 def_view = UnitView(
                     candidate.side,
                     candidate.stats,
@@ -282,6 +283,7 @@ def draw(combat, frame: int = 0) -> None:
                     candidate.retaliations_left,
                     candidate.facing,
                 )
+                def_view.count = candidate.count
                 dist = combat.hex_distance(
                     (attacker.x, attacker.y), (candidate.x, candidate.y)
                 )
