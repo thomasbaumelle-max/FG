@@ -246,10 +246,12 @@ def build_biome_base_images() -> Dict[str, List[str]]:
     for biome in BiomeCatalog._biomes.values():
         variant_count = max(1, int(getattr(biome, "variants", 1)))
         base_path = biome.path
-        files = [
-            f"{base_path}_{i}.png" if not base_path.endswith(".png") else base_path
-            for i in range(variant_count)
-        ]
+        if base_path.endswith(".png"):
+            files = [base_path]
+        elif variant_count == 1:
+            files = [f"{base_path}.png"]
+        else:
+            files = [f"{base_path}_{i}.png" for i in range(variant_count)]
         images[biome.id] = files
 
     # Load legacy terrain tiles for backward compatibility

@@ -48,5 +48,5 @@ def expand_variants(entry: Dict[str, Any], key: str = "path", variants: str = "v
         return []
     var = int(entry.get(variants, 0))
     if var <= 1:
-        return [base if base.endswith(".png") else f"{base}/base.png"]
+        return [base if base.endswith(".png") else f"{base}.png"]
     return [f"{base}_{i}.png" for i in range(var)]

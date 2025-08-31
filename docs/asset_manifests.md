@@ -7,7 +7,7 @@ with at least the following fields:
 * `id` – unique identifier used in code.
 * `path` – base path to the asset image relative to the `assets/` directory.
 * `variants` – optional number of variants. ``0`` or ``1`` resolves to
-  ``<path>/base.png`` while higher counts use ``_<n>.png`` suffixes.
+  ``<path>.png`` while higher counts use ``_<n>.png`` suffixes.
 * additional rule-specific fields depending on the category (e.g. `income`
   for resources).
 

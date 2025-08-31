@@ -162,22 +162,33 @@ def load_tileset(ctx: Context, biome: Biome, tile_size: Optional[int] = None) ->
         tile_size = constants.COMBAT_TILE_SIZE
     base = biome.path[:-4] if biome.path.endswith(".png") else biome.path
     matches: List[str] = []
-    seen: set[str] = set()
-    for root in ctx.search_paths:
-        root_abs = root if os.path.isabs(root) else os.path.join(ctx.repo_root, root)
-        pattern = os.path.join(root_abs, f"{base}_*.png")
-        for fn in sorted(glob.glob(pattern)):
-            rel = os.path.relpath(fn, root_abs).replace(os.sep, "/")
-            if rel not in seen:
-                matches.append(rel)
-                seen.add(rel)
-    if not matches:
+    if biome.variants == 1:
         for root in ctx.search_paths:
             root_abs = root if os.path.isabs(root) else os.path.join(ctx.repo_root, root)
-            candidate = os.path.join(root_abs, f"{base}.png")
+            candidate = os.path.join(
+                root_abs,
+                biome.path if biome.path.endswith(".png") else f"{base}.png",
+            )
             if os.path.isfile(candidate):
                 matches.append(os.path.relpath(candidate, root_abs).replace(os.sep, "/"))
                 break
+    else:
+        seen: set[str] = set()
+        for root in ctx.search_paths:
+            root_abs = root if os.path.isabs(root) else os.path.join(ctx.repo_root, root)
+            pattern = os.path.join(root_abs, f"{base}_*.png")
+            for fn in sorted(glob.glob(pattern)):
+                rel = os.path.relpath(fn, root_abs).replace(os.sep, "/")
+                if rel not in seen:
+                    matches.append(rel)
+                    seen.add(rel)
+        if not matches:
+            for root in ctx.search_paths:
+                root_abs = root if os.path.isabs(root) else os.path.join(ctx.repo_root, root)
+                candidate = os.path.join(root_abs, f"{base}.png")
+                if os.path.isfile(candidate):
+                    matches.append(os.path.relpath(candidate, root_abs).replace(os.sep, "/"))
+                    break
     if biome.variants > len(matches):
         logger.warning(
             "Biome %s specifies %d variants but only %d files found",

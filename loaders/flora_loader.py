@@ -26,7 +26,7 @@ et dessin trié (baseline) compatible top‑down et futur rendu isométrique.
     "anchor_px": [128,236],
     "passable": false,
     "occludes": true,
-    "path": "flora/tall/scarlet_tree_a",  # utilise suffixes _0.._N‑1 si variants>1, sinon "/base.png"
+    "path": "flora/tall/scarlet_tree_a",  # utilise suffixes _0.._N‑1 si variants>1, sinon ".png"
     "variants": 2,
     "spawn": {"density": 0.006, "min_dist": 3}
   },
