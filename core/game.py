@@ -2877,7 +2877,10 @@ class Game:
             self.refresh_army_list()
             self._update_player_visibility()
             try:
-                audio.play_music('event_turn_end')
+                prev = audio.get_current_music()
+                audio.play_music('event_turn_end', loop=0)
+                if prev:
+                    audio.queue_music(prev)
                 audio.play_sound('end_turn')
             except Exception:  # pragma: no cover
                 pass
@@ -2897,12 +2900,9 @@ class Game:
             return
         self._notify("End of day. All heroes' action points are restored.")
         if hasattr(self, "state") and hasattr(self.state, "next_day"):
-            prev_week = getattr(self.state.turn, "week", None)
             self._sync_economy_from_hero()
             self.state.next_day()
             self._sync_hero_from_economy()
-            if prev_week is not None and self.state.turn.week != prev_week:
-                audio.play_music('event_week_start')
         else:
             for row in self.world.grid:
                 for tile in row:
@@ -2921,7 +2921,10 @@ class Game:
         self.refresh_army_list()
         self._update_player_visibility()
         try:
-            audio.play_music('event_turn_end')
+            prev = audio.get_current_music()
+            audio.play_music('event_turn_end', loop=0)
+            if prev:
+                audio.queue_music(prev)
             audio.play_sound('end_turn')
         except Exception:  # pragma: no cover
             pass
