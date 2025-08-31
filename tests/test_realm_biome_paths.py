@@ -15,6 +15,9 @@ def test_manifest_relative_paths_resolved(tmp_path):
 
     repo_root = tmp_path
     assets_root = tmp_path / "assets"
+    (assets_root / "biomes").mkdir(parents=True)
+    with open(assets_root / "biomes" / "biomes.json", "w", encoding="utf-8") as fh:
+        json.dump([], fh)
     (assets_root / "realms" / "testrealm" / "biomes").mkdir(parents=True)
     (assets_root / "realms" / "testrealm" / "biomes" / "test_biome.png").write_bytes(PNG_1x1)
     manifest = [
@@ -38,7 +41,7 @@ def test_manifest_relative_paths_resolved(tmp_path):
     old_weights = constants.DEFAULT_BIOME_WEIGHTS
     old_prio = constants.BIOME_PRIORITY
     try:
-        BiomeCatalog.load(ctx, "realms/testrealm")
+        BiomeCatalog.load(ctx, "testrealm")
         biome = BiomeCatalog.get("test_biome")
         assert biome is not None
         assert biome.path == "realms/testrealm/biomes/test_biome"

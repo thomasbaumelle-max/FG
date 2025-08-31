@@ -210,8 +210,9 @@ class Game:
                 self.enemy_faction_id = self.faction_id
                 self.enemy_faction = self.faction
 
-            realm_dir = f"realms/{self.realm}"
-            BiomeCatalog.load(self.ctx, realm_dir)
+            realm = self.realm
+            realm_dir = f"realms/{realm}"
+            BiomeCatalog.load(self.ctx, realm)
             init_biome_images()
 
             # Load unit and creature definitions early so ``load_assets`` can

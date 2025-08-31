@@ -102,10 +102,10 @@ enumerate entries with metadata and image paths.  Dedicated loaders such as
 `loaders.flora_loader.FloraLoader` and
 `loaders.resources_loader.load_resources` parse these manifests, load the
 referenced PNGs via the `AssetManager` and make them available to the rest of
-the game.  Biome and flora manifests are organised per realm under
-`assets/realms/<realm>/`, letting each realm ship its own `biomes.json` and
-`flora.json` files.  Additional JSON files can be dropped into these realm
-folders and will automatically be merged by the loaders.
+the game.  Common biome data is defined in `assets/biomes/` (e.g.
+`biomes.json`, `char_map.json`) while realm-specific extensions are placed in
+`assets/realms/<realm>/` and merged on top of the shared files.  Each realm may
+provide its own `biomes*.json`, `flora.json` and related manifests.
 
 This approach allows each asset to define variants, biome tags or spawn rules
 without hard‑coding file names.  To add new artwork, place the image in the
@@ -152,8 +152,8 @@ context to read JSON manifests and register assets:
 
 * `loaders.resources_loader.load_resources` imports resource definitions from
   `assets/resources/resources.json`.
-* `loaders.biomes.BiomeCatalog` merges every `biomes*.json` file from a realm
-  directory like `assets/realms/scarletia/`.
+* `loaders.biomes.BiomeCatalog` reads `assets/biomes/biomes.json` and merges
+  any `biomes*.json` files from `assets/realms/<realm>/`.
 * `loaders.flora_loader.FloraLoader` loads all `flora*.json` files from the same
   realm directory and can automatically scatter props across the map via
   `autoplace` using biome information and spawn rules.

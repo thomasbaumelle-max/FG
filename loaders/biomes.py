@@ -56,25 +56,25 @@ class BiomeCatalog:
     _biomes: Dict[str, Biome] = {}
 
     @classmethod
-    def load(cls, ctx: Context, manifest: str = "realms/scarletia") -> None:
-        """Load biome definitions.
+    def load(cls, ctx: Context, realm: str = "scarletia") -> None:
+        """Load biome definitions for a realm.
 
-        ``manifest`` may point to a single JSON file or to a directory. When a
-        directory is supplied, all files matching ``biomes*.json`` within that
-        directory are merged.
+        Always loads ``assets/biomes/biomes.json`` first.  If ``realm`` is
+        provided, any ``biomes*.json`` files under ``assets/realms/<realm>/`` are
+        merged on top, allowing realms to extend or override the common
+        definitions.
         """
-        # Resolve manifest to a list of files
-        files: List[str] = []
-        for base in ctx.search_paths:
-            base_abs = base if os.path.isabs(base) else os.path.join(ctx.repo_root, base)
-            candidate = os.path.join(base_abs, manifest)
-            if os.path.isdir(candidate):
-                pattern = os.path.join(candidate, "biomes*.json")
-                for fn in sorted(glob.glob(pattern)):
-                    files.append(os.path.relpath(fn, base_abs))
-                break
-        else:
-            files.append(manifest)
+        files: List[str] = ["biomes/biomes.json"]
+        if realm:
+            for base in ctx.search_paths:
+                base_abs = base if os.path.isabs(base) else os.path.join(ctx.repo_root, base)
+                candidate = os.path.join(base_abs, "realms", realm)
+                if os.path.isdir(candidate):
+                    pattern = os.path.join(candidate, "biomes*.json")
+                    for fn in sorted(glob.glob(pattern)):
+                        rel = os.path.relpath(fn, base_abs).replace(os.sep, "/")
+                        files.append(rel)
+                    break
 
         def _asset_exists(rel: str) -> bool:
             """Return ``True`` if an image for ``rel`` exists in search paths."""
@@ -145,7 +145,7 @@ class BiomeCatalog:
         constants.BIOME_PRIORITY = constants.build_biome_priority()
         from core import world as core_world
         core_world.init_biome_images()
-        core_world.load_biome_char_map(ctx, manifest)
+        core_world.load_biome_char_map(ctx, realm)
         try:
             from ui.widgets.minimap import Minimap
             Minimap.invalidate_all()
