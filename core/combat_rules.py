@@ -2,6 +2,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, Any, Tuple
 import random
+
+# Dedicated RNG for gameplay so simulations can use a separate deterministic
+# instance without altering combat state.
 RNG = random.Random()
 
 @dataclass
@@ -15,7 +18,7 @@ class UnitView:
     facing: Tuple[int,int] = (0, 1)  # optionnel: orientation (dx,dy)
 
 # ---- Morale & Chance ----
-def roll_morale(morale: int) -> int:
+def roll_morale(morale: int, rng: random.Random | None = None) -> int:
     """Return -1, 0 or +1 depending on morale.
 
     The probabilities are capped to the ``[-3..3]`` range with the following
@@ -35,19 +38,21 @@ def roll_morale(morale: int) -> int:
     }
     m = max(-3, min(3, morale))
     p = table[m]
-    r = random.random()
+    rng = rng or RNG
+    r = rng.random()
     if m > 0 and r < p:
         return 1
     if m < 0 and r < p:
         return -1
     return 0
 
-def roll_luck(luck: int) -> float:
+def roll_luck(luck: int, rng: random.Random | None = None) -> float:
     """retourne multiplicateur de dégâts (0.5, 1.0, 1.5)."""
     table = {0: 0.0, 1: 1 / 24, 2: 2 / 24}
     L = max(-2, min(2, luck))
     p = table[abs(L)]
-    r = random.random()
+    rng = rng or RNG
+    r = rng.random()
     if L > 0 and r < p:
         return 1.5
     if L < 0 and r < p:
@@ -148,19 +153,21 @@ def flanking_bonus(attacker: UnitView, defender: UnitView) -> float:
     return 1.0
 
 # ---- Dégâts ----
-def roll_base_damage(attacker_stats) -> int:
-    import random
-    return random.randint(attacker_stats.attack_min, attacker_stats.attack_max)
+def roll_base_damage(attacker_stats, rng: random.Random | None = None) -> int:
+    rng = rng or RNG
+    return rng.randint(attacker_stats.attack_min, attacker_stats.attack_max)
 
 def compute_damage(attacker: UnitView, defender: UnitView, *,
                    attack_type: str = "melee", distance: int = 1,
-                   obstacles: set[Tuple[int, int]] | None = None) -> Dict[str, Any]:
+                   obstacles: set[Tuple[int, int]] | None = None,
+                   rng: random.Random | None = None) -> Dict[str, Any]:
     """Calcule un coup standard. attack_type: 'melee'/'ranged'/'magic'."""
+    rng = rng or RNG
     # Base roll + bonus from hero skills
-    base = roll_base_damage(attacker.stats) + getattr(attacker, "attack_bonus", 0)
+    base = roll_base_damage(attacker.stats, rng=rng) + getattr(attacker, "attack_bonus", 0)
     # Stack size
     dmg = base * getattr(attacker, "count", 1)
-    luck_mul = roll_luck(attacker.stats.luck)
+    luck_mul = roll_luck(attacker.stats.luck, rng=rng)
     dmg = int(round(dmg * luck_mul))
 
     # Pénalités/bonus

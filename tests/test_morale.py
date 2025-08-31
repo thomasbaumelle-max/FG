@@ -1,6 +1,6 @@
 import os
-import random
 from dataclasses import replace
+import core.combat_rules as combat_rules
 
 os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
 
@@ -27,7 +27,7 @@ def test_positive_morale_grants_extra_turn(monkeypatch, simple_combat):
         calls["count"] += 1
         return 0.0
 
-    monkeypatch.setattr(random, "random", fake_random)
+    monkeypatch.setattr(combat_rules.RNG, "random", fake_random)
     before = len(combat.fx_queue._events)
     combat.check_morale(hero_unit)
     assert hero_unit.extra_turns == 1
@@ -68,7 +68,7 @@ def test_morale_not_rechecked_after_extra_turn(monkeypatch, simple_combat):
         calls["count"] += 1
         return 0.0
 
-    monkeypatch.setattr(random, "random", fake_random)
+    monkeypatch.setattr(combat_rules.RNG, "random", fake_random)
     combat.check_morale(hero_unit)
     assert hero_unit.extra_turns == 1
     hero_unit.acted = True
@@ -92,7 +92,7 @@ def test_negative_morale_skips_turn(monkeypatch, simple_combat):
     enemy_unit = combat.enemy_units[0]
     combat.turn_order = [hero_unit, enemy_unit]
     combat.current_index = 0
-    monkeypatch.setattr(random, 'random', lambda: 0.0)
+    monkeypatch.setattr(combat_rules.RNG, 'random', lambda: 0.0)
     before = len(combat.fx_queue._events)
     combat.check_morale(hero_unit)
     assert hero_unit.skip_turn
