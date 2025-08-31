@@ -8,6 +8,8 @@ from collections import deque
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Set
 
+import constants
+
 Cell = Tuple[int, int]
 
 
@@ -213,6 +215,20 @@ def generate_continent_map(
             land_chance = 0.7
         else:
             land_chance = 0.45
+
+    if not biome_chars:
+        repo_root = Path(__file__).resolve().parents[1]
+        try:
+            with open(repo_root / "assets" / "biomes" / "char_map.json", "r", encoding="utf-8") as fh:
+                char_map = json.load(fh)
+        except Exception:
+            char_map = {}
+        id_to_char = {v: k for k, v in char_map.items()}
+        biome_chars = "".join(
+            id_to_char[b]
+            for b in constants.DEFAULT_BIOME_WEIGHTS.keys()
+            if b in id_to_char
+        )
 
     grid = _cellular_automata_land_mask(width, height, land_chance, smoothing_iterations)
 

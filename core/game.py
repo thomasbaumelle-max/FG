@@ -56,6 +56,7 @@ from core.entities import (
     ARTIFACT_ICONS,
 )
 from core.world import WorldMap, generate_combat_map, init_biome_images, Tile
+import core.world
 from core.faction import FactionDef
 from graphics.spritesheet import load_sprite_sheet
 from mapgen import generate_continent_map
@@ -327,7 +328,7 @@ class Game:
                 height,
                 map_type=self.map_type,
                 smoothing_iterations=5,
-                biome_chars="GFD",
+                biome_chars="".join(core.world.BIOME_CHARS),
             )
             self.world = WorldMap(
                 map_data=map_rows,
