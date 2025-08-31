@@ -185,11 +185,10 @@ class Game:
         self.assets = AssetManager(repo_root)
         self.vfx_manifest: Dict[str, Dict[str, Any]] = {}
 
-        search_paths: List[str] = []
+        search_paths: List[str] = [os.path.join(repo_root, "assets")]
         extra = os.environ.get("FG_ASSETS_DIR")
         if extra:
-            search_paths.extend(p for p in extra.split(os.pathsep) if p)
-        search_paths.append(os.path.join(repo_root, "assets"))
+            search_paths = [p for p in extra.split(os.pathsep) if p] + search_paths
         self.ctx = Context(
             repo_root=repo_root,
             search_paths=search_paths,
