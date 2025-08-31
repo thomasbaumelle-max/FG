@@ -6,11 +6,14 @@ from typing import Dict, List, Optional, Tuple
 
 import glob
 import os
+import logging
 import pygame
 
 from .core import Context, read_json, require_keys
 from graphics.scale import scale_surface
 import constants
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -157,17 +160,33 @@ class BiomeCatalog:
 def load_tileset(ctx: Context, biome: Biome, tile_size: Optional[int] = None) -> BiomeTileset:
     if tile_size is None:
         tile_size = constants.COMBAT_TILE_SIZE
-    tileset = BiomeTileset(id=biome.id, path=biome.path, variants=biome.variants)
-    base = biome.path
-    for i in range(max(1, biome.variants)):
-        if base.endswith(".png"):
-            key = base
-        elif biome.variants > 1:
-            key = f"{base}_{i}.png"
-        else:
-            # Support single-variant biomes whose manifest omits the ``_0`` suffix
-            # by loading ``<path>.png`` instead of ``<path>_0.png``.
-            key = f"{base}.png"
+    base = biome.path[:-4] if biome.path.endswith(".png") else biome.path
+    matches: List[str] = []
+    seen: set[str] = set()
+    for root in ctx.search_paths:
+        root_abs = root if os.path.isabs(root) else os.path.join(ctx.repo_root, root)
+        pattern = os.path.join(root_abs, f"{base}_*.png")
+        for fn in sorted(glob.glob(pattern)):
+            rel = os.path.relpath(fn, root_abs).replace(os.sep, "/")
+            if rel not in seen:
+                matches.append(rel)
+                seen.add(rel)
+    if not matches:
+        for root in ctx.search_paths:
+            root_abs = root if os.path.isabs(root) else os.path.join(ctx.repo_root, root)
+            candidate = os.path.join(root_abs, f"{base}.png")
+            if os.path.isfile(candidate):
+                matches.append(os.path.relpath(candidate, root_abs).replace(os.sep, "/"))
+                break
+    if biome.variants > len(matches):
+        logger.warning(
+            "Biome %s specifies %d variants but only %d files found",
+            biome.id,
+            biome.variants,
+            len(matches),
+        )
+    tileset = BiomeTileset(id=biome.id, path=biome.path, variants=len(matches))
+    for key in matches:
         surf = ctx.asset_loader.get(key) if ctx.asset_loader else None
         if surf and hasattr(surf, "get_size"):
             if surf.get_size() != (tile_size, tile_size):
