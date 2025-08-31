@@ -245,6 +245,14 @@ speed, enabling a reader-friendly tooltip mode and remapping controls. The
 world renderer's biome caching can be tuned with `biome_chunk_tiles` (tiles per
 chunk) and `biome_cache_size` (maximum cached chunks).
 
+## Audio Troubleshooting
+
+If the game starts without producing any sound, the audio mixer may have
+failed to initialise. A default `SDL_AUDIODRIVER` is chosen automatically, and
+an error is logged when mixer setup fails. Verify an audio device is available
+or set `SDL_AUDIODRIVER` (for example `pulseaudio`, `alsa` or
+`directsound`) before launching the game.
+
 ## Roadmap and Ideas
 
 There are many directions to expand the game.  Some possibilities include:
