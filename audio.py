@@ -8,16 +8,17 @@ try:
     import pygame
     try:
         from .loaders.asset_manager import AssetManager
-        from .loaders.core import Context, find_file, read_json
+        from .loaders import audio_loader
     except ImportError:  # pragma: no cover - package vs script
         from loaders.asset_manager import AssetManager  # type: ignore
-        from loaders.core import Context, find_file, read_json  # type: ignore
+        from loaders import audio_loader  # type: ignore
 except Exception:  # pragma: no cover - when pygame is unavailable
     pygame = None
     AssetManager = None  # type: ignore
-    Context = None  # type: ignore
-    find_file = None  # type: ignore
-    read_json = None  # type: ignore
+    audio_loader = None  # type: ignore
+
+
+_logger = logging.getLogger(__name__)
 
 
 _logger = logging.getLogger(__name__)
@@ -53,20 +54,15 @@ def _find_asset(filename: str) -> Optional[str]:
     if _asset_manager is not None:
         search_paths = list(_asset_manager.search_paths)
     else:
-        search_paths = [os.path.join(os.path.dirname(__file__), "assets")]
+        search_paths = ["assets"]
 
-    if Context is None or find_file is None:  # pragma: no cover - defensive
-        for base in search_paths:
-            candidate = os.path.join(base, filename)
-            if os.path.isfile(candidate):
-                return candidate
-        return None
-
-    ctx = Context(repo_root="", search_paths=search_paths, asset_loader=None)
-    try:
-        return find_file(ctx, filename)
-    except FileNotFoundError:
-        return None
+    if audio_loader is not None:
+        return audio_loader.find_audio_file(filename, search_paths)
+    for base in search_paths:
+        candidate = os.path.join(base, filename)
+        if os.path.isfile(candidate):
+            return candidate
+    return None
 
 
 def _has_mixer() -> bool:
@@ -75,22 +71,17 @@ def _has_mixer() -> bool:
 
 def _load_manifests() -> None:
     """Load sound and music manifests from the assets folder."""
-    if Context is None or read_json is None:
+    if audio_loader is None:
         return
 
     search_paths: list[str]
     if _asset_manager is not None:
         search_paths = list(_asset_manager.search_paths)
     else:
-        search_paths = [os.path.join(os.path.dirname(__file__), "assets")]
-
-    ctx = Context(repo_root="", search_paths=search_paths, asset_loader=None)
+        search_paths = ["assets"]
 
     # Load sounds
-    try:
-        data = read_json(ctx, os.path.join("audio", "sounds.json"))
-    except Exception:  # pragma: no cover - missing manifest
-        data = []
+    data = audio_loader.load_manifest("sounds.json", search_paths)
     for entry in data or []:
         key = entry.get("id")
         file = entry.get("file")
@@ -99,10 +90,7 @@ def _load_manifests() -> None:
 
     # Load music tracks
     global _default_music
-    try:
-        music_data = read_json(ctx, os.path.join("audio", "music.json"))
-    except Exception:  # pragma: no cover
-        music_data = []
+    music_data = audio_loader.load_manifest("music.json", search_paths)
     for entry in music_data or []:
         key = entry.get("id")
         file = entry.get("file")
@@ -130,7 +118,8 @@ def init(asset_manager: AssetManager | None = None) -> None:
         if "SDL_AUDIODRIVER" not in os.environ:
             if sys.platform.startswith("win"):
                 os.environ["SDL_AUDIODRIVER"] = "directsound"
-            # leave other platforms unset
+            else:
+                os.environ["SDL_AUDIODRIVER"] = "pulseaudio"
         try:  # pragma: no cover - depends on system audio
             if not pygame.mixer.get_init():
                 pygame.mixer.init()
