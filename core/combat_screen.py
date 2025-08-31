@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Callable, Dict, Tuple, Optional, List
 import json
 from pathlib import Path
+import random
 import pygame
 import theme
 import settings
@@ -187,6 +188,7 @@ class CombatHUD:
                 attack_type=combat.selected_action,
                 distance=dist,
                 obstacles=combat.obstacles,
+                rng=random.Random(0),
             )["value"]
 
         # Backgrounds

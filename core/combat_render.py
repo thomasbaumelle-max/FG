@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Tuple
 
+import random
 import pygame
 import constants
 import theme
@@ -293,6 +294,7 @@ def draw(combat, frame: int = 0) -> None:
                     attack_type=combat.selected_action,
                     distance=dist,
                     obstacles=combat.obstacles,
+                    rng=random.Random(0),
                 )["value"]
 
     combat.hover_target = hover_target
