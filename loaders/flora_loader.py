@@ -137,19 +137,59 @@ class FloraLoader:
         """
         manifest_files: List[str] = []
         for base in self.ctx.search_paths:
-            base_abs = base if os.path.isabs(base) else os.path.join(self.ctx.repo_root, base)
+            base_abs = (
+                base if os.path.isabs(base) else os.path.join(self.ctx.repo_root, base)
+            )
             candidate = os.path.join(base_abs, manifest_path)
             if os.path.isdir(candidate):
                 pattern = os.path.join(candidate, "flora*.json")
                 for fn in sorted(glob.glob(pattern)):
-                    manifest_files.append(os.path.relpath(fn, base_abs))
-                break
-        else:
+                    manifest_files.append(
+                        os.path.relpath(fn, base_abs).replace(os.sep, "/")
+                    )
+            elif os.path.isfile(candidate):
+                manifest_files.append(
+                    os.path.relpath(candidate, base_abs).replace(os.sep, "/")
+                )
+        if not manifest_files:
             manifest_files.append(manifest_path)
+
+        def _asset_exists(rel: str) -> bool:
+            for base in self.ctx.search_paths:
+                base_abs = (
+                    base
+                    if os.path.isabs(base)
+                    else os.path.join(self.ctx.repo_root, base)
+                )
+                if os.path.isfile(os.path.join(base_abs, f"{rel}.png")):
+                    return True
+                if glob.glob(os.path.join(base_abs, f"{rel}_*.png")):
+                    return True
+            return False
 
         for path in manifest_files:
             data = read_json(self.ctx, path)
+            base_dir = os.path.dirname(path)
             for entry in data:
+                entry_path = entry.get("path")
+                if entry_path and not os.path.isabs(entry_path):
+                    candidate = os.path.normpath(os.path.join(base_dir, entry_path))
+                    if _asset_exists(candidate):
+                        entry["path"] = candidate.replace(os.sep, "/")
+                    else:
+                        entry["path"] = os.path.normpath(entry_path).replace(
+                            os.sep, "/"
+                        )
+                if "files" in entry:
+                    new_files = []
+                    for f in entry["files"]:
+                        if not os.path.isabs(f):
+                            cand = os.path.normpath(os.path.join(base_dir, f))
+                            base_cand = cand[:-4] if cand.endswith(".png") else cand
+                            if _asset_exists(base_cand):
+                                f = cand
+                        new_files.append(os.path.normpath(f).replace(os.sep, "/"))
+                    entry["files"] = new_files
                 biomes = entry.get("biomes", [])
                 for b in biomes:
                     if BiomeCatalog.get(b) is None:
