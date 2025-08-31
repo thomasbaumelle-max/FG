@@ -83,19 +83,31 @@ def load_biome_char_map(ctx: Context = _BOSS_CTX, realm: Optional[str] = None) -
     """
 
     mapping: Dict[str, str] = {}
-    try:
-        base_map = read_json(ctx, "biomes/char_map.json")
-        if isinstance(base_map, dict):
-            mapping.update({k: str(v) for k, v in base_map.items()})
-    except Exception:
-        pass
+    for base in ctx.search_paths:
+        base_abs = base if os.path.isabs(base) else os.path.join(ctx.repo_root, base)
+        candidate = os.path.join(base_abs, "biomes", "char_map.json")
+        if os.path.isfile(candidate):
+            rel = os.path.relpath(candidate, base_abs).replace(os.sep, "/")
+            try:
+                base_map = read_json(Context(ctx.repo_root, [base_abs]), rel)
+                if isinstance(base_map, dict):
+                    mapping.update({k: str(v) for k, v in base_map.items()})
+            except Exception:
+                pass
     if realm:
-        try:
-            realm_map = read_json(ctx, f"realms/{realm}/char_map.json")
-            if isinstance(realm_map, dict):
-                mapping.update({k: str(v) for k, v in realm_map.items()})
-        except Exception:
-            pass
+        for base in ctx.search_paths:
+            base_abs = (
+                base if os.path.isabs(base) else os.path.join(ctx.repo_root, base)
+            )
+            candidate = os.path.join(base_abs, "realms", realm, "char_map.json")
+            if os.path.isfile(candidate):
+                rel = os.path.relpath(candidate, base_abs).replace(os.sep, "/")
+                try:
+                    realm_map = read_json(Context(ctx.repo_root, [base_abs]), rel)
+                    if isinstance(realm_map, dict):
+                        mapping.update({k: str(v) for k, v in realm_map.items()})
+                except Exception:
+                    pass
     global BIOME_CHAR_MAP, BIOME_CHARS
     BIOME_CHAR_MAP = mapping
     BIOME_CHARS = set(mapping.keys())
