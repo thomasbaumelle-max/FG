@@ -82,8 +82,12 @@ class BiomeCatalog:
                 colour = entry.get("colour", [0, 0, 0])
                 entry_path = entry.get("path", "")
                 if entry_path and not os.path.isabs(entry_path):
-                    entry_path = os.path.normpath(os.path.join(base_dir, entry_path))
-                entry_path = entry_path.replace(os.sep, "/")
+                    # By default treat paths as relative to the asset search root.
+                    # When a manifest wishes to reference files relative to its own
+                    # directory it can use an explicit ``./`` or ``../`` prefix.
+                    if entry_path.startswith("./") or entry_path.startswith("../"):
+                        entry_path = os.path.join(base_dir, entry_path)
+                entry_path = os.path.normpath(entry_path).replace(os.sep, "/")
                 biome = Biome(
                     id=entry["id"],
                     type=entry.get("type", ""),
