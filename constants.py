@@ -70,35 +70,65 @@ WORLD_HEIGHT = 8
 # Allow slightly larger automatically generated worlds so exploration feels
 # less cramped.  The range is used when no explicit size is provided.
 WORLD_SIZE_RANGE = (12, 20)
-# Default distribution of biomes for purely random maps (non‑continent
-# generation).  Additional terrains beyond the core four are included so the
-# world contains a richer variety of regions to explore.
-DEFAULT_BIOME_WEIGHTS = {
-    "scarletia_echo_plain": 0.3,
-    "scarletia_crimson_forest": 0.15,
-    "scarletia_volcanic": 0.15,
-    "mountain": 0.1,
-    "hills": 0.1,
-    "swamp": 0.08,
-    "jungle": 0.07,
-    "ice": 0.05,
-}
-"""Default distribution of biomes used for random map generation."""
 
-# Relative priority of biomes when blending neighbouring tiles.  A higher
-# value means the neighbouring biome overlays this tile during rendering.
-BIOME_PRIORITY = {
-    "scarletia_echo_plain": 0,
-    "scarletia_crimson_forest": 1,
-    "hills": 2,
-    "swamp": 3,
-    "jungle": 4,
-    "scarletia_volcanic": 5,
-    "ice": 6,
-    "mountain": 7,
-    "river": 8,
-    "ocean": 9,
-}
+
+def build_default_biome_weights() -> Dict[str, float]:
+    """Return mapping of biome ids to selection weights.
+
+    When the biome catalogue has not yet been loaded, legacy values are used as
+    sensible defaults so random map generation continues to work in tests that
+    depend on the original Scarletiа terrains.
+    """
+
+    from loaders.biomes import BiomeCatalog  # noqa: WPS433
+
+    if BiomeCatalog._biomes:
+        return {
+            b.id: float(getattr(b, "weight", 1.0))
+            for b in BiomeCatalog._biomes.values()
+        }
+    return {
+        "scarletia_echo_plain": 0.3,
+        "scarletia_crimson_forest": 0.15,
+        "scarletia_volcanic": 0.15,
+        "mountain": 0.1,
+        "hills": 0.1,
+        "swamp": 0.08,
+        "jungle": 0.07,
+        "ice": 0.05,
+    }
+
+
+# Default distribution of biomes used for random map generation.
+DEFAULT_BIOME_WEIGHTS: Dict[str, float] = build_default_biome_weights()
+
+
+def build_biome_priority() -> Dict[str, int]:
+    """Return relative priority of biomes when blending neighbours."""
+
+    from loaders.biomes import BiomeCatalog  # noqa: WPS433
+
+    if BiomeCatalog._biomes:
+        return {
+            b.id: int(getattr(b, "priority", 0))
+            for b in BiomeCatalog._biomes.values()
+        }
+    return {
+        "scarletia_echo_plain": 0,
+        "scarletia_crimson_forest": 1,
+        "hills": 2,
+        "swamp": 3,
+        "jungle": 4,
+        "scarletia_volcanic": 5,
+        "ice": 6,
+        "mountain": 7,
+        "river": 8,
+        "ocean": 9,
+    }
+
+
+# Relative priority of biomes when blending neighbouring tiles.
+BIOME_PRIORITY: Dict[str, int] = build_biome_priority()
 
 # Biomes that are inherently impassable regardless of the ``obstacle`` flag on a
 # tile.  Units may never enter these terrains.

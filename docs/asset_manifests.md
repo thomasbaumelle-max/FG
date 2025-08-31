@@ -32,6 +32,20 @@ tiles such as `grass` or `forest` whose images live under `terrain/*.png`.  Thes
 backward compatibility and will eventually be replaced by equivalent biome
 definitions.
 
+### Biomes
+
+Entries in `biomes.json` support two optional fields in addition to the basic
+metadata:
+
+* `weight` – relative likelihood that the biome appears during random world
+  generation.
+* `priority` – numeric ordering used when blending neighbouring biomes.  Higher
+  values overlay lower ones.
+
+Characters in text-based map files are translated to biome identifiers via
+`biomes/char_map.json`.  Realms may provide their own `char_map.json` alongside
+their biome definitions to extend the mapping without modifying core code.
+
 ## Missing images
 
 When an image referenced in a manifest is absent from disk, the

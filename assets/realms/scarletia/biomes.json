@@ -14,7 +14,9 @@
     ],
     "vision_bonus": 0,
     "passable": true,
-    "overlays": []
+    "overlays": [],
+    "weight": 0.3,
+    "priority": 0
   },
   {
     "id": "scarletia_crimson_forest",
@@ -30,7 +32,9 @@
     ],
     "vision_bonus": 0,
     "passable": true,
-    "overlays": []
+    "overlays": [],
+    "weight": 0.15,
+    "priority": 1
   },
   {
     "id": "scarletia_volcanic",
@@ -51,6 +55,8 @@
     "overlays": [
       "coast",
       "cliff"
-    ]
+    ],
+    "weight": 0.15,
+    "priority": 5
   }
 ]
