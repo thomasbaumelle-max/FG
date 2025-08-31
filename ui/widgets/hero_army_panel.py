@@ -12,7 +12,7 @@ from typing import Callable, List, Optional, Tuple
 
 import pygame
 
-import constants, theme
+import constants, theme, audio
 from core.entities import Unit, UnitCarrier
 from state.event_bus import EVENT_BUS, ON_SELECT_HERO
 from .quantity_dialog import QuantityDialog
@@ -248,6 +248,7 @@ class HeroArmyPanel:
                         unit = self.grid[idx]
                         if unit is not None:
                             self.drag = _DragState(idx, unit)
+                            audio.play_sound("drag_start")
             elif button == 3:
                 idx = self._cell_at(pos, rect)
                 if idx is not None:
@@ -265,6 +266,7 @@ class HeroArmyPanel:
                     )
                     self._commit_grid()
                 self.drag = None
+                audio.play_sound("drag_drop")
 
     # ------------------------------------------------------------------
     def _split_selected(self) -> None:

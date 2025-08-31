@@ -171,8 +171,11 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
         choice, screen = simple_menu(screen, options, title="Options")
 
         if choice is None or choice == 11:
+            audio.play_sound("ui_cancel")
             _persist()
             return screen
+
+        audio.play_sound("ui_confirm")
 
         if choice == 0:
             sel, screen = simple_menu(
@@ -251,13 +254,18 @@ def options_menu(screen: pygame.Surface) -> pygame.Surface:
                     title="Musique de fond",
                 )
                 if sel is not None:
+                    audio.play_sound("ui_confirm")
                     if sel < len(tracks):
                         track_idx = sel
                         audio.play_music(tracks[track_idx])
                     elif sel == len(tracks):
                         track_idx = -1
                         audio.stop_music()
+                else:
+                    audio.play_sound("ui_cancel")
                 _persist()
+            else:
+                audio.play_sound("ui_error")
         elif choice == 9:
             screen = _keymap_menu(screen)
             _persist()

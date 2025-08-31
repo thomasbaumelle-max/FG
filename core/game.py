@@ -649,6 +649,7 @@ class Game:
     def _notify(self, message: str) -> None:
         """Log ``message`` and publish it to the UI event bus."""
         logger.info(message)
+        audio.play_sound("notification")
         EVENT_BUS.publish(ON_INFO_MESSAGE, message)
 
     def _load_sea_chain(self) -> None:
@@ -3852,6 +3853,7 @@ class Game:
         if path is None:
             msg = "No save path specified"
             logger.warning(msg)
+            audio.play_sound("ui_error")
             EVENT_BUS.publish(ON_INFO_MESSAGE, msg)
             return msg
 
@@ -3884,6 +3886,7 @@ class Game:
         slots = getattr(self, "save_slots", [])
         if path in slots:
             self.current_slot = slots.index(path)
+        audio.play_sound("save_game")
 
     def quick_save(self) -> None:
         """Convenience wrapper saving to the predefined quick-save slot."""
@@ -3929,6 +3932,7 @@ class Game:
         if path is None or not os.path.exists(path):
             msg = f"Save file not found: {path}"
             logger.warning("Save file %s not found", path)
+            audio.play_sound("ui_error")
             EVENT_BUS.publish(ON_INFO_MESSAGE, msg)
             return msg
         with open(path, "r", encoding="utf-8") as f:
@@ -3957,3 +3961,4 @@ class Game:
         slots = getattr(self, "save_slots", [])
         if path in slots:
             self.current_slot = slots.index(path)
+        audio.play_sound("load_game")

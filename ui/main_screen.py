@@ -13,6 +13,7 @@ from typing import Dict, Optional, List
 
 import os
 import pygame
+import audio
 from . import theme, constants
 
 from .layout import Layout
@@ -122,6 +123,7 @@ class MainScreen:
             self.game, "open_menu", None
         )
         if cb:
+            audio.play_sound("panel_open")
             cb()
 
     def save_game(self) -> None:
@@ -165,11 +167,13 @@ class MainScreen:
                     town = getattr(self.game, "_focused_town", None)
                     pos = getattr(self.game, "_focused_town_pos", None)
                     try:
+                        audio.play_sound("panel_open")
                         if town:
                             open_cb(town, town_pos=pos)
                         else:
                             open_cb()
                     except TypeError:
+                        audio.play_sound("panel_open")
                         if town:
                             open_cb(town, town_pos=pos)
                         else:

@@ -14,6 +14,7 @@ import pygame
 
 import constants
 import theme
+import audio
 from .widgets.icon_button import IconButton
 from core.entities import (
     EquipmentSlot,
@@ -762,6 +763,7 @@ class InventoryScreen:
                     self.drag_item = self.hero.inventory[inv_idx]
                     self.drag_origin = inv_idx
                     self.drag_icon_size = (size - 4, size - 4)
+                    audio.play_sound("drag_start")
                     return
             for slot, r in self.slot_rects.items():
                 if r.collidepoint(pos):
@@ -791,6 +793,7 @@ class InventoryScreen:
                         self.drag_origin = None
                         self.drag_icon_size = r.size
                         del self.hero.equipment[slot]
+                        audio.play_sound("drag_start")
                     return
             self._last_click_slot = None
             self._last_click_time = 0
@@ -803,6 +806,7 @@ class InventoryScreen:
                     if unit:
                         self.drag_unit = unit
                         self.drag_unit_origin = idx
+                        audio.play_sound("drag_start")
                     return
 
         elif self.active_tab == "skills":
@@ -834,6 +838,7 @@ class InventoryScreen:
             self.drag_item = None
             self.drag_origin = None
             self.drag_icon_size = None
+            audio.play_sound("drag_drop")
             return
 
         if self.drag_unit is not None:
@@ -852,6 +857,7 @@ class InventoryScreen:
                 self.hero.army = [u for u in self.army_grid if u]
             self.drag_unit = None
             self.drag_unit_origin = None
+            audio.play_sound("drag_drop")
             return
 
         # Skills: right-click refund (safe if no dependent learned)

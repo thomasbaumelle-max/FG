@@ -8,5 +8,16 @@
   {"id": "defeat", "file": "audio/defeat.wav"},
   {"id": "hover", "file": "audio/hover.wav"},
   {"id": "click", "file": "audio/click.wav"},
-  {"id": "end_turn", "file": "audio/end_turn.wav"}
+  {"id": "end_turn", "file": "audio/end_turn.wav"},
+  {"id": "ui_confirm",  "file": "audio/ui/confirm.wav"},
+  {"id": "ui_cancel",   "file": "audio/ui/cancel.wav"},
+  {"id": "ui_error",    "file": "audio/ui/error.wav"},
+  {"id": "panel_open",  "file": "audio/ui/panel_open.wav"},
+  {"id": "panel_close", "file": "audio/ui/panel_close.wav"},
+  {"id": "drag_start",  "file": "audio/ui/drag_start.wav"},
+  {"id": "drag_drop",   "file": "audio/ui/drag_drop.wav"},
+  {"id": "list_scroll", "file": "audio/ui/list_scroll.wav"},
+  {"id": "notification","file": "audio/ui/notification.wav"},
+  {"id": "save_game",   "file": "audio/ui/save_game.wav"},
+  {"id": "load_game",   "file": "audio/ui/load_game.wav"}
 ]
