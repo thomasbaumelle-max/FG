@@ -1484,8 +1484,14 @@ class Combat:
                                 total_time = dist * self.timings.get("movement", 0.3)
                                 step_time = total_time / len(path) if path else 0.0
                                 print(f"Moving {self.selected_unit.stats.name} to {(cx, cy)}")
+                                current = (x0, y0)
+                                self.grid[y0][x0] = None
+                                blocked = False
                                 for nx, ny in path:
-                                    self.move_unit(self.selected_unit, nx, ny, duration=step_time)
+                                    if self.grid[ny][nx]:
+                                        blocked = True
+                                        break
+                                    self.animate_move_segment(self.selected_unit, current, (nx, ny), step_time)
                                     elapsed = 0.0
                                     while elapsed < step_time:
                                         combat_render.draw(self, frame)
@@ -1495,11 +1501,20 @@ class Combat:
                                         dt = clock.tick(constants.FPS) / 1000.0
                                         frame = (frame + 1) % 60
                                         elapsed += dt
+                                    current = (nx, ny)
+                                if blocked:
+                                    print("Path blocked")
+                                    self.grid[y0][x0] = self.selected_unit
+                                else:
+                                    self.move_unit(self.selected_unit, cx, cy)
+                                    rt = self._rt(self.selected_unit)
+                                    if rt:
+                                        rt.moved_tiles_this_turn += dist - 1
 
-                                if self.get_status(self.selected_unit, 'charge'):
+                                if not blocked and self.get_status(self.selected_unit, 'charge'):
                                     # allow attack after move
                                     self.selected_action = None
-                                else:
+                                elif not blocked:
                                     self.selected_unit.acted = True
                                     self.selected_unit = None
                                     self.selected_action = None
@@ -1747,6 +1762,36 @@ class Combat:
             return
         pygame.time.wait(int(duration * 1000))
 
+    def animate_move_segment(
+        self,
+        unit: Unit,
+        start: Tuple[int, int],
+        end: Tuple[int, int],
+        duration: float,
+    ) -> None:
+        """Animate ``unit`` moving from ``start`` to ``end`` without grid updates."""
+
+        start_rect = self.cell_rect(*start)
+        end_rect = self.cell_rect(*end)
+        if hasattr(pygame, "math"):
+            start_pos = pygame.math.Vector2(start_rect.center)
+            end_pos = pygame.math.Vector2(end_rect.center)
+            velocity = (end_pos - start_pos) / duration if duration > 0 else pygame.math.Vector2(0, 0)
+        else:
+            start_pos = start_rect.center
+            end_pos = end_rect.center
+            if duration > 0:
+                velocity = (
+                    (end_pos[0] - start_pos[0]) / duration,
+                    (end_pos[1] - start_pos[1]) / duration,
+                )
+            else:
+                velocity = (0, 0)
+        img = self.get_unit_image(unit, start_rect.size)
+        if img is None:
+            return
+        event = FXEvent(img, start_pos, duration, z=50, velocity=velocity)
+        self.fx_queue.add(event)
 
     def remove_unit_from_grid(self, unit: Unit) -> None:
         """Remove ``unit`` from all combat structures.
