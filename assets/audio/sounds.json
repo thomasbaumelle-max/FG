@@ -1,6 +1,9 @@
 [
   {"id": "move", "file": "audio/move.wav"},
   {"id": "attack", "file": "audio/attack.wav"},
+  {"id": "attack_melee", "file": "audio/attack_melee.wav"},
+  {"id": "attack_ranged", "file": "audio/attack_ranged.wav"},
+  {"id": "attack_magic", "file": "audio/attack_magic.wav"},
   {"id": "victory", "file": "audio/victory.wav"},
   {"id": "defeat", "file": "audio/defeat.wav"},
   {"id": "hover", "file": "audio/hover.wav"},
