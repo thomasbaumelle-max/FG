@@ -42,7 +42,7 @@ def _expected_files(entry: dict) -> List[str]:
     variants = int(entry.get("variants", 1))
     if variants > 1:
         return [f"{base}_{i}.png" for i in range(variants)]
-    return [f"{base}.png" if base.endswith(".png") else f"{base}/base.png"]
+    return [base if base.endswith(".png") else f"{base}.png"]
 
 
 def main() -> int:
