@@ -91,11 +91,6 @@ def build_default_biome_weights() -> Dict[str, float]:
         "scarletia_echo_plain": 0.3,
         "scarletia_crimson_forest": 0.15,
         "scarletia_volcanic": 0.15,
-        "mountain": 0.1,
-        "hills": 0.1,
-        "swamp": 0.08,
-        "jungle": 0.07,
-        "ice": 0.05,
     }
 
 
@@ -108,24 +103,16 @@ def build_biome_priority() -> Dict[str, int]:
 
     from loaders.biomes import BiomeCatalog  # noqa: WPS433
 
-    mapping = {
-        b.id: int(getattr(b, "priority", 0)) for b in BiomeCatalog._biomes.values()
-    }
-    defaults = {
+    if BiomeCatalog._biomes:
+        return {
+            b.id: int(getattr(b, "priority", 0))
+            for b in BiomeCatalog._biomes.values()
+        }
+    return {
         "scarletia_echo_plain": 0,
         "scarletia_crimson_forest": 1,
-        "hills": 2,
-        "swamp": 3,
-        "jungle": 4,
         "scarletia_volcanic": 5,
-        "ice": 6,
-        "mountain": 7,
-        "river": 8,
-        "ocean": 9,
     }
-    for key, value in defaults.items():
-        mapping.setdefault(key, value)
-    return mapping
 
 
 # Relative priority of biomes when blending neighbouring tiles.
@@ -288,8 +275,4 @@ BIOME_BASE_IMAGES: Dict[str, List[str]] = {
     "ice": ["terrain/ice.png"],
     "river": ["terrain/river.png"],
     "ocean": ["terrain/ocean.png"],
-    # Fallbacks for the core Scarletiа biomes used in tests
-    "scarletia_echo_plain": ["terrain/grass.png"],
-    "scarletia_crimson_forest": ["terrain/forest.png"],
-    "scarletia_volcanic": ["terrain/desert.png"],
 }

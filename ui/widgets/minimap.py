@@ -243,9 +243,11 @@ class Minimap:
                     for ty in range(ty0, ty1):
                         for tx in range(tx0, tx1):
                             tile = self.world.grid[ty][tx]
-                            colour = BIOME_IMAGES.get(
-                                tile.biome, BIOME_IMAGES["scarletia_echo_plain"]
-                            )[1]
+                            default = next(
+                                iter(BIOME_IMAGES.values()),
+                                ("", constants.GREEN),
+                            )
+                            colour = BIOME_IMAGES.get(tile.biome, default)[1]
                             rect = pygame.Rect(
                                 int(tx * tile_w - px0),
                                 int(ty * tile_h - py0),

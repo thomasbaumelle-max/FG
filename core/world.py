@@ -183,42 +183,7 @@ BIOME_IMAGES: Dict[str, Tuple[str, Tuple[int, int, int]]] = {}
 def init_biome_images() -> None:
     """(Re)build :data:`BIOME_IMAGES` from :class:`BiomeCatalog`."""
 
-    images: Dict[str, Tuple[str, Tuple[int, int, int]]] = {
-        "mountain": (
-            constants.BIOME_BASE_IMAGES.get("mountain", [""])[0],
-            constants.GREY,
-        ),
-        "hills": (
-            constants.BIOME_BASE_IMAGES.get("hills", [""])[0],
-            constants.GREY,
-        ),
-        "swamp": (
-            constants.BIOME_BASE_IMAGES.get("swamp", [""])[0],
-            constants.GREEN,
-        ),
-        "jungle": (
-            constants.BIOME_BASE_IMAGES.get("jungle", [""])[0],
-            constants.GREEN,
-        ),
-        "ice": (
-            constants.BIOME_BASE_IMAGES.get("ice", [""])[0],
-            constants.WHITE,
-        ),
-        "ocean": (
-            constants.BIOME_BASE_IMAGES.get("ocean", [""])[0],
-            constants.BLUE,
-        ),
-        # Fallbacks for the core Scarletiа biomes used in tests
-        "scarletia_echo_plain": (
-            constants.BIOME_BASE_IMAGES.get("grass", [""])[0], constants.GREEN
-        ),
-        "scarletia_crimson_forest": (
-            constants.BIOME_BASE_IMAGES.get("forest", [""])[0], constants.GREEN
-        ),
-        "scarletia_volcanic": (
-            constants.BIOME_BASE_IMAGES.get("desert", [""])[0], constants.YELLOW
-        ),
-    }
+    images: Dict[str, Tuple[str, Tuple[int, int, int]]] = {}
     for biome in BiomeCatalog._biomes.values():
         paths = constants.BIOME_BASE_IMAGES.get(biome.id, [""])
         base = paths[0] if isinstance(paths, list) else paths
