@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Dict, Optional, Set, List, Tuple, Union
 
 import constants
 import settings
+import audio
 from core.economy import DEFAULT_MARKET_RATES
 from loaders import building_loader
 from loaders.building_loader import BuildingAsset
@@ -508,6 +509,7 @@ class Town(Building):
         if isinstance(growth, dict):
             for uid, amount in growth.items():
                 self.stock[uid] = self.stock.get(uid, 0) + int(amount)
+        audio.play_sound("building_built")
         return True
 
     def recruit_units(

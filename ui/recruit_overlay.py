@@ -6,6 +6,7 @@ import pygame
 
 from core.entities import RECRUITABLE_UNITS
 import theme
+import audio
 from loaders import icon_loader as IconLoader
 
 FONT_NAME = None
@@ -149,6 +150,7 @@ def open(
                                 hero.apply_bonuses_to_army()
                             if hasattr(game, "_publish_resources"):
                                 game._publish_resources()
+                            audio.play_sound("unit_recruited")
         # draw overlay
         screen.blit(background, (0, 0))
         s = pygame.Surface(screen.get_size(), pygame.SRCALPHA)

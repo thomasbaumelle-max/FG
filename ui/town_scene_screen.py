@@ -7,6 +7,7 @@ from typing import Any, Mapping
 
 import pygame
 import constants
+import audio
 
 from loaders.town_scene_loader import TownScene, TownBuilding
 from render.town_scene_renderer import TownSceneRenderer
@@ -138,6 +139,7 @@ class TownSceneScreen:
                 if self.town.build_structure(sid, hero, player):
                     if hasattr(self.game, "_publish_resources"):
                         self.game._publish_resources()
+                    audio.play_sound("building_built")
                     self.building_states[sid] = "built"
             return False
 

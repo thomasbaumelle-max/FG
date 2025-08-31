@@ -31,5 +31,9 @@
   {"id": "artifact_pickup","file": "audio/world/artifact_pickup.wav"},
   {"id": "enter_town",  "file": "audio/world/enter_town.wav"},
   {"id": "exit_town",   "file": "audio/world/exit_town.wav"},
-  {"id": "capture_mine","file": "audio/world/capture_mine.wav"}
+  {"id": "capture_mine","file": "audio/world/capture_mine.wav"},
+  {"id": "hero_level_up",   "file": "audio/rpg/hero_level_up.wav"},
+  {"id": "skill_learned",   "file": "audio/rpg/skill_learned.wav"},
+  {"id": "building_built",  "file": "audio/town/building_built.wav"},
+  {"id": "unit_recruited",  "file": "audio/town/unit_recruited.wav"}
 ]
