@@ -173,22 +173,20 @@ class BiomeCatalog:
         return cls._biomes.get(biome_id)
 
 
-def load_tileset(ctx: Context, biome: Biome, tile_size: Optional[int] = None) -> BiomeTileset:
+def load_tileset(
+    ctx: Context,
+    biome: Biome,
+    tile_size: Optional[int] = None,
+    variants: Optional[int] = None,
+) -> BiomeTileset:
     if tile_size is None:
         tile_size = constants.COMBAT_TILE_SIZE
+
     base = biome.path[:-4] if biome.path.endswith(".png") else biome.path
+
     matches: List[str] = []
-    if biome.variants == 1:
-        for root in ctx.search_paths:
-            root_abs = root if os.path.isabs(root) else os.path.join(ctx.repo_root, root)
-            candidate = os.path.join(
-                root_abs,
-                biome.path if biome.path.endswith(".png") else f"{base}.png",
-            )
-            if os.path.isfile(candidate):
-                matches.append(os.path.relpath(candidate, root_abs).replace(os.sep, "/"))
-                break
-    else:
+    # If no variant count is supplied, try to auto-detect available files
+    if variants is None:
         seen: set[str] = set()
         for root in ctx.search_paths:
             root_abs = root if os.path.isabs(root) else os.path.join(ctx.repo_root, root)
@@ -203,17 +201,36 @@ def load_tileset(ctx: Context, biome: Biome, tile_size: Optional[int] = None) ->
                 root_abs = root if os.path.isabs(root) else os.path.join(ctx.repo_root, root)
                 candidate = os.path.join(root_abs, f"{base}.png")
                 if os.path.isfile(candidate):
-                    matches.append(os.path.relpath(candidate, root_abs).replace(os.sep, "/"))
+                    matches.append(
+                        os.path.relpath(candidate, root_abs).replace(os.sep, "/")
+                    )
                     break
-    if biome.variants > len(matches):
+        variants = len(matches) if matches else 1
+    else:
+        variants = max(variants, 1)
+
+    if biome.variants > variants:
         logger.warning(
             "Biome %s specifies %d variants but only %d files found",
             biome.id,
             biome.variants,
-            len(matches),
+            variants,
         )
-    tileset = BiomeTileset(id=biome.id, path=biome.path, variants=len(matches))
-    for key in matches:
+
+    tileset = BiomeTileset(id=biome.id, path=biome.path, variants=variants)
+
+    if tileset.variants > 1:
+        for i in range(tileset.variants):
+            key = f"{base}_{i}.png"
+            surf = ctx.asset_loader.get(key) if ctx.asset_loader else None
+            if surf and hasattr(surf, "get_size"):
+                if surf.get_size() != (tile_size, tile_size):
+                    surf = scale_surface(surf, (tile_size, tile_size), smooth=False)
+            tileset.surfaces.append(surf)
+    else:
+        key = matches[0] if matches else (
+            biome.path if biome.path.endswith(".png") else f"{base}.png"
+        )
         surf = ctx.asset_loader.get(key) if ctx.asset_loader else None
         if surf and hasattr(surf, "get_size"):
             if surf.get_size() != (tile_size, tile_size):
