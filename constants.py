@@ -108,12 +108,10 @@ def build_biome_priority() -> Dict[str, int]:
 
     from loaders.biomes import BiomeCatalog  # noqa: WPS433
 
-    if BiomeCatalog._biomes:
-        return {
-            b.id: int(getattr(b, "priority", 0))
-            for b in BiomeCatalog._biomes.values()
-        }
-    return {
+    mapping = {
+        b.id: int(getattr(b, "priority", 0)) for b in BiomeCatalog._biomes.values()
+    }
+    defaults = {
         "scarletia_echo_plain": 0,
         "scarletia_crimson_forest": 1,
         "hills": 2,
@@ -125,6 +123,9 @@ def build_biome_priority() -> Dict[str, int]:
         "river": 8,
         "ocean": 9,
     }
+    for key, value in defaults.items():
+        mapping.setdefault(key, value)
+    return mapping
 
 
 # Relative priority of biomes when blending neighbouring tiles.
