@@ -168,6 +168,7 @@ class CombatHUD:
                 attacker.retaliations_left,
                 attacker.facing,
             )
+            att_view.count = attacker.count
             def_view = UnitView(
                 hover_target.side,
                 hover_target.stats,
@@ -176,6 +177,7 @@ class CombatHUD:
                 hover_target.retaliations_left,
                 hover_target.facing,
             )
+            def_view.count = hover_target.count
             dist = combat.hex_distance(
                 (attacker.x, attacker.y), (hover_target.x, hover_target.y)
             )
