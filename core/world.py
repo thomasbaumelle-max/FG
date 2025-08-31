@@ -42,6 +42,8 @@ except Exception:  # pragma: no cover
 from loaders.biomes import BiomeCatalog
 from loaders.core import Context, read_json
 from loaders.units_loader import load_units
+from loaders.faction_loader import load_factions
+from core.faction import FactionDef
 from .vision import compute_vision
 from core.ai.creature_ai import (
     CreatureAI,
@@ -59,6 +61,7 @@ logger = logging.getLogger(__name__)
 _BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 _BOSS_CTX = Context(_BASE_PATH, [os.path.join(_BASE_PATH, "assets")])
 bosses.load_boss_definitions(_BOSS_CTX)
+_FACTIONS: Dict[str, FactionDef] = load_factions(_BOSS_CTX)
 
 
 # Type hints for optional flora integration
@@ -428,7 +431,17 @@ class WorldMap:
             self.resource_density = num_resources * 100
 
         if not map_data:
-            self._assign_biomes(biome_weights)
+            weights = (
+                dict(biome_weights)
+                if biome_weights is not None
+                else dict(constants.DEFAULT_BIOME_WEIGHTS)
+            )
+            if self.player_faction:
+                fdef = _FACTIONS.get(self.player_faction)
+                if fdef:
+                    for hb in fdef.home_biomes:
+                        weights.setdefault(hb, 0.1)
+            self._assign_biomes(weights)
             self._place_obstacles(num_obstacles)
             self._place_treasures(num_treasures)
             guardian = max(0, num_enemies - num_enemies // 3)
@@ -811,12 +824,15 @@ class WorldMap:
                     coords.append((x, y))
         return coords
 
-    def _adjacent_free_tile(self, x: int, y: int) -> Optional[Tuple[int, int]]:
+    def _adjacent_free_tile(
+        self, x: int, y: int, allowed_biomes: Optional[Set[str]] = None
+    ) -> Optional[Tuple[int, int]]:
         """Return a free passable tile adjacent to ``(x, y)`` if any.
 
         Considers the four cardinal directions and returns the first coordinate
         that is in bounds, passable and without buildings, treasures or enemy
-        units.  Returns ``None`` if no such tile exists.
+        units.  When ``allowed_biomes`` is provided, only tiles whose biome is in
+        the set are considered.  Returns ``None`` if no such tile exists.
         """
 
         for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
@@ -824,6 +840,8 @@ class WorldMap:
             if not self.in_bounds(nx, ny):
                 continue
             tile = self.grid[ny][nx]
+            if allowed_biomes and tile.biome not in allowed_biomes:
+                continue
             if (
                 tile.is_passable()
                 and tile.building is None
@@ -1156,7 +1174,9 @@ class WorldMap:
             return
 
         def carve_area(x0: int, y0: int, size: int, owner: int) -> None:
-            biome = "scarletia_echo_plain"
+            fid = self.player_faction if owner == 0 else self.enemy_faction
+            home = _FACTIONS.get(fid).home_biomes if fid and fid in _FACTIONS else []
+            biome = random.choice(home) if home else "scarletia_echo_plain"
             for yy in range(y0, y0 + size):
                 for xx in range(x0, x0 + size):
                     tile = self.grid[yy][xx]
@@ -1173,7 +1193,6 @@ class WorldMap:
             ]
             coords = area_coords.copy()
             random.shuffle(coords)
-            fid = self.player_faction if owner == 0 else self.enemy_faction
             town = Town(faction_id=fid)
             placed = False
             while coords:
@@ -1246,7 +1265,7 @@ class WorldMap:
                                 biome
                             )
                         break
-            spawn = self._adjacent_free_tile(tx, ty)
+            spawn = self._adjacent_free_tile(tx, ty, {biome})
             if owner == 0:
                 if spawn:
                     self.hero_start = spawn
