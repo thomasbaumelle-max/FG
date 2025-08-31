@@ -184,11 +184,16 @@ class Game:
         self.assets = AssetManager(repo_root)
         self.vfx_manifest: Dict[str, Dict[str, Any]] = {}
 
-        search_paths = [os.path.join(repo_root, "assets")]
+        search_paths: List[str] = []
         extra = os.environ.get("FG_ASSETS_DIR")
         if extra:
-            search_paths.append(extra)
-        self.ctx = Context(repo_root=repo_root, search_paths=search_paths, asset_loader=self.assets)
+            search_paths.extend(p for p in extra.split(os.pathsep) if p)
+        search_paths.append(os.path.join(repo_root, "assets"))
+        self.ctx = Context(
+            repo_root=repo_root,
+            search_paths=search_paths,
+            asset_loader=self.assets,
+        )
 
         fast_tests = os.environ.get("FG_FAST_TESTS") == "1"
 

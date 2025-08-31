@@ -182,7 +182,12 @@ def _scenario_config(screen: pygame.Surface, scenario: str) -> Tuple[Optional[di
     colour_labels = [MENU_TEXTS["blue"], MENU_TEXTS["red"]]
     colour_values = [constants.BLUE, constants.RED]
     repo_root = os.path.dirname(os.path.dirname(__file__))
-    ctx = Context(repo_root=repo_root, search_paths=[os.path.join(repo_root, "assets")])
+    search_paths: list[str] = []
+    extra = os.environ.get("FG_ASSETS_DIR")
+    if extra:
+        search_paths.extend(p for p in extra.split(os.pathsep) if p)
+    search_paths.append(os.path.join(repo_root, "assets"))
+    ctx = Context(repo_root=repo_root, search_paths=search_paths)
     factions = load_factions(ctx)
     faction_items = sorted(factions.items())
     faction_opts = [fid for fid, _ in faction_items] + [None]

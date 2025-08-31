@@ -767,8 +767,13 @@ def _load_stats(manifest: str, section: str) -> Dict[str, UnitStats]:
     from loaders.units_loader import load_units  # local import to avoid cycle
     from loaders.core import Context
 
-    base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "assets"))
-    ctx = Context(base, [""])
+    base = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    search_paths: List[str] = []
+    extra = os.environ.get("FG_ASSETS_DIR")
+    if extra:
+        search_paths.extend(p for p in extra.split(os.pathsep) if p)
+    search_paths.append(os.path.join(base, "assets"))
+    ctx = Context(base, search_paths)
     stats_map, _ = load_units(ctx, manifest, section=section)
 
     out = {uid: st for uid, st in stats_map.items()}

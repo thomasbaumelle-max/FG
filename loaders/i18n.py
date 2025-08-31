@@ -8,7 +8,7 @@ that merges the default (French) strings with the requested language so
 missing keys gracefully fall back to the French text.
 """
 
-from typing import Dict
+from typing import Dict, List
 import os
 
 from .core import Context, read_json
@@ -25,7 +25,14 @@ def load_locale(language: str, default: str = "fr") -> Dict[str, str]:
     """
 
     repo_root = os.path.dirname(os.path.dirname(__file__))
-    ctx = Context(repo_root=repo_root, search_paths=["assets/i18n"])
+    search_paths: List[str] = []
+    extra = os.environ.get("FG_ASSETS_DIR")
+    if extra:
+        search_paths.extend(
+            os.path.join(p, "i18n") for p in extra.split(os.pathsep) if p
+        )
+    search_paths.append(os.path.join(repo_root, "assets", "i18n"))
+    ctx = Context(repo_root=repo_root, search_paths=search_paths)
 
     try:
         data = read_json(ctx, f"{default}.json")
