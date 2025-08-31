@@ -73,6 +73,18 @@ class BiomeCatalog:
         else:
             files.append(manifest)
 
+        def _asset_exists(rel: str) -> bool:
+            """Return ``True`` if an image for ``rel`` exists in search paths."""
+
+            for base in ctx.search_paths:
+                base_abs = (
+                    base if os.path.isabs(base) else os.path.join(ctx.repo_root, base)
+                )
+                for suffix in (".png", "_0.png"):
+                    if os.path.isfile(os.path.join(base_abs, f"{rel}{suffix}")):
+                        return True
+            return False
+
         biomes: Dict[str, Biome] = {}
         for path in files:
             data = read_json(ctx, path)
@@ -84,9 +96,17 @@ class BiomeCatalog:
                 if entry_path and not os.path.isabs(entry_path):
                     # By default treat paths as relative to the asset search root.
                     # When a manifest wishes to reference files relative to its own
-                    # directory it can use an explicit ``./`` or ``../`` prefix.
+                    # directory it can use an explicit ``./`` or ``../`` prefix.  If
+                    # the resulting file does not exist there, fall back to resolving
+                    # relative to the manifest location so realm-specific assets such
+                    # as ``realms/<realm>/biomes/<tile>.png`` are picked up without
+                    # needing explicit ``./`` prefixes.
                     if entry_path.startswith("./") or entry_path.startswith("../"):
                         entry_path = os.path.join(base_dir, entry_path)
+                    elif not _asset_exists(entry_path):
+                        candidate = os.path.join(base_dir, entry_path)
+                        if _asset_exists(candidate):
+                            entry_path = candidate
                 entry_path = os.path.normpath(entry_path).replace(os.sep, "/")
                 biome = Biome(
                     id=entry["id"],
