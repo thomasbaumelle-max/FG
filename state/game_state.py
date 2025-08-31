@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 from core import economy
+import audio
 
 
 @dataclass
@@ -134,6 +135,10 @@ class GameState:
                         town.advance_day(hero, self.world)
         self.turn.turn_index += 1
         if self.economy.calendar.day == 1:
+            prev = audio.get_current_music()
+            audio.play_music('event_week_start', loop=0)
+            if prev:
+                audio.queue_music(prev)
             self._advance_towns_week()
 
     def next_week(self) -> None:

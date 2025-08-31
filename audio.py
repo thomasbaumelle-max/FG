@@ -28,6 +28,7 @@ import settings
 _sounds: Dict[str, 'pygame.mixer.Sound'] = {}
 _music_enabled: bool = True
 _current_music: Optional[str] = None
+_queued_music: Optional[str] = None
 _music_tracks: Dict[str, str] = {}
 _default_music: Optional[str] = None
 _music_volume: float = 1.0
@@ -251,7 +252,8 @@ def play_sound(key: str) -> None:
 
 def play_music(track: str, loop: int = -1) -> None:
     """Start playing a music track referenced by ``track`` id or filename."""
-    global _current_music
+    global _current_music, _queued_music
+    _queued_music = None
     if not _music_enabled or not _has_mixer():
         _current_music = track
         return
@@ -266,6 +268,24 @@ def play_music(track: str, loop: int = -1) -> None:
         _current_music = track
     except Exception:
         _current_music = track
+
+
+def queue_music(track: str) -> None:
+    """Queue a music track to play after the current one ends."""
+    global _queued_music
+    if not track:
+        return
+    filename = _music_tracks.get(track, track)
+    path = _find_asset(filename)
+    if path is None or not os.path.isfile(path):
+        return
+    _queued_music = track if _has_mixer() else path
+    if not _music_enabled or not _has_mixer():
+        return
+    try:  # pragma: no cover
+        pygame.mixer.music.queue(path)
+    except Exception:
+        pass
 
 
 def stop_music() -> None:
