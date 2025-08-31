@@ -130,8 +130,7 @@ def init(asset_manager: AssetManager | None = None) -> None:
         if "SDL_AUDIODRIVER" not in os.environ:
             if sys.platform.startswith("win"):
                 os.environ["SDL_AUDIODRIVER"] = "directsound"
-            else:
-                os.environ["SDL_AUDIODRIVER"] = "pulseaudio"
+            # leave other platforms unset
         try:  # pragma: no cover - depends on system audio
             if not pygame.mixer.get_init():
                 pygame.mixer.init()
