@@ -7,6 +7,7 @@ from typing import Callable, Iterable, Tuple, Any
 import pygame
 
 import constants
+import audio
 
 
 def run_dialog(
@@ -30,12 +31,14 @@ def run_dialog(
                 pygame.quit()
                 exit()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                audio.play_sound("ui_cancel")
                 if on_escape:
                     on_escape()
                 return escape_result
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 for rect, result in buttons:
                     if rect.collidepoint(event.pos):
+                        audio.play_sound("ui_confirm")
                         return result
         draw_fn()
         pygame.display.flip()

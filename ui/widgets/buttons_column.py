@@ -145,12 +145,12 @@ class ButtonsColumn:
                     break
             if idx != self.hover_index:
                 if idx is not None and self.buttons[idx].button.enabled:
-                    audio.play_sound("hover")
+                    audio.play_sound("list_scroll")
                 self.hover_index = idx
         else:
             for entry in self.buttons:
                 if entry.button.handle(event):
-                    audio.play_sound("click")
+                    audio.play_sound("ui_confirm")
                     break
 
     def get_tooltip(self, pos: Tuple[int, int], rect: pygame.Rect) -> Optional[str]:

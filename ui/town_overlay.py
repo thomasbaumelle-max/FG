@@ -31,16 +31,20 @@ class TownOverlay:
                     pass
         self.font = theme.get_font(16)
         self.town_rects: List[Tuple[pygame.Rect, "Town"]] = []
+        audio.play_sound("panel_open")
 
     # ------------------------------------------------------------------
     def handle_event(self, event: pygame.event.Event) -> Union[bool, "Town"]:
         if event.type == pygame.KEYDOWN and event.key == pygame.K_u:
+            audio.play_sound("panel_close")
             return True  # signal to caller to close overlay
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            audio.play_sound("panel_close")
             return True
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             for rect, town in self.town_rects:
                 if rect.collidepoint(event.pos):
+                    audio.play_sound("panel_close")
                     return town
         return False
 

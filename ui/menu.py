@@ -451,6 +451,7 @@ def main_menu(screen: pygame.Surface, can_resume: bool = False) -> pygame.Surfac
             save_dir = os.path.dirname(__file__)
             save_path = os.path.join(save_dir, SAVE_SLOT_FILES[slot])
             if not os.path.exists(save_path):
+                audio.play_sound("notification")
                 _, screen = simple_menu(
                     screen,
                     [MENU_TEXTS["file_not_found"], MENU_TEXTS["back"]],
@@ -461,10 +462,12 @@ def main_menu(screen: pygame.Surface, can_resume: bool = False) -> pygame.Surfac
             game = Game(screen, slot=slot)
             try:
                 game.load_game(save_path)
+                audio.play_sound("load_game")
             except FileNotFoundError:
                 track = audio.get_current_music() or audio.get_default_music()
                 if track:
                     audio.play_music(track)
+                audio.play_sound("notification")
                 _, screen = simple_menu(
                     screen,
                     [MENU_TEXTS["file_not_found"], MENU_TEXTS["back"]],
@@ -513,6 +516,7 @@ def pause_menu(screen: pygame.Surface, game: Game) -> Tuple[bool, pygame.Surface
             game.default_save_path = game.save_slots[slot]
             game.default_profile_path = game.profile_slots[slot]
             game.save_game(game.default_save_path, game.default_profile_path)
+            audio.play_sound("save_game")
         elif choice == 2:  # Options
             screen = options_menu(screen)
         else:  # Quit to menu

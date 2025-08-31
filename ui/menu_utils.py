@@ -70,15 +70,15 @@ def simple_menu(
             if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_UP, pygame.K_w):
                     selected = (selected - 1) % len(opts)
-                    audio.play_sound("move")
+                    audio.play_sound("list_scroll")
                 elif event.key in (pygame.K_DOWN, pygame.K_s):
                     selected = (selected + 1) % len(opts)
-                    audio.play_sound("move")
+                    audio.play_sound("list_scroll")
                 elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
-                    audio.play_sound("click")
+                    audio.play_sound("ui_confirm")
                     return selected, screen
                 elif event.key == pygame.K_ESCAPE:
-                    audio.play_sound("click")
+                    audio.play_sound("ui_cancel")
                     return None, screen
                 elif event.key == pygame.K_F11:
                     pygame.display.toggle_fullscreen()
