@@ -247,6 +247,13 @@ chunk) and `biome_cache_size` (maximum cached chunks).
 
 ## Audio Troubleshooting
 
+Audio files are searched in the following order:
+
+- Paths listed in the `FG_ASSETS_DIR` environment variable. This variable
+  accepts multiple paths separated by the operating system's path separator.
+- The project's bundled `assets` directory.
+- An `assets` directory in the parent of the project, if present.
+
 If the game starts without producing any sound, the audio mixer may have
 failed to initialise. A default `SDL_AUDIODRIVER` is chosen automatically, and
 an error is logged when mixer setup fails. Verify an audio device is available
