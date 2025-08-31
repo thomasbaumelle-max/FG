@@ -76,14 +76,19 @@ class BiomeCatalog:
         biomes: Dict[str, Biome] = {}
         for path in files:
             data = read_json(ctx, path)
+            base_dir = os.path.dirname(path)
             for entry in data:
                 require_keys(entry, ["id"])
                 colour = entry.get("colour", [0, 0, 0])
+                entry_path = entry.get("path", "")
+                if entry_path and not os.path.isabs(entry_path):
+                    entry_path = os.path.normpath(os.path.join(base_dir, entry_path))
+                entry_path = entry_path.replace(os.sep, "/")
                 biome = Biome(
                     id=entry["id"],
                     type=entry.get("type", ""),
                     description=entry.get("description", ""),
-                    path=entry.get("path", ""),
+                    path=entry_path,
                     variants=int(entry.get("variants", 1)),
                     colour=tuple(colour),
                     flora=list(entry.get("flora", [])),
