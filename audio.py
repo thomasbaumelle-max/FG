@@ -149,6 +149,7 @@ def load_sound(key: str, filename: str) -> None:
         return
     path = _find_asset(filename)
     if path is None or not os.path.isfile(path):
+        _logger.warning("Missing audio file %s", filename)
         return
     try:  # pragma: no cover - loading depends on external files
         snd = pygame.mixer.Sound(path)
