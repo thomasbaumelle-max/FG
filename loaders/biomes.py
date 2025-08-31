@@ -76,14 +76,23 @@ class BiomeCatalog:
         biomes: Dict[str, Biome] = {}
         for path in files:
             data = read_json(ctx, path)
+            base_dir = os.path.dirname(path)
             for entry in data:
                 require_keys(entry, ["id"])
                 colour = entry.get("colour", [0, 0, 0])
+                entry_path = entry.get("path", "")
+                if entry_path and not os.path.isabs(entry_path):
+                    # By default treat paths as relative to the asset search root.
+                    # When a manifest wishes to reference files relative to its own
+                    # directory it can use an explicit ``./`` or ``../`` prefix.
+                    if entry_path.startswith("./") or entry_path.startswith("../"):
+                        entry_path = os.path.join(base_dir, entry_path)
+                entry_path = os.path.normpath(entry_path).replace(os.sep, "/")
                 biome = Biome(
                     id=entry["id"],
                     type=entry.get("type", ""),
                     description=entry.get("description", ""),
-                    path=entry.get("path", ""),
+                    path=entry_path,
                     variants=int(entry.get("variants", 1)),
                     colour=tuple(colour),
                     flora=list(entry.get("flora", [])),
@@ -122,7 +131,14 @@ def load_tileset(ctx: Context, biome: Biome, tile_size: Optional[int] = None) ->
     tileset = BiomeTileset(id=biome.id, path=biome.path, variants=biome.variants)
     base = biome.path
     for i in range(max(1, biome.variants)):
-        key = f"{base}_{i}.png" if not base.endswith(".png") else base
+        if base.endswith(".png"):
+            key = base
+        elif biome.variants > 1:
+            key = f"{base}_{i}.png"
+        else:
+            # Support single-variant biomes whose manifest omits the ``_0`` suffix
+            # by loading ``<path>.png`` instead of ``<path>_0.png``.
+            key = f"{base}.png"
         surf = ctx.asset_loader.get(key) if ctx.asset_loader else None
         if surf and hasattr(surf, "get_size"):
             if surf.get_size() != (tile_size, tile_size):
