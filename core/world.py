@@ -32,6 +32,7 @@ from core.entities import (
     UnitCarrier,
 )
 from core.buildings import create_building, Town, Building
+import audio
 from core import economy, bosses
 from render.autotile import AutoTileRenderer
 try:  # flora loader is optional for tests without pygame
@@ -324,6 +325,15 @@ class Tile:
                     econ_building.garrison.clear()
             return True
         return False
+
+    # -------------------------------------------------------------- audio hooks
+    def enter_structure(self, hero: "Hero") -> None:
+        if isinstance(self.building, Town):
+            audio.play_sound("enter_town")
+
+    def exit_structure(self, hero: "Hero") -> None:
+        if isinstance(self.building, Town):
+            audio.play_sound("exit_town")
 
     def is_passable(self, has_boat: bool = False) -> bool:
         """Return ``True`` if the tile can be entered by units.

@@ -2214,9 +2214,16 @@ class Game:
                 self._notify("A boat is required to embark.")
             return
         # Move hero
+        prev_tile.exit_structure(self.hero)
         self.hero.x = nx
         self.hero.y = ny
-        audio.play_sound('move')
+        if 'desert' in tile.biome:
+            audio.play_sound('step_desert')
+        elif 'forest' in tile.biome:
+            audio.play_sound('step_forest')
+        else:
+            audio.play_sound('step_plain')
+        tile.enter_structure(self.hero)
         # Update free tile cache for old and new positions
         self._update_caches_for_tile(prev_x, prev_y)
         self._update_caches_for_tile(self.hero.x, self.hero.y)
@@ -2423,6 +2430,15 @@ class Game:
             res = tile.resource
             self.hero.resources[res] += 5
             tile.resource = None
+            sound_map = {
+                'wood': 'pickup_wood',
+                'stone': 'pickup_ore',
+                'gold': 'pickup_gold',
+                'crystal': 'pickup_crystal',
+            }
+            sound_key = sound_map.get(res)
+            if sound_key:
+                audio.play_sound(sound_key)
             self._notify(f"You gather some {res}.")
             self._update_caches_for_tile(self.hero.x, self.hero.y)
             self._publish_resources()
@@ -2438,6 +2454,7 @@ class Game:
         if treasure is None:
             return
         choice = self.prompt_treasure_choice(treasure)
+        audio.play_sound("chest_open")
         if choice == "gold":
             amount = random.randint(*treasure["gold"])
             self.hero.gold += amount
@@ -2983,6 +3000,9 @@ class Game:
         captured = tile.capture(hero, new_owner, econ_state, econ_building)
         if captured:
             self._update_caches_for_tile(x, y)
+            bid = getattr(tile.building, "id", "")
+            if bid in {"mine", "crystal_mine", "sawmill"}:
+                audio.play_sound("capture_mine")
             if (
                 new_owner == 0
                 and isinstance(tile.building, Town)
@@ -3340,6 +3360,7 @@ class Game:
         choose one.
         """
 
+        audio.play_sound("enter_town")
         if town is not None:
             track = None
             if getattr(town, "faction_id", None):
@@ -3378,6 +3399,7 @@ class Game:
             except Exception as exc:
                 logger.warning("Failed to load town scene %s: %s", scene_path, exc)
             finally:
+                audio.play_sound("exit_town")
                 audio.play_music("world_scarletia")
             return
 
@@ -3422,6 +3444,7 @@ class Game:
             overlay.draw()
             pygame.display.flip()
             self.clock.tick(constants.FPS)
+        audio.play_sound("exit_town")
         audio.play_music("world_scarletia")
 
     def open_hero_exchange(self, other: Union[Hero, Army]) -> None:

@@ -19,5 +19,17 @@
   {"id": "list_scroll", "file": "audio/ui/list_scroll.wav"},
   {"id": "notification","file": "audio/ui/notification.wav"},
   {"id": "save_game",   "file": "audio/ui/save_game.wav"},
-  {"id": "load_game",   "file": "audio/ui/load_game.wav"}
+  {"id": "load_game",   "file": "audio/ui/load_game.wav"},
+  {"id": "step_plain",  "file": "audio/world/step_plain.wav"},
+  {"id": "step_desert", "file": "audio/world/step_desert.wav"},
+  {"id": "step_forest", "file": "audio/world/step_forest.wav"},
+  {"id": "pickup_wood", "file": "audio/world/pickup_wood.wav"},
+  {"id": "pickup_ore",  "file": "audio/world/pickup_ore.wav"},
+  {"id": "pickup_gold", "file": "audio/world/pickup_gold.wav"},
+  {"id": "pickup_crystal","file": "audio/world/pickup_crystal.wav"},
+  {"id": "chest_open",  "file": "audio/world/chest_open.wav"},
+  {"id": "artifact_pickup","file": "audio/world/artifact_pickup.wav"},
+  {"id": "enter_town",  "file": "audio/world/enter_town.wav"},
+  {"id": "exit_town",   "file": "audio/world/exit_town.wav"},
+  {"id": "capture_mine","file": "audio/world/capture_mine.wav"}
 ]

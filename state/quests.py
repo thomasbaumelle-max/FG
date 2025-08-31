@@ -6,6 +6,7 @@ from typing import Dict, List, Any
 
 from state.event_bus import EVENT_BUS, ON_RESOURCES_CHANGED, ON_ENEMY_DEFEATED
 import constants
+import audio
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +85,7 @@ class QuestManager:
         artifact = reward.get("artifact")
         if artifact:
             hero.inventory.append(artifact)
+            audio.play_sound("artifact_pickup")
         logger.info("Quest completed: %s", quest.id)
         self.completed.append(quest)
 
