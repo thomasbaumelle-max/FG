@@ -19,8 +19,12 @@ def _candidate_asset_dirs() -> list[Path]:
     # 1) Override explicite
     env = os.environ.get("FG_ASSETS_DIR")
     if env:
-        p = Path(env).expanduser().resolve()
-        dirs.append(p)
+        for part in env.split(os.pathsep):
+            if part:
+                p = Path(part).expanduser()
+                if not p.is_absolute():
+                    p = _ROOT / p
+                dirs.append(p.resolve())
     # 2) assets du projet
     dirs.append((_ROOT / "assets").resolve())
     # 3) assets au niveau parent (ton cas : D:\FG_v0\assets)

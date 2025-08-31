@@ -202,9 +202,14 @@ class Town(Building):
 
         if faction_id:
             repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+            search_paths: List[str] = []
+            extra = os.environ.get("FG_ASSETS_DIR")
+            if extra:
+                search_paths.extend(p for p in extra.split(os.pathsep) if p)
+            search_paths.append(os.path.join(repo_root, "assets"))
             ctx = Context(
                 repo_root=repo_root,
-                search_paths=[os.path.join(repo_root, "assets")],
+                search_paths=search_paths,
                 asset_loader=None,
             )
             manifest = os.path.join("towns", faction_id, "town.json")

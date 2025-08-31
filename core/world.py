@@ -59,7 +59,12 @@ logger = logging.getLogger(__name__)
 # generation functions.  Errors are silently ignored and simply result in an
 # empty definition mapping which is sufficient for tests.
 _BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-_BOSS_CTX = Context(_BASE_PATH, [os.path.join(_BASE_PATH, "assets")])
+_SEARCH_PATHS: List[str] = []
+_EXTRA = os.environ.get("FG_ASSETS_DIR")
+if _EXTRA:
+    _SEARCH_PATHS.extend(p for p in _EXTRA.split(os.pathsep) if p)
+_SEARCH_PATHS.append(os.path.join(_BASE_PATH, "assets"))
+_BOSS_CTX = Context(_BASE_PATH, _SEARCH_PATHS)
 bosses.load_boss_definitions(_BOSS_CTX)
 _FACTIONS: Dict[str, FactionDef] = load_factions(_BOSS_CTX)
 
@@ -129,7 +134,12 @@ def _load_creatures_by_biome() -> Tuple[
     """
 
     base = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    ctx = Context(base, [os.path.join(base, "assets")])
+    search_paths: List[str] = []
+    extra = os.environ.get("FG_ASSETS_DIR")
+    if extra:
+        search_paths.extend(p for p in extra.split(os.pathsep) if p)
+    search_paths.append(os.path.join(base, "assets"))
+    ctx = Context(base, search_paths)
     mapping: Dict[str, List[str]] = {}
     behaviour: Dict[str, Tuple[CreatureBehavior, int]] = {}
     manifest = "units/creatures.json"

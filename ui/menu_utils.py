@@ -18,13 +18,12 @@ def _load_background() -> Optional[pygame.Surface]:
 
     filenames = ["menu_background.png", "menu_backround.png"]
     base_dir = os.path.dirname(__file__)
-    env_path = os.environ.get("FG_ASSETS_DIR")
-    search_dirs = [
-        os.path.join(base_dir, "assets"),
-        os.path.join(os.path.dirname(base_dir), "assets"),
-    ]
-    if env_path:
-        search_dirs.insert(0, env_path)
+    env_paths = os.environ.get("FG_ASSETS_DIR")
+    search_dirs: List[str] = []
+    if env_paths:
+        search_dirs.extend(p for p in env_paths.split(os.pathsep) if p)
+    search_dirs.append(os.path.join(base_dir, "assets"))
+    search_dirs.append(os.path.join(os.path.dirname(base_dir), "assets"))
     for directory in search_dirs:
         for root, _dirs, files in os.walk(directory):
             for name in filenames:

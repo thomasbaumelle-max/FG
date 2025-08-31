@@ -140,7 +140,11 @@ def load_default_buildings() -> Dict[str, BuildingAsset]:
     """Load building definitions using the repository's asset paths."""
 
     repo_root = os.path.dirname(os.path.dirname(__file__))
-    search = [os.path.join(repo_root, "assets")]
+    search: List[str] = []
+    extra = os.environ.get("FG_ASSETS_DIR")
+    if extra:
+        search.extend(p for p in extra.split(os.pathsep) if p)
+    search.append(os.path.join(repo_root, "assets"))
     ctx = Context(repo_root=repo_root, search_paths=search, asset_loader=None)
     return load_buildings(ctx)
 
