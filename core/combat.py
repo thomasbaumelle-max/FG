@@ -1506,7 +1506,9 @@ class Combat:
                                     print("Path blocked")
                                     self.grid[y0][x0] = self.selected_unit
                                 else:
+                                    facing = self._facing_from_last_step(path, (x0, y0))
                                     self.move_unit(self.selected_unit, cx, cy)
+                                    self.selected_unit.facing = facing
                                     rt = self._rt(self.selected_unit)
                                     if rt:
                                         rt.moved_tiles_this_turn += dist - 1
@@ -1753,6 +1755,30 @@ class Combat:
         rt = self._rt(unit)
         if rt:
             rt.moved_tiles_this_turn += 1
+
+    def _facing_from_last_step(
+        self, path: list[Tuple[int, int]], start: Tuple[int, int]
+    ) -> Tuple[int, int]:
+        """Return facing vector for the final segment of ``path``.
+
+        ``path`` should include the destination as its last element.  If the
+        path contains only the destination, the facing is computed from
+        ``start`` to that point.
+        """
+        if not path:
+            return (0, 0)
+        if len(path) >= 2:
+            prev_x, prev_y = path[-2]
+            dest_x, dest_y = path[-1]
+        else:
+            prev_x, prev_y = start
+            dest_x, dest_y = path[-1]
+        dx = dest_x - prev_x
+        dy = dest_y - prev_y
+        return (
+            0 if dx == 0 else (1 if dx > 0 else -1),
+            0 if dy == 0 else (1 if dy > 0 else -1),
+        )
 
     def _wait(self, duration: float) -> None:
         """Pause for ``duration`` seconds if a display surface exists."""
