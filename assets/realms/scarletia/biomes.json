@@ -3,7 +3,7 @@
     "id": "scarletia_echo_plain",
     "type": "plain",
     "description": "Étendues ouvertes balayées par le vent.",
-    "path": "biomes/scarletia_echo_plain",
+    "path": "./biomes/scarletia_echo_plain",
     "variants": 3,
     "colour": [104, 168, 84],
     "flora": [
@@ -22,7 +22,7 @@
     "id": "scarletia_crimson_forest",
     "type": "forest",
     "description": "Forêt écarlate dense.",
-    "path": "biomes/scarletia_crimson_forest",
+    "path": "./biomes/scarletia_crimson_forest",
     "variants": 3,
     "colour": [34, 122, 57],
     "flora": [
@@ -40,7 +40,7 @@
     "id": "scarletia_volcanic",
     "type": "volcanic",
     "description": "Laves et scories incandescentes.",
-    "path": "biomes/scarletia_volcanic",
+    "path": "./biomes/scarletia_volcanic",
     "variants": 3,
     "colour": [210, 186, 75],
     "flora": [

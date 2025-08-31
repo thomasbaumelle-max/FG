@@ -3,7 +3,7 @@
     "id": "sylvan_lirael_brume",
     "type": "forest",
     "description": "Vallées embrumées et forêts moussues",
-    "path": "biomes/sylvan_lirael_brume",
+    "path": "./biomes/sylvan_lirael_brume",
     "variants": 1,
     "colour": [34, 122, 57],
     "flora": [
@@ -21,7 +21,7 @@
     "id": "sylvan_calywen_garden",
     "type": "forest",
     "description": "Falaises couvertes de végétation en cascade",
-    "path": "biomes/sylvan_calywen_garden",
+    "path": "./biomes/sylvan_calywen_garden",
     "variants": 1,
     "colour": [34, 122, 57],
     "flora": [
@@ -39,7 +39,7 @@
     "id": "sylvan_herbyplain",
     "type": "plain",
     "description": "Prairies enchantées et cercles de pierres",
-    "path": "biomes/sylvan_herby_plain",
+    "path": "./biomes/sylvan_herby_plain",
     "variants": 1,
     "colour": [34, 122, 57],
     "flora": [

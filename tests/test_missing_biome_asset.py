@@ -15,7 +15,7 @@ def test_missing_biome_image_raises(tmp_path):
             "id": "missing",
             "type": "forest",
             "description": "",
-            "path": "biomes/missing",
+            "path": "./biomes/missing",
             "variants": 1,
             "colour": [0, 0, 0],
             "flora": [],
@@ -35,10 +35,10 @@ def test_missing_biome_image_raises(tmp_path):
     old_weights = constants.DEFAULT_BIOME_WEIGHTS
     old_prio = constants.BIOME_PRIORITY
     try:
-        with pytest.raises(RuntimeError) as exc:
+        with pytest.raises(FileNotFoundError) as exc:
             BiomeCatalog.load(ctx)
         assert "missing" in str(exc.value)
-        assert "biomes/missing.png" in str(exc.value)
+        assert "biomes/biomes/missing.png" in str(exc.value)
         assert str(assets_root) in str(exc.value)
     finally:
         BiomeCatalog._biomes = old_biomes

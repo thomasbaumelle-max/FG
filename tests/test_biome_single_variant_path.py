@@ -19,7 +19,7 @@ def test_single_variant_base_image_without_suffix(tmp_path):
             "id": "foo",
             "type": "",
             "description": "",
-            "path": "biomes/foo",
+            "path": "./biomes/foo",
             "variants": 1,
             "colour": [0, 0, 0],
             "flora": [],

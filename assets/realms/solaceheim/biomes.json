@@ -3,7 +3,7 @@
     "id": "solaceheim_singing_dunes",
     "type": "desert",
     "description": "Dunes dorées dont les vents tirent des harmoniques sacrées.",
-    "path": "biomes/solaceheim_singing_dunes",
+    "path": "./biomes/solaceheim_singing_dunes",
     "variants": 3,
     "colour": [218, 182, 95],
     "flora": [
@@ -19,7 +19,7 @@
     "id": "solaceheim_ascetic_terraces",
     "type": "hills",
     "description": "Terrasses rocheuses et monastères taillés dans le grès doré.",
-    "path": "biomes/solaceheim_ascetic_terraces",
+    "path": "./biomes/solaceheim_ascetic_terraces",
     "variants": 3,
     "colour": [206, 172, 120],
     "flora": [
@@ -35,7 +35,7 @@
     "id": "solaceheim_celestial_veil",
     "type": "hills",
     "description": "Cimes filtrant la lumière en nuées dorées, au bord du ciel.",
-    "path": "biomes/solaceheim_celestial_veil",
+    "path": "./biomes/solaceheim_celestial_veil",
     "variants": 3,
     "colour": [245, 231, 190],
     "flora": [
