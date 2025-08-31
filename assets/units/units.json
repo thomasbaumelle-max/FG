@@ -40,7 +40,7 @@
       "anchor_px": [32, 64],
       "shadow_baked": true,
       "battlefield_scale": 1.0,
-      "abilities": {"brace": 1,"set_pike": 1, "formation_bonus" : 1}, # brace: +def_melee vs charge ; set_pike: +dmg vs mounted/beast ; formation: adjacent allies +1 def_ranged  role="T1—anti-charge / écran",
+      "abilities": {"brace": 1,"set_pike": 1, "formation_bonus" : 1},
       "stats": {
         "name": "Spearman",
         "max_hp": 28,
@@ -238,7 +238,7 @@
       "anchor_px": [32, 64],
       "shadow_baked": true,
       "battlefield_scale": 1.3,
-      "abilities": {"cleave" : 1,"unyielding" : 1,"counterstrike_plus" : 1},  # cleave: touche 1 case adjacente supplémentaire ; unyielding: ignore 1 malus de morale ; retaliations=2
+      "abilities": {"cleave" : 1,"unyielding" : 1,"counterstrike_plus" : 1}, 
       "stats": {
         "name": "Grandmaster Warrior",
         "max_hp": 95,
