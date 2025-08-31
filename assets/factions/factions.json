@@ -28,7 +28,8 @@
     ],
     "home_biomes": [
       "scarletia_echo_plain",
-      "scarletia_crimson_forest"
+      "scarletia_crimson_forest",
+      "scarletia_volcanic"
     ]
   },
   {
@@ -104,7 +105,9 @@
       {"id": "Serkath", "name": "Ser’kath, le Parangon Scorpion"}
     ],
     "home_biomes": [
-      "scarletia_volcanic"
+      "solaceheim_singing_dunes",
+      "solaceheim_ascetic_terraces",
+      "solaceheim_celestial_veil"
     ]
   }
 ]
