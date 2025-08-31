@@ -64,6 +64,38 @@ bosses.load_boss_definitions(_BOSS_CTX)
 _FACTIONS: Dict[str, FactionDef] = load_factions(_BOSS_CTX)
 
 
+# Mapping from single-character codes in map files to biome identifiers.
+BIOME_CHAR_MAP: Dict[str, str] = {}
+BIOME_CHARS: Set[str] = set()
+
+
+def load_biome_char_map(ctx: Context = _BOSS_CTX, realm: Optional[str] = None) -> None:
+    """Load ``BIOME_CHAR_MAP`` from JSON files.
+
+    The base mapping comes from ``assets/biomes/char_map.json``.  If ``realm`` is
+    provided, an additional ``<realm>/char_map.json`` is merged on top allowing
+    custom realms to extend or override the default characters.
+    """
+
+    mapping: Dict[str, str] = {}
+    try:
+        base_map = read_json(ctx, "biomes/char_map.json")
+        if isinstance(base_map, dict):
+            mapping.update({k: str(v) for k, v in base_map.items()})
+    except Exception:
+        pass
+    if realm:
+        try:
+            realm_map = read_json(ctx, f"{realm}/char_map.json")
+            if isinstance(realm_map, dict):
+                mapping.update({k: str(v) for k, v in realm_map.items()})
+        except Exception:
+            pass
+    global BIOME_CHAR_MAP, BIOME_CHARS
+    BIOME_CHAR_MAP = mapping
+    BIOME_CHARS = set(mapping.keys())
+
+
 # Type hints for optional flora integration
 if TYPE_CHECKING:  # pragma: no cover
     from loaders.flora_loader import FloraLoader, PropInstance
@@ -151,53 +183,46 @@ BIOME_IMAGES: Dict[str, Tuple[str, Tuple[int, int, int]]] = {}
 def init_biome_images() -> None:
     """(Re)build :data:`BIOME_IMAGES` from :class:`BiomeCatalog`."""
 
-    images: Dict[str, Tuple[str, Tuple[int, int, int]]] = {}
+    images: Dict[str, Tuple[str, Tuple[int, int, int]]] = {
+        "mountain": (
+            constants.BIOME_BASE_IMAGES.get("mountain", [""])[0],
+            constants.GREY,
+        ),
+        "hills": (
+            constants.BIOME_BASE_IMAGES.get("hills", [""])[0],
+            constants.GREY,
+        ),
+        "swamp": (
+            constants.BIOME_BASE_IMAGES.get("swamp", [""])[0],
+            constants.GREEN,
+        ),
+        "jungle": (
+            constants.BIOME_BASE_IMAGES.get("jungle", [""])[0],
+            constants.GREEN,
+        ),
+        "ice": (
+            constants.BIOME_BASE_IMAGES.get("ice", [""])[0],
+            constants.WHITE,
+        ),
+        "ocean": (
+            constants.BIOME_BASE_IMAGES.get("ocean", [""])[0],
+            constants.BLUE,
+        ),
+        # Fallbacks for the core Scarletiа biomes used in tests
+        "scarletia_echo_plain": (
+            constants.BIOME_BASE_IMAGES.get("grass", [""])[0], constants.GREEN
+        ),
+        "scarletia_crimson_forest": (
+            constants.BIOME_BASE_IMAGES.get("forest", [""])[0], constants.GREEN
+        ),
+        "scarletia_volcanic": (
+            constants.BIOME_BASE_IMAGES.get("desert", [""])[0], constants.YELLOW
+        ),
+    }
     for biome in BiomeCatalog._biomes.values():
         paths = constants.BIOME_BASE_IMAGES.get(biome.id, [""])
         base = paths[0] if isinstance(paths, list) else paths
         images[biome.id] = (base, biome.colour)
-    images.update(
-        {
-            "mountain": (
-                constants.BIOME_BASE_IMAGES.get("mountain", [""])[0],
-                constants.GREY,
-            ),
-            "hills": (
-                constants.BIOME_BASE_IMAGES.get("hills", [""])[0],
-                constants.GREY,
-            ),
-            "swamp": (
-                constants.BIOME_BASE_IMAGES.get("swamp", [""])[0],
-                constants.GREEN,
-            ),
-            "jungle": (
-                constants.BIOME_BASE_IMAGES.get("jungle", [""])[0],
-                constants.GREEN,
-            ),
-            "ice": (
-                constants.BIOME_BASE_IMAGES.get("ice", [""])[0],
-                constants.WHITE,
-            ),
-            "ocean": (
-                constants.BIOME_BASE_IMAGES.get("ocean", [""])[0],
-                constants.BLUE,
-            ),
-        }
-    )
-    # Ensure placeholder entries for core Scarletiа biomes even if the catalog
-    # has not been loaded yet (e.g. in unit tests using ``WorldMap`` directly).
-    images.setdefault(
-        "scarletia_echo_plain",
-        (constants.BIOME_BASE_IMAGES.get("grass", [""])[0], constants.GREEN),
-    )
-    images.setdefault(
-        "scarletia_crimson_forest",
-        (constants.BIOME_BASE_IMAGES.get("forest", [""])[0], constants.GREEN),
-    )
-    images.setdefault(
-        "scarletia_volcanic",
-        (constants.BIOME_BASE_IMAGES.get("desert", [""])[0], constants.YELLOW),
-    )
     global BIOME_IMAGES
     BIOME_IMAGES = images
 
@@ -205,6 +230,7 @@ def init_biome_images() -> None:
 # Initialise mapping with whatever is currently loaded in the catalogue.  The
 # game refreshes this after loading the manifest.
 init_biome_images()
+load_biome_char_map()
 
 
 def generate_combat_map(
@@ -246,22 +272,9 @@ def generate_combat_map(
 
     return grid, flora_props
 
-# Mapping from single-character codes in map files to biome names.  Certain
-# biomes such as ``mountain`` and ``ocean`` are intrinsically impassable.
-BIOME_CHAR_MAP = {
-    "G": "scarletia_echo_plain",
-    "F": "scarletia_crimson_forest",
-    "D": "scarletia_volcanic",
-    "M": "mountain",
-    "H": "hills",
-    "S": "swamp",
-    "J": "jungle",
-    "I": "ice",
-    "R": "river",
-    "W": "ocean",
-    "O": "ocean",  # backward compatibility
-}
-BIOME_CHARS = set(BIOME_CHAR_MAP.keys())
+# Mapping from single-character codes in map files to biome ids.
+# Loaded via :func:`load_biome_char_map` so custom realms can extend the
+# mapping without modifying core code.
 
 
 

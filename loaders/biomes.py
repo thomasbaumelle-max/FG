@@ -26,6 +26,8 @@ class Biome:
     passable: bool = True
     overlays: List[str] = field(default_factory=list)
     vision_bonus: int = 0
+    weight: float = 1.0
+    priority: int = 0
 
 
 @dataclass
@@ -91,13 +93,18 @@ class BiomeCatalog:
                     passable=bool(entry.get("passable", True)),
                     overlays=list(entry.get("overlays", [])),
                     vision_bonus=int(entry.get("vision_bonus", 0)),
+                    weight=float(entry.get("weight", 1.0)),
+                    priority=int(entry.get("priority", 0)),
                 )
                 biomes[biome.id] = biome
         cls._biomes = biomes
         # Refresh derived mappings in constants
         constants.BIOME_BASE_IMAGES = constants.build_biome_base_images()
+        constants.DEFAULT_BIOME_WEIGHTS = constants.build_default_biome_weights()
+        constants.BIOME_PRIORITY = constants.build_biome_priority()
         from core import world as core_world
         core_world.init_biome_images()
+        core_world.load_biome_char_map(ctx, manifest)
         try:
             from ui.widgets.minimap import Minimap
             Minimap.invalidate_all()
