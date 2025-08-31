@@ -120,15 +120,14 @@ def init(asset_manager: AssetManager | None = None) -> None:
     if asset_manager is not None:
         set_asset_manager(asset_manager)
 
-    _load_manifests()
+    if _has_mixer():
+        try:  # pragma: no cover - depends on system audio
+            if not pygame.mixer.get_init():
+                pygame.mixer.init()
+        except Exception:
+            pass
 
-    if not _has_mixer():
-        return
-    try:  # pragma: no cover - depends on system audio
-        if not pygame.mixer.get_init():
-            pygame.mixer.init()
-    except Exception:
-        return
+    _load_manifests()
 
 
 def load_sound(key: str, filename: str) -> None:
