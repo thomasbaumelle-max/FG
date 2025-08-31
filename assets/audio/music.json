@@ -1,4 +1,15 @@
 [
-  {"id": "title", "file": "audio/title_theme.ogg", "default": true},
-  {"id": "battle", "file": "audio/battle_theme.ogg"}
+  {"id": "menu_main",    "file": "audio/music/menu_main.ogg",    "default": true},
+  {"id": "menu_options", "file": "audio/music/menu_options.ogg"},
+  {"id": "world_scarletia", "file": "audio/music/world_scarletia.ogg"},
+  {"id": "town_red_knights", "file": "audio/music/town_red_knights.ogg"},
+  {"id": "town_sylvan", "file": "audio/music/town_sylvan.ogg"},
+  {"id": "town_solaceheim", "file": "audio/music/town_solaceheim.ogg"},
+  {"id": "battle_standard", "file": "audio/music/battle_standard.ogg"},
+  {"id": "battle_elite",    "file": "audio/music/battle_elite.ogg"},
+  {"id": "battle_siege",    "file": "audio/music/battle_siege.ogg"},
+  {"id": "event_victory",   "file": "audio/music/event_victory.ogg"},
+  {"id": "event_defeat",    "file": "audio/music/event_defeat.ogg"},
+  {"id": "event_turn_end",  "file": "audio/music/event_turn_end.ogg"},
+  {"id": "event_week_start","file": "audio/music/event_week_start.ogg"}
 ]

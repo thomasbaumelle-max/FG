@@ -1439,6 +1439,7 @@ class Game:
 
     def run(self) -> None:
         """Main game loop handling exploration and combat."""
+        audio.play_music("world_scarletia")
         self.quit_to_menu = False
         running = True
         while running and not self.quit_to_menu:
@@ -1610,11 +1611,13 @@ class Game:
         if enemy_town is None:
             if hasattr(ms, "show_end_overlay"):
                 ms.show_end_overlay(True)
+            audio.play_music('event_victory')
             audio.play_sound('victory')
             self._victory_shown = True
         elif hero_town is None:
             if hasattr(ms, "show_end_overlay"):
                 ms.show_end_overlay(False)
+            audio.play_music('event_defeat')
             audio.play_sound('defeat')
             self._game_over_shown = True
 
@@ -1634,6 +1637,7 @@ class Game:
 
     def _show_game_over(self) -> None:
         """Display a simple game over summary and return to the main menu."""
+        audio.play_music('event_defeat')
         audio.play_sound('defeat')
         heading_font = theme.get_font(48) or pygame.font.SysFont(None, 48)
         font = theme.get_font(24) or pygame.font.SysFont(None, 24)
@@ -1680,6 +1684,7 @@ class Game:
 
     def _show_victory(self) -> None:
         """Display a simple victory summary and return to the main menu."""
+        audio.play_music('event_victory')
         audio.play_sound('victory')
         heading_font = theme.get_font(48) or pygame.font.SysFont(None, 48)
         font = theme.get_font(24) or pygame.font.SysFont(None, 24)
@@ -2022,6 +2027,7 @@ class Game:
                     )
                     audio.play_sound('attack')
                     hero_wins, _ = combat.run()
+                    audio.play_music("world_scarletia")
                     for i in range(len(actor.units) - 1, -1, -1):
                         if i < len(combat.hero_units):
                             res = combat.hero_units[i]
@@ -2259,6 +2265,7 @@ class Game:
                 )
                 if hero_wins:
                     self._notify("You are victorious!")
+                    audio.play_music('event_victory')
                     audio.play_sound('victory')
                     EVENT_BUS.publish(
                         ON_ENEMY_DEFEATED, [u.stats.name for u in tile.enemy_units]
@@ -2269,6 +2276,7 @@ class Game:
                         self.hero.army = []
                 else:
                     self._notify("You have been defeated!")
+                    audio.play_music('event_defeat')
                     audio.play_sound('defeat')
                     self.hero.army = []
                     # Retreat to previous position
@@ -2312,6 +2320,7 @@ class Game:
                 )
                 audio.play_sound('attack')
                 hero_wins, exp_gained = combat.run()
+                audio.play_music("world_scarletia")
                 if combat.exit_to_menu:
                     self.quit_to_menu = True
                     return
@@ -2328,6 +2337,7 @@ class Game:
                 self.hero.gain_exp(exp_gained)
                 if hero_wins:
                     self._notify("You are victorious!")
+                    audio.play_music('event_victory')
                     audio.play_sound('victory')
                     EVENT_BUS.publish(ON_ENEMY_DEFEATED, [u.stats.name for u in tile.enemy_units])
                     tile.enemy_units = None
@@ -2336,6 +2346,7 @@ class Game:
                         self.hero.army = []
                 else:
                     self._notify("You have been defeated!")
+                    audio.play_music('event_defeat')
                     audio.play_sound('defeat')
                     self.hero.army = []
                     # Retreat to previous position
@@ -2844,6 +2855,7 @@ class Game:
             self.refresh_army_list()
             self._update_player_visibility()
             try:
+                audio.play_music('event_turn_end')
                 audio.play_sound('end_turn')
             except Exception:  # pragma: no cover
                 pass
@@ -2863,9 +2875,12 @@ class Game:
             return
         self._notify("End of day. All heroes' action points are restored.")
         if hasattr(self, "state") and hasattr(self.state, "next_day"):
+            prev_week = getattr(self.state.turn, "week", None)
             self._sync_economy_from_hero()
             self.state.next_day()
             self._sync_hero_from_economy()
+            if prev_week is not None and self.state.turn.week != prev_week:
+                audio.play_music('event_week_start')
         else:
             for row in self.world.grid:
                 for tile in row:
@@ -2884,6 +2899,7 @@ class Game:
         self.refresh_army_list()
         self._update_player_visibility()
         try:
+            audio.play_music('event_turn_end')
             audio.play_sound('end_turn')
         except Exception:  # pragma: no cover
             pass
@@ -3135,6 +3151,7 @@ class Game:
                     EVENT_BUS.publish(ON_ENEMY_DEFEATED, ["EnemyHero"])
                 else:
                     self._notify("You have been defeated!")
+                    audio.play_music('event_defeat')
                     audio.play_sound('defeat')
                     self.hero.army = []
                 return True
@@ -3177,6 +3194,7 @@ class Game:
         )
         audio.play_sound("attack")
         hero_wins, exp_gained = combat.run()
+        audio.play_music("world_scarletia")
         if combat.exit_to_menu:
             self.quit_to_menu = True
             return False
@@ -3198,6 +3216,7 @@ class Game:
             EVENT_BUS.publish(ON_ENEMY_DEFEATED, ["EnemyHero"])
         else:
             self._notify("You have been defeated!")
+            audio.play_music('event_defeat')
             audio.play_sound('defeat')
             self.hero.army = []
         self.refresh_army_list()
@@ -3321,6 +3340,11 @@ class Game:
         """
 
         if town is not None:
+            track = None
+            if getattr(town, "faction_id", None):
+                track = f"town_{town.faction_id}"
+            if track:
+                audio.play_music(track)
             if scene_path is None:
                 scene_path = os.path.join(
                     self.ctx.repo_root, "assets", "towns", "red_knights", "town.json"
@@ -3352,6 +3376,8 @@ class Game:
                     run(debug=debug_scene)
             except Exception as exc:
                 logger.warning("Failed to load town scene %s: %s", scene_path, exc)
+            finally:
+                audio.play_music("world_scarletia")
             return
 
         try:  # pragma: no cover - allow running without package context
@@ -3395,6 +3421,7 @@ class Game:
             overlay.draw()
             pygame.display.flip()
             self.clock.tick(constants.FPS)
+        audio.play_music("world_scarletia")
 
     def open_hero_exchange(self, other: Union[Hero, Army]) -> None:
         """Open the unit exchange screen between the active hero and ``other``."""
@@ -3411,7 +3438,11 @@ class Game:
             from .ui.options_menu import options_menu
         except ImportError:  # pragma: no cover
             from ui.options_menu import options_menu
+        prev_track = audio.get_current_music() or audio.get_default_music()
+        audio.play_music("menu_options")
         self.screen = options_menu(self.screen)
+        if prev_track:
+            audio.play_music(prev_track)
 
     def hero_heal(self) -> None:
         """Heal ability: restore some HP to the top creature of each stack. Costs one AP."""

@@ -361,9 +361,7 @@ def main_menu(screen: pygame.Surface, can_resume: bool = False) -> pygame.Surfac
     loads the first available slot.
     """
 
-    initial_track = audio.get_current_music() or audio.get_default_music()
-    if initial_track:
-        audio.play_music(initial_track)
+    audio.play_music("menu_main")
 
     base_dir = os.path.dirname(__file__)
 
@@ -480,7 +478,9 @@ def main_menu(screen: pygame.Surface, can_resume: bool = False) -> pygame.Surfac
                 audio.play_music(track)
 
         elif choice == 2 + offset:  # Options
+            audio.play_music("menu_options")
             screen = options_menu(screen)
+            audio.play_music("menu_main")
 
         else:  # Quit
             audio.stop_music()

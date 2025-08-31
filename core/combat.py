@@ -210,6 +210,16 @@ class Combat:
         # Track initial enemy count to award experience
         self._initial_enemy_count = sum(u.count for u in self.enemy_units)
         self.units: List[CombatUnit] = self.hero_units + self.enemy_units
+        if fortification:
+            track = "battle_siege"
+        elif sum(u.count for u in self.enemy_units) > 20:
+            track = "battle_elite"
+        else:
+            track = "battle_standard"
+        try:
+            audio.play_music(track)
+        except Exception:
+            pass
         self.timings: Dict[str, float] = settings.COMBAT_TIMINGS.copy()
         if timings:
             self.timings.update(timings)
