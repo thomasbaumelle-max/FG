@@ -80,9 +80,18 @@ class BiomeCatalog:
                 base_abs = (
                     base if os.path.isabs(base) else os.path.join(ctx.repo_root, base)
                 )
-                for suffix in (".png", "_0.png"):
-                    if os.path.isfile(os.path.join(base_abs, f"{rel}{suffix}")):
-                        return True
+                rel_path = rel
+                if os.path.isdir(os.path.join(base_abs, rel_path)):
+                    rel_path = os.path.join(rel_path, os.path.basename(rel_path))
+
+                png_file = os.path.join(base_abs, f"{rel_path}.png")
+                zero_file = os.path.join(base_abs, f"{rel_path}_0.png")
+                if os.path.isfile(png_file) or os.path.isfile(zero_file):
+                    return True
+
+                pattern = os.path.join(base_abs, f"{rel_path}_*.png")
+                if glob.glob(pattern):
+                    return True
             return False
 
         biomes: Dict[str, Biome] = {}
