@@ -95,9 +95,12 @@ class BiomeCatalog:
                 require_keys(entry, ["id"])
                 colour = entry.get("colour", [0, 0, 0])
                 entry_path = entry.get("path", "")
-                if entry_path and not os.path.isabs(entry_path):
-                    entry_path = os.path.normpath(os.path.join(base_dir, entry_path))
-                entry_path = os.path.normpath(entry_path).replace(os.sep, "/")
+                if entry_path:
+                    entry_path = os.path.normpath(
+                        entry_path
+                        if os.path.isabs(entry_path)
+                        else os.path.join(base_dir, entry_path)
+                    ).replace(os.sep, "/")
                 if entry_path:
                     img_rel = (
                         entry_path if entry_path.endswith(".png") else f"{entry_path}.png"
@@ -220,18 +223,39 @@ def load_tileset(
     tileset = BiomeTileset(id=biome.id, path=biome.path, variants=variants)
 
     if tileset.variants > 1:
+        attempted: List[str] = []
+        sentinel = object()
         for i in range(tileset.variants):
             key = f"{base}_{i}.png"
-            surf = ctx.asset_loader.get(key) if ctx.asset_loader else None
+            attempted.append(key)
+            surf = (
+                ctx.asset_loader.get(key, default=sentinel) if ctx.asset_loader else None
+            )
+            if surf is sentinel:
+                continue
             if surf and hasattr(surf, "get_size"):
                 if surf.get_size() != (tile_size, tile_size):
                     surf = scale_surface(surf, (tile_size, tile_size), smooth=False)
             tileset.surfaces.append(surf)
+        if not tileset.surfaces:
+            raise RuntimeError(
+                f"Biome {biome.id} missing tileset images {attempted}"
+            )
     else:
-        key = matches[0] if matches else (
-            biome.path if biome.path.endswith(".png") else f"{base}.png"
+        sentinel = object()
+        attempted = [
+            matches[0]
+            if matches
+            else (biome.path if biome.path.endswith(".png") else f"{base}.png")
+        ]
+        key = attempted[0]
+        surf = (
+            ctx.asset_loader.get(key, default=sentinel) if ctx.asset_loader else None
         )
-        surf = ctx.asset_loader.get(key) if ctx.asset_loader else None
+        if surf is sentinel:
+            raise RuntimeError(
+                f"Biome {biome.id} missing tileset images {attempted}"
+            )
         if surf and hasattr(surf, "get_size"):
             if surf.get_size() != (tile_size, tile_size):
                 surf = scale_surface(surf, (tile_size, tile_size), smooth=False)
