@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import List, Tuple, Optional, Union
 import pygame
-import theme
+import theme, audio
 
 class TownOverlay:
     """Simple overlay listing player's towns using ``theme.PALETTE`` colours."""
@@ -22,6 +22,13 @@ class TownOverlay:
             else:
                 towns = [t for t in data if getattr(t, "owner", None) == 0]
         self.towns = towns
+        if self.towns:
+            faction = getattr(self.towns[0], "faction_id", None)
+            if faction:
+                try:
+                    audio.play_music(f"town_{faction}")
+                except Exception:
+                    pass
         self.font = theme.get_font(16)
         self.town_rects: List[Tuple[pygame.Rect, "Town"]] = []
 
