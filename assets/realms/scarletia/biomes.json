@@ -1,0 +1,56 @@
+[
+  {
+    "id": "scarletia_echo_plain",
+    "type": "plain",
+    "description": "Étendues ouvertes balayées par le vent.",
+    "path": "biomes/scarletia_echo_plain",
+    "variants": 3,
+    "colour": [104, 168, 84],
+    "flora": [
+      "pebble_patch_a",
+      "blood_stain_weathered",
+      "garnet_shard",
+      "torn_battle_banner"
+    ],
+    "vision_bonus": 0,
+    "passable": true,
+    "overlays": []
+  },
+  {
+    "id": "scarletia_crimson_forest",
+    "type": "forest",
+    "description": "Forêt écarlate dense.",
+    "path": "biomes/scarletia_crimson_forest",
+    "variants": 3,
+    "colour": [34, 122, 57],
+    "flora": [
+      "scarlet_tree_a",
+      "crimson_fern_litter",
+      "scarlet_herb_a"
+    ],
+    "vision_bonus": 0,
+    "passable": true,
+    "overlays": []
+  },
+  {
+    "id": "scarletia_volcanic",
+    "type": "volcanic",
+    "description": "Laves et scories incandescentes.",
+    "path": "biomes/scarletia_volcanic",
+    "variants": 3,
+    "colour": [210, 186, 75],
+    "flora": [
+      "pebble_patch_a",
+      "lava_scab",
+      "ember_moss",
+      "garnet_shard",
+      "basalt_spire"
+    ],
+    "vision_bonus": 0,
+    "passable": true,
+    "overlays": [
+      "coast",
+      "cliff"
+    ]
+  }
+]

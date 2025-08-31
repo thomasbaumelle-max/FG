@@ -1,0 +1,123 @@
+[
+  {
+    "id": "pebble_patch_a",
+    "type": "decal",
+    "biomes": ["scarletia_echo_plain", "scarletia_volcanic"],
+    "size_px": [64, 64],
+    "path": "flora/decals/pebble_patch_a",
+    "variants": 4,
+    "shadow_baked": false,
+    "spawn": { "prob": 0.12 }
+  },
+  {
+    "id": "crimson_fern_litter",
+    "type": "decal",
+    "biomes": ["scarletia_crimson_forest"],
+    "size_px": [64, 64],
+    "path": "flora/decals/crimson_fern_litter",
+    "variants": 3,
+    "shadow_baked": false,
+    "spawn": { "prob": 0.10 }
+  },
+  {
+    "id": "blood_stain_weathered",
+    "type": "decal",
+    "biomes": ["scarletia_echo_plain"],
+    "size_px": [64, 64],
+    "path": "flora/decals/blood_stain_weathered",
+    "variants": 4,
+    "shadow_baked": false,
+    "spawn": { "prob": 0.10 }
+  },
+  {
+    "id": "lava_scab",
+    "type": "decal",
+    "biomes": ["scarletia_volcanic"],
+    "size_px": [64, 64],
+    "path": "flora/decals/lava_scab",
+    "variants": 3,
+    "shadow_baked": false,
+    "spawn": { "prob": 0.08 }
+  },
+  {
+    "id": "scarlet_herb_a",
+    "type": "collectible",
+    "biomes": ["scarletia_crimson_forest"],
+    "footprint": [1, 1],
+    "anchor_px": [64, 110],
+    "passable": true,
+    "occludes": false,
+    "path": "flora/collectibles/scarlet_herb_a",
+    "variants": 3,
+    "collectible": { "item": "scarlet_leaf", "qty": [1, 3] },
+    "shadow_baked": false,
+    "spawn": { "density": 0.15, "min_dist": 2, "avoid": ["road", "water"] }
+  },
+  {
+    "id": "ember_moss",
+    "type": "collectible",
+    "biomes": ["scarletia_volcanic"],
+    "footprint": [1, 1],
+    "anchor_px": [64, 110],
+    "passable": true,
+    "occludes": false,
+    "path": "flora/collectibles/ember_moss",
+    "variants": 2,
+    "collectible": { "item": "ember_spores", "qty": [1, 2] },
+    "shadow_baked": false,
+    "spawn": { "density": 0.15, "min_dist": 2, "avoid": ["road"] }
+  },
+  {
+    "id": "garnet_shard",
+    "type": "collectible",
+    "biomes": ["scarletia_echo_plain", "scarletia_volcanic"],
+    "footprint": [1, 1],
+    "anchor_px": [64, 108],
+    "passable": true,
+    "occludes": false,
+    "path": "flora/collectibles/garnet_shard",
+    "variants": 2,
+    "collectible": { "item": "raw_garnet", "qty": [1, 2] },
+    "shadow_baked": false,
+    "spawn": { "density": 0.15, "min_dist": 3, "avoid": ["road", "water"] }
+  },
+  {
+    "id": "scarlet_tree_a",
+    "type": "tall",
+    "biomes": ["scarletia_crimson_forest"],
+    "footprint": [1, 1],
+    "anchor_px": [128, 236],
+    "passable": true,
+    "occludes": true,
+    "path": "flora/tall/scarlet_tree_a",
+    "variants": 2,
+    "shadow_baked": false,
+    "spawn": { "density": 0.15, "min_dist": 3, "avoid": ["road", "water"] }
+  },
+  {
+    "id": "basalt_spire",
+    "type": "tall",
+    "biomes": ["scarletia_volcanic"],
+    "footprint": [1, 1],
+    "anchor_px": [64, 120],
+    "passable": false,
+    "occludes": true,
+    "path": "flora/tall/basalt_spire",
+    "variants": 3,
+    "shadow_baked": false,
+    "spawn": { "density": 0.009, "min_dist": 2, "avoid": ["road"] }
+  },
+  {
+    "id": "torn_battle_banner",
+    "type": "tall",
+    "biomes": ["scarletia_echo_plain"],
+    "footprint": [1, 1],
+    "anchor_px": [64, 122],
+    "passable": false,
+    "occludes": true,
+    "path": "flora/tall/torn_battle_banner",
+    "variants": 2,
+    "shadow_baked": false,
+    "spawn": { "density": 0.004, "min_dist": 4, "avoid": ["road", "water"] }
+  }
+]

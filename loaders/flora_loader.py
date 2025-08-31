@@ -3,7 +3,7 @@ flora_loader.py — gestion des assets de flore (décals, collectibles, décors 
 chargement depuis un manifest JSON, placement (blue‑noise / type Poisson discret),
 et dessin trié (baseline) compatible top‑down et futur rendu isométrique.
 
-⚙️ Manifest attendu (exemple minimal) — assets/flora/flora.json
+⚙️ Manifest attendu (exemple minimal) — assets/realms/<realm>/flora.json
 [
   {
     "id": "scarlet_herb_a",
@@ -43,7 +43,7 @@ et dessin trié (baseline) compatible top‑down et futur rendu isométrique.
 
 💡 Intégration typique :
     loader = FloraLoader(ctx, tile_size=64)
-    loader.load_manifest("flora/flora.json")
+    loader.load_manifest("realms/scarletia")
 
     # Placement automatique sur la carte (par biomes)
     props = loader.autoplace(biome_grid, tags_grid, rng_seed=42)
@@ -58,7 +58,7 @@ et dessin trié (baseline) compatible top‑down et futur rendu isométrique.
     hit = loader.pick_prop_at(props, mouse_pos, grid_to_screen)
 """
 from __future__ import annotations
-import os, random
+import os, random, glob
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple, Iterable
 
@@ -130,31 +130,49 @@ class FloraLoader:
 
     # ---------- Chargement manifest ----------
     def load_manifest(self, manifest_path: str) -> None:
-        data = read_json(self.ctx, manifest_path)
-        for entry in data:
-            biomes = entry.get("biomes", [])
-            for b in biomes:
-                if BiomeCatalog.get(b) is None:
-                    raise ValueError(f"Unknown biome '{b}' in flora manifest")
-            spawn_defaults = TYPE_DEFAULTS.get(entry["type"], {})
-            spawn_data = {**spawn_defaults, **entry.get("spawn", {})}
-            files = expand_variants(entry)
-            a = FloraAsset(
-                id=entry["id"],
-                type=entry["type"],
-                biomes=biomes,
-                footprint=tuple(entry.get("footprint", [1, 1])) or (1, 1),
-                anchor_px=tuple(entry.get("anchor_px", [self.tile // 2, self.tile]))
-                or (self.tile // 2, self.tile),
-                passable=bool(entry.get("passable", True)),
-                occludes=bool(entry.get("occludes", False)),
-                files=files,
-                size_px=tuple(entry.get("size_px", [])) or None,
-                collectible=entry.get("collectible"),
-                shadow_baked=bool(entry.get("shadow_baked", False)),
-                spawn=spawn_data,
-            )
-            self.assets[a.id] = a
+        """Load flora definitions from a file or directory.
+
+        ``manifest_path`` may be a single JSON file or a directory containing
+        one or more ``flora*.json`` files.  All matching files are merged.
+        """
+        manifest_files: List[str] = []
+        for base in self.ctx.search_paths:
+            base_abs = base if os.path.isabs(base) else os.path.join(self.ctx.repo_root, base)
+            candidate = os.path.join(base_abs, manifest_path)
+            if os.path.isdir(candidate):
+                pattern = os.path.join(candidate, "flora*.json")
+                for fn in sorted(glob.glob(pattern)):
+                    manifest_files.append(os.path.relpath(fn, base_abs))
+                break
+        else:
+            manifest_files.append(manifest_path)
+
+        for path in manifest_files:
+            data = read_json(self.ctx, path)
+            for entry in data:
+                biomes = entry.get("biomes", [])
+                for b in biomes:
+                    if BiomeCatalog.get(b) is None:
+                        raise ValueError(f"Unknown biome '{b}' in flora manifest")
+                spawn_defaults = TYPE_DEFAULTS.get(entry["type"], {})
+                spawn_data = {**spawn_defaults, **entry.get("spawn", {})}
+                asset_files = expand_variants(entry)
+                a = FloraAsset(
+                    id=entry["id"],
+                    type=entry["type"],
+                    biomes=biomes,
+                    footprint=tuple(entry.get("footprint", [1, 1])) or (1, 1),
+                    anchor_px=tuple(entry.get("anchor_px", [self.tile // 2, self.tile]))
+                    or (self.tile // 2, self.tile),
+                    passable=bool(entry.get("passable", True)),
+                    occludes=bool(entry.get("occludes", False)),
+                    files=asset_files,
+                    size_px=tuple(entry.get("size_px", [])) or None,
+                    collectible=entry.get("collectible"),
+                    shadow_baked=bool(entry.get("shadow_baked", False)),
+                    spawn=spawn_data,
+                )
+                self.assets[a.id] = a
 
     # ---------- Surfaces ----------
     def get_surface(

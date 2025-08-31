@@ -166,6 +166,7 @@ class Game:
         player_name: str = "Joueur",
         player_colour: Tuple[int, int, int] = constants.BLUE,
         faction: str = "red_knights",
+        realm: str = "scarletia",
         ai_names: Optional[List[str]] = None,
     ) -> None:
         self.screen = screen
@@ -176,6 +177,7 @@ class Game:
         self.player_name = player_name
         self.player_colour = player_colour
         self.faction_id = faction
+        self.realm = realm
         self.ai_names = ai_names or ["ordinateur"]
         constants.AI_DIFFICULTY = difficulty
         repo_root = os.path.dirname(os.path.dirname(__file__))
@@ -208,7 +210,8 @@ class Game:
                 self.enemy_faction_id = self.faction_id
                 self.enemy_faction = self.faction
 
-            BiomeCatalog.load(self.ctx, "biomes/biomes.json")
+            realm_dir = f"realms/{self.realm}"
+            BiomeCatalog.load(self.ctx, realm_dir)
             init_biome_images()
 
             # Load unit and creature definitions early so ``load_assets`` can
@@ -246,7 +249,7 @@ class Game:
             }
 
             self.flora_loader = FloraLoader(self.ctx, tile_size=constants.TILE_SIZE)
-            self.flora_loader.load_manifest("flora/flora.json")
+            self.flora_loader.load_manifest(realm_dir)
 
             self.resources: Dict[str, ResourceDef] = load_resources(
                 self.ctx, "resources/resources.json", tile_size=constants.TILE_SIZE

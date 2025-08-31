@@ -4,6 +4,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
+import glob
+import os
 import pygame
 
 from .core import Context, read_json, require_keys
@@ -49,28 +51,48 @@ class BiomeCatalog:
     _biomes: Dict[str, Biome] = {}
 
     @classmethod
-    def load(cls, ctx: Context, manifest: str = "biomes/biomes.json") -> None:
-        data = read_json(ctx, manifest)
+    def load(cls, ctx: Context, manifest: str = "realms/scarletia") -> None:
+        """Load biome definitions.
+
+        ``manifest`` may point to a single JSON file or to a directory. When a
+        directory is supplied, all files matching ``biomes*.json`` within that
+        directory are merged.
+        """
+        # Resolve manifest to a list of files
+        files: List[str] = []
+        for base in ctx.search_paths:
+            base_abs = base if os.path.isabs(base) else os.path.join(ctx.repo_root, base)
+            candidate = os.path.join(base_abs, manifest)
+            if os.path.isdir(candidate):
+                pattern = os.path.join(candidate, "biomes*.json")
+                for fn in sorted(glob.glob(pattern)):
+                    files.append(os.path.relpath(fn, base_abs))
+                break
+        else:
+            files.append(manifest)
+
         biomes: Dict[str, Biome] = {}
-        for entry in data:
-            require_keys(entry, ["id"])
-            colour = entry.get("colour", [0, 0, 0])
-            biome = Biome(
-                id=entry["id"],
-                type=entry.get("type", ""),
-                description=entry.get("description", ""),
-                path=entry.get("path", ""),
-                variants=int(entry.get("variants", 1)),
-                colour=tuple(colour),
-                flora=list(entry.get("flora", [])),
-                terrain_cost=float(
-                    constants.TERRAIN_COSTS.get(entry.get("type", ""), 1.0)
-                ),
-                passable=bool(entry.get("passable", True)),
-                overlays=list(entry.get("overlays", [])),
-                vision_bonus=int(entry.get("vision_bonus", 0)),
-            )
-            biomes[biome.id] = biome
+        for path in files:
+            data = read_json(ctx, path)
+            for entry in data:
+                require_keys(entry, ["id"])
+                colour = entry.get("colour", [0, 0, 0])
+                biome = Biome(
+                    id=entry["id"],
+                    type=entry.get("type", ""),
+                    description=entry.get("description", ""),
+                    path=entry.get("path", ""),
+                    variants=int(entry.get("variants", 1)),
+                    colour=tuple(colour),
+                    flora=list(entry.get("flora", [])),
+                    terrain_cost=float(
+                        constants.TERRAIN_COSTS.get(entry.get("type", ""), 1.0)
+                    ),
+                    passable=bool(entry.get("passable", True)),
+                    overlays=list(entry.get("overlays", [])),
+                    vision_bonus=int(entry.get("vision_bonus", 0)),
+                )
+                biomes[biome.id] = biome
         cls._biomes = biomes
         # Refresh derived mappings in constants
         constants.BIOME_BASE_IMAGES = constants.build_biome_base_images()
