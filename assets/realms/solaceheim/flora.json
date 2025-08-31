@@ -1,0 +1,126 @@
+[
+  /* ====== Dunes Chantantes de Solara ====== */
+  {
+    "id": "mirage_grass",
+    "type": "decal",
+    "biomes": ["solaceheim_singing_dunes"],
+    "size_px": [64, 64],
+    "path": "flora/decals/mirage_grass",
+    "variants": 1,
+    "shadow_baked": false,
+    "spawn": { "prob": 0.12 }
+  },
+  {
+    "id": "solar_saguaranth",
+    "type": "tall",
+    "biomes": ["solaceheim_singing_dunes"],
+    "footprint": [1, 1],
+    "anchor_px": [64, 122],
+    "passable": false,
+    "occludes": true,
+    "path": "flora/tall/solar_saguaranth",
+    "variants": 1,
+    "shadow_baked": false,
+    "spawn": { "density": 0.012, "min_dist": 3, "avoid": ["road", "water"] }
+  },
+  {
+    "id": "serenity_lily",
+    "type": "collectible",
+    "biomes": ["solaceheim_singing_dunes"],
+    "footprint": [1, 1],
+    "anchor_px": [64, 110],
+    "passable": true,
+    "occludes": false,
+    "path": "flora/collectibles/serenity_lily",
+    "variants": 1,
+    "collectible": { "item": "serenity_petal", "qty": [1, 3] },
+    "shadow_baked": false,
+    "spawn": { "density": 0.10, "min_dist": 2, "avoid": ["road"] }
+  },
+
+  /* ====== Terrasses Ascétiques ====== */
+  {
+    "id": "soul_moss",
+    "type": "collectible",
+    "biomes": ["solaceheim_ascetic_terraces"],
+    "footprint": [1, 1],
+    "anchor_px": [64, 108],
+    "passable": true,
+    "occludes": false,
+    "path": "flora/collectibles/soul_moss",
+    "variants": 1,
+    "collectible": { "item": "soul_moss_spool", "qty": [1, 2] },
+    "shadow_baked": false,
+    "spawn": { "density": 0.16, "min_dist": 2, "avoid": ["road", "water"] }
+  },
+  {
+    "id": "sand_cypress",
+    "type": "tall",
+    "biomes": ["solaceheim_ascetic_terraces"],
+    "footprint": [1, 1],
+    "anchor_px": [128, 236],
+    "passable": false,
+    "occludes": true,
+    "path": "flora/tall/sand_cypress",
+    "variants": 2,
+    "shadow_baked": false,
+    "spawn": { "density": 0.015, "min_dist": 3, "avoid": ["road"] }
+  },
+  {
+    "id": "solace_myrrh",
+    "type": "collectible",
+    "biomes": ["solaceheim_ascetic_terraces"],
+    "footprint": [1, 1],
+    "anchor_px": [64, 110],
+    "passable": true,
+    "occludes": false,
+    "path": "flora/collectibles/solace_myrrh",
+    "variants": 1,
+    "collectible": { "item": "myrrh_resin", "qty": [1, 2] },
+    "shadow_baked": false,
+    "spawn": { "density": 0.12, "min_dist": 2, "avoid": ["road"] }
+  },
+
+  /* ====== Voile Céleste ====== */
+  {
+    "id": "golden_mist_fern",
+    "type": "tall",
+    "biomes": ["solaceheim_celestial_veil"],
+    "footprint": [1, 1],
+    "anchor_px": [96, 180],
+    "passable": true,
+    "occludes": false,
+    "path": "flora/tall/golden_mist_fern",
+    "variants": 1,
+    "shadow_baked": false,
+    "spawn": { "density": 0.012, "min_dist": 3, "avoid": ["road"] }
+  },
+  {
+    "id": "ascendant_lotus",
+    "type": "collectible",
+    "biomes": ["solaceheim_celestial_veil"],
+    "footprint": [1, 1],
+    "anchor_px": [64, 110],
+    "passable": true,
+    "occludes": false,
+    "path": "flora/collectibles/ascendant_lotus",
+    "variants": 2,
+    "collectible": { "item": "lotus_ascendant", "qty": [1, 2] },
+    "shadow_baked": false,
+    "spawn": { "density": 0.10, "min_dist": 3, "avoid": ["road"] }
+  },
+  {
+    "id": "solar_lichen",
+    "type": "collectible",
+    "biomes": ["solaceheim_celestial_veil"],
+    "footprint": [1, 1],
+    "anchor_px": [64, 108],
+    "passable": true,
+    "occludes": false,
+    "path": "flora/collectibles/solar_lichen",
+    "variants": 3,
+    "collectible": { "item": "solari_lichen", "qty": [1, 3] },
+    "shadow_baked": false,
+    "spawn": { "density": 0.14, "min_dist": 2, "avoid": ["road", "water"] }
+  }
+]
