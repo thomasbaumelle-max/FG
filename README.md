@@ -248,11 +248,12 @@ chunk) and `biome_cache_size` (maximum cached chunks).
 ## Audio Troubleshooting
 
 If the game starts without producing any sound, the audio mixer may have
-failed to initialise. On Windows a default `SDL_AUDIODRIVER` of `directsound`
-is chosen automatically; other platforms rely on SDL's auto-detection. An
-error is logged when mixer setup fails. Verify an audio device is available
-or set `SDL_AUDIODRIVER` (for example `pulseaudio`, `alsa` or
-another driver) before launching the game.
+failed to initialise. On Windows, when `SDL_AUDIODRIVER` is not set the game
+defaults it to `directsound` before initialising audio. Other platforms leave
+the variable unset and rely on SDL's auto-detection. An error is logged when
+mixer setup fails. Ensure an audio device is available or manually set
+`SDL_AUDIODRIVER` (for example `pulseaudio`, `alsa`, `coreaudio` or another
+driver) before launching the game.
 
 ## Roadmap and Ideas
 
