@@ -1864,8 +1864,17 @@ class Combat:
         self.fx_queue.add(event)
 
     def animate_attack(self, attacker: Unit, target: Unit, attack_type: str) -> None:
-        """Trigger a visual effect for ranged or magical attacks."""
-        audio.play_sound('attack')
+        """Trigger a visual effect for attacks and play context-aware sounds."""
+        weapon = getattr(attacker.stats, "weapon", None)
+        if weapon:
+            sound_key = f"attack_{weapon}"
+        elif attack_type == "ranged":
+            sound_key = "attack_ranged"
+        elif attack_type == "magic":
+            sound_key = "attack_magic"
+        else:
+            sound_key = "attack_melee"
+        audio.play_sound(sound_key)
         if attack_type != "ranged":
             return
         if attacker.stats.name == "Archer":
