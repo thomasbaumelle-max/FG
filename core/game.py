@@ -1506,13 +1506,17 @@ class Game:
                     elif event.key == pygame.K_u:
                         self.open_town()
                     elif event.key == pygame.K_1:
-                        self.hero.choose_skill('strength')
+                        if self.hero.choose_skill('strength'):
+                            audio.play_sound("skill_learned")
                     elif event.key == pygame.K_2:
-                        self.hero.choose_skill('wisdom')
+                        if self.hero.choose_skill('wisdom'):
+                            audio.play_sound("skill_learned")
                     elif event.key == pygame.K_3:
-                        self.hero.choose_skill('tactics')
+                        if self.hero.choose_skill('tactics'):
+                            audio.play_sound("skill_learned")
                     elif event.key == pygame.K_4:
-                        self.hero.choose_skill('logistics')
+                        if self.hero.choose_skill('logistics'):
+                            audio.play_sound("skill_learned")
                     elif (
                         event.key == pygame.K_F12
                         and event.mod & pygame.KMOD_CTRL
@@ -2072,7 +2076,7 @@ class Game:
                 self._notify(f"You found a treasure chest with {amount} gold!")
             elif choice == "exp":
                 amount = random.randint(*treasure["exp"])
-                self.hero.gain_exp(amount)
+                self.hero_gain_exp(amount)
                 tile.treasure = None
                 self._notify(f"You gained {amount} experience from the treasure!")
             else:
@@ -2267,7 +2271,7 @@ class Game:
                     unit.current_hp = res.current_hp
                 self.hero.army = [u for u in self.hero.army if u.count > 0]
                 self.hero.mana = self.hero.max_mana
-                self.hero.gain_exp(exp_gained)
+                self.hero_gain_exp(exp_gained)
                 auto_resolve.show_summary(
                     self.screen, heroes, enemies, hero_wins, exp_gained, self.hero
                 )
@@ -2342,7 +2346,7 @@ class Game:
                         del self.hero.army[i]
                 # After battle, reset hero mana and award experience
                 self.hero.mana = self.hero.max_mana
-                self.hero.gain_exp(exp_gained)
+                self.hero_gain_exp(exp_gained)
                 if hero_wins:
                     self._notify("You are victorious!")
                     audio.play_music('event_victory')
@@ -2462,7 +2466,7 @@ class Game:
             self._notify(f"You found a treasure chest with {amount} gold!")
         elif choice == "exp":
             amount = random.randint(*treasure["exp"])
-            self.hero.gain_exp(amount)
+            self.hero_gain_exp(amount)
             tile.treasure = None
             self._notify(f"You gained {amount} experience from the treasure!")
         else:
@@ -3163,7 +3167,7 @@ class Game:
                 self.hero.army = [u for u in self.hero.army if u.count > 0]
                 enemy.army = enemies
                 self.hero.mana = self.hero.max_mana
-                self.hero.gain_exp(exp_gained)
+                self.hero_gain_exp(exp_gained)
                 if hero_wins:
                     if enemy in self.enemy_heroes:
                         self.enemy_heroes.remove(enemy)
@@ -3228,7 +3232,7 @@ class Game:
                 del self.hero.army[i]
         enemy.army = [u for u in combat.enemy_units]
         self.hero.mana = self.hero.max_mana
-        self.hero.gain_exp(exp_gained)
+        self.hero_gain_exp(exp_gained)
         if hero_wins:
             if enemy in self.enemy_heroes:
                 self.enemy_heroes.remove(enemy)
@@ -3274,7 +3278,12 @@ class Game:
         Returns ``True`` if the player chose to open the main menu.
         """
         screen = InventoryScreen(
-            self.screen, self.assets, self.hero, self.clock, self.open_pause_menu
+            self.screen,
+            self.assets,
+            self.hero,
+            self.clock,
+            self.open_pause_menu,
+            game=self,
         )
         quit_to_menu, self.screen = screen.run()
         return quit_to_menu
@@ -3340,7 +3349,12 @@ class Game:
         """
 
         screen = InventoryScreen(
-            self.screen, self.assets, self.hero, self.clock, self.open_pause_menu
+            self.screen,
+            self.assets,
+            self.hero,
+            self.clock,
+            self.open_pause_menu,
+            game=self,
         )
         screen.active_tab = tab
         quit_to_menu, self.screen = screen.run()
@@ -3467,6 +3481,18 @@ class Game:
         self.screen = options_menu(self.screen)
         if prev_track:
             audio.play_music(prev_track)
+
+    def hero_gain_exp(self, amount: int) -> None:
+        prev_level = getattr(self.hero, "level", None)
+        self.hero.gain_exp(amount)
+        if prev_level is not None and getattr(self.hero, "level", None) > prev_level:
+            audio.play_sound("hero_level_up")
+
+    def learn_skill(self, node: Any, branch: str = "combat") -> bool:
+        if self.hero.learn_skill(node, branch):
+            audio.play_sound("skill_learned")
+            return True
+        return False
 
     def hero_heal(self) -> None:
         """Heal ability: restore some HP to the top creature of each stack. Costs one AP."""

@@ -67,10 +67,13 @@ class InventoryScreen:
         hero: Hero,
         clock: Optional[pygame.time.Clock] = None,
         pause_cb: Optional[Callable[[], Tuple[bool, pygame.Surface]]] = None,
+        *,
+        game: "Game" | None = None,
     ) -> None:
         self.screen = screen
         self.assets = assets
         self.hero = hero
+        self.game = game
         self.clock = clock or pygame.time.Clock()
         self.active_tab = "stats"
         self.active_skill_tab = ""
@@ -815,8 +818,12 @@ class InventoryScreen:
                 if rect and rect.collidepoint(pos):
                     node = self.skill_nodes[nid]
                     branch = self.skill_branch_of.get(nid, "")
-                    if not self.hero.learn_skill(node, branch):
-                        self._toast("Cannot learn")
+                    if self.game:
+                        if not self.game.learn_skill(node, branch):
+                            self._toast("Cannot learn")
+                    else:
+                        if not self.hero.learn_skill(node, branch):
+                            self._toast("Cannot learn")
                     return
 
     def _on_lmb_up(self, pos: Tuple[int, int]) -> None:
