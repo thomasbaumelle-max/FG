@@ -1,0 +1,50 @@
+[
+  {
+    "id": "solaceheim_singing_dunes",
+    "type": "desert",
+    "description": "Dunes dorées dont les vents tirent des harmoniques sacrées.",
+    "path": "biomes/solaceheim_singing_dunes",
+    "variants": 3,
+    "colour": [218, 182, 95],
+    "flora": [
+      "solar_saguaranth",
+      "mirage_grass",
+      "serenity_lily"
+    ],
+    "vision_bonus": 0,
+    "passable": true,
+    "overlays": []
+  },
+  {
+    "id": "solaceheim_ascetic_terraces",
+    "type": "hills",
+    "description": "Terrasses rocheuses et monastères taillés dans le grès doré.",
+    "path": "biomes/solaceheim_ascetic_terraces",
+    "variants": 3,
+    "colour": [206, 172, 120],
+    "flora": [
+      "soul_moss",
+      "sand_cypress",
+      "solace_myrrh"
+    ],
+    "vision_bonus": 0,
+    "passable": true,
+    "overlays": ["cliff"]
+  },
+  {
+    "id": "solaceheim_celestial_veil",
+    "type": "hills",
+    "description": "Cimes filtrant la lumière en nuées dorées, au bord du ciel.",
+    "path": "biomes/solaceheim_celestial_veil",
+    "variants": 3,
+    "colour": [245, 231, 190],
+    "flora": [
+      "golden_mist_fern",
+      "ascendant_lotus",
+      "solar_lichen"
+    ],
+    "vision_bonus": 1,
+    "passable": true,
+    "overlays": ["cliff"]
+  }
+]
