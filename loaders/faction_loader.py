@@ -38,6 +38,7 @@ def load_factions(ctx: Context, manifest: str = "factions/factions.json") -> Dic
             unique_buildings=list(data.get("unique_buildings", [])),
             army_synergies=list(data.get("army_synergies", [])),
             heroes=[dict(h) for h in data.get("heroes", [])],
+            home_biomes=list(data.get("home_biomes", [])),
         )
         factions[fdef.id] = fdef
         if fdef.unique_buildings:

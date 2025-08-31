@@ -25,6 +25,7 @@ class FactionDef:
     unique_buildings: List[str] = field(default_factory=list)
     army_synergies: List[Dict[str, object]] = field(default_factory=list)
     heroes: List[Dict[str, str]] = field(default_factory=list)
+    home_biomes: List[str] = field(default_factory=list)
 
 
 __all__ = ["FactionDef"]
