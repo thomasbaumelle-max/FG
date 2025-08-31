@@ -149,6 +149,9 @@ class CombatHUD:
 
         right, bottom = self._panel_rects(screen, grid_rect, combat)
 
+        mouse_get_pos = getattr(getattr(pygame, "mouse", None), "get_pos", lambda: (0, 0))
+        mouse_pos = mouse_get_pos()
+
         hover_target = getattr(combat, "hover_target", None)
         hover_damage = None
         if (
