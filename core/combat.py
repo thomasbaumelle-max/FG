@@ -792,6 +792,30 @@ class Combat:
             level = self.hero_spells.get(spell.name, 1)
             spell.effect(caster, target, level)
             self.hero_mana -= spell.cost
+        name_map = {
+            'Summon': 'summon',
+            'Banish': 'banish',
+            'Heal': 'heal',
+            'Curse': 'curse',
+        }
+        school_map = {
+            'fire': 'spell_fire_cast',
+            'ice': 'spell_ice_cast',
+            'lightning': 'spell_lightning_cast',
+            'earth': 'spell_earth_cast',
+            'air': 'spell_air_cast',
+            'water': 'spell_water_cast',
+            'holy': 'spell_holy_cast',
+            'shadow': 'spell_shadow_cast',
+            'poison': 'spell_poison_cast',
+            'arcane': 'spell_arcane_cast',
+        }
+        sound = name_map.get(spell.name)
+        school = getattr(spell, 'school', None)
+        if not sound and school:
+            sound = school_map.get(school.lower())
+        if sound:
+            audio.play_sound(sound)
         # Trigger hit effect on target position for damaging spells
         if spell.name in {"Fireball", "Chain Lightning", "Dragon Breath"}:
             impact: Optional[Tuple[int, int]] = None
@@ -804,6 +828,9 @@ class Combat:
                     impact = target  # direct cell target
             if impact:
                 self.show_hit_effect(impact, "explosion")
+                school = getattr(spell, 'school', None)
+                if school and school.lower() == 'fire':
+                    audio.play_sound('spell_fire_hit')
         self.casting_spell = False
         self.spell_caster = None
         self.selected_spell = None
@@ -825,6 +852,10 @@ class Combat:
         adjusted = apply_defence(dmg, defender, "magic")
         self.log_damage(attacker, defender, adjusted)
         defender.take_damage(adjusted)
+        if element.lower() == 'fire':
+            audio.play_sound('spell_fire_hit')
+        else:
+            audio.play_sound(self._impact_sound(defender))
         self.show_hit_effect((defender.x, defender.y), "explosion")
         if not defender.is_alive:
             self.remove_unit_from_grid(defender)
@@ -911,6 +942,7 @@ class Combat:
         if luck_mul > 1.0:
             self.add_log(f"Lucky strike by {attacker.stats.name}!")
             self.show_effect("luck_fx", (attacker.x, attacker.y))
+            audio.play_sound('critical_hit')
         elif luck_mul < 1.0:
             self.add_log(f"Unlucky hit by {attacker.stats.name}.")
             self.show_effect("luck_fx", (attacker.x, attacker.y))
@@ -946,6 +978,7 @@ class Combat:
             self.consume_status(attacker, 'focus')
         if attack_type == 'melee' and self.get_status(defender, 'shield_block'):
             self.consume_status(defender, 'shield_block')
+            audio.play_sound('impact_shield')
             self.log_damage(attacker, defender, 0)
             return 0
 
@@ -953,6 +986,7 @@ class Combat:
         self.log_damage(attacker, defender, base)
         defender_id = self.units.index(defender)
         defender.take_damage(base)
+        audio.play_sound(self._impact_sound(defender))
         self.show_hit_effect((defender.x, defender.y), "spark")
         dead = not defender.is_alive
         if dead:
@@ -1097,6 +1131,7 @@ class Combat:
             unit.skip_turn = False
         if unit.acted and unit.extra_turns > 0:
             self.show_effect("morale_fx", (unit.x, unit.y))
+            audio.play_sound('extra_turn')
             unit.extra_turns -= 1
             unit.acted = False
             return
@@ -1307,6 +1342,7 @@ class Combat:
             if current_unit.skip_turn:
                 self.advance_turn()
                 continue
+            audio.play_sound('turn_start')
             if self.auto_mode:
                 for event in pygame.event.get():
                     if self.overlays:
@@ -1760,7 +1796,14 @@ class Combat:
                     0 if dx == 0 else (1 if dx > 0 else -1),
                     0 if dy == 0 else (1 if dy > 0 else -1),
                 )
-        audio.play_sound('move')
+        sound = 'move'
+        if 'flying' in unit.tags:
+            sound = 'move_wing'
+        elif 'heavy' in unit.tags:
+            sound = 'move_heavy'
+        elif 'light' in unit.tags:
+            sound = 'move_light'
+        audio.play_sound(sound)
         # ability runtime: track moved tiles
         rt = self._rt(unit)
         if rt:
@@ -1946,28 +1989,41 @@ class Combat:
             event = FXEvent(frames[0], img_pos, duration, z=100)
         self.fx_queue.add(event)
 
+    def _impact_sound(self, defender: Unit) -> str:
+        if self.get_status(defender, 'shield_block'):
+            return 'impact_shield'
+        tags = getattr(defender, 'tags', [])
+        if 'construct' in tags:
+            return 'impact_rock'
+        if 'plant' in tags:
+            return 'impact_wood'
+        if 'undead' in tags:
+            return 'impact_body'
+        if getattr(defender.stats, 'defence_melee', 0) >= 5:
+            return 'impact_armor'
+        return 'impact_flesh'
+
     def animate_attack(self, attacker: Unit, target: Unit, attack_type: str) -> None:
         """Trigger a visual effect for attacks and play context-aware sounds."""
-        weapon = getattr(attacker.stats, "weapon", None)
-        if weapon:
-            sound_key = f"attack_{weapon}"
-        elif attack_type == "ranged":
-            sound_key = "attack_ranged"
-        elif attack_type == "magic":
-            sound_key = "attack_magic"
-        else:
-            sound_key = "attack_melee"
-        audio.play_sound(sound_key)
-        if attack_type != "ranged":
+        if attack_type == "ranged":
+            audio.play_sound("arrow_shot")
+            if attacker.stats.name == "Archer":
+                self.animate_projectile(
+                    "arrow", (attacker.x, attacker.y), (target.x, target.y)
+                )
+            elif attacker.stats.name == "Mage":
+                self.animate_projectile(
+                    "fireball", (attacker.x, attacker.y), (target.x, target.y)
+                )
+            audio.play_sound("arrow_whizz")
             return
-        if attacker.stats.name == "Archer":
-            self.animate_projectile(
-                "arrow", (attacker.x, attacker.y), (target.x, target.y)
-            )
-        elif attacker.stats.name == "Mage":
-            self.animate_projectile(
-                "fireball", (attacker.x, attacker.y), (target.x, target.y)
-            )
+        if attack_type == "magic":
+            audio.play_sound("spell_arcane_cast")
+            return
+        if 'heavy' in attacker.tags:
+            audio.play_sound('melee_heavy')
+        else:
+            audio.play_sound('melee_light')
 
                 
     def reachable_squares(self, unit: Unit) -> List[Tuple[int, int]]:
