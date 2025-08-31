@@ -141,6 +141,21 @@ class BiomeCatalog:
                     priority=int(entry.get("priority", 0)),
                 )
                 biomes[biome.id] = biome
+                if ctx.asset_loader and biome.path:
+                    key = (
+                        biome.path
+                        if biome.path.endswith(".png")
+                        else f"{biome.path}.png"
+                    )
+                    _sentinel = object()
+                    if (
+                        ctx.asset_loader.get(key, default=_sentinel, biome_id=biome.id)
+                        is _sentinel
+                    ):
+                        raise RuntimeError(
+                            f"Biome {biome.id} missing image '{key}'"
+                            f" (search_paths={list(ctx.search_paths)})"
+                        )
         cls._biomes = biomes
         # Refresh derived mappings in constants
         constants.BIOME_BASE_IMAGES = constants.build_biome_base_images()
