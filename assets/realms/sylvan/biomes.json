@@ -1,0 +1,49 @@
+[
+  {
+    "id": "sylvan_lirael_brume",
+    "type": "forest",
+    "description": "Vallées embrumées et forêts moussues",
+    "path": "biomes/sylvan_liraelbrume",
+    "variants": 1,
+    "colour": [34, 122, 57],
+    "flora": [
+      "saules_pleureurs",
+      "larmes_lune",
+      "fougere_brume"
+    ],
+    "vision_bonus": 0,
+    "passable": true,
+    "overlays": []
+  },
+  {
+    "id": "sylvan_calywen_garden",
+    "type": "riff",
+    "description": "Falaises couvertes de végétation en cascade",
+    "path": "biomes/sylvan_calywen_garden",
+    "variants": 1,
+    "colour": [34, 122, 57],
+    "flora": [
+      "arbre_balcon",
+      "orchide_rose",
+      "lianes_flammes"
+    ],
+    "vision_bonus": 0,
+    "passable": true,
+    "overlays": []
+  },
+  {
+    "id": "sylvan_herbyplain",
+    "type": "plain",
+    "description": "Prairies enchantées et cercles de pierres",
+    "path": "biomes/sylvan_herbyplain",
+    "variants": 1,
+    "colour": [34, 122, 57],
+    "flora": [
+      "herbe_chuchotante",
+      "fleur_cantilenes"
+    ],
+    "vision_bonus": 0,
+    "passable": true,
+    "overlays": []
+  }
+]

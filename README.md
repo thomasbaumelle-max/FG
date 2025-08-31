@@ -97,12 +97,15 @@ immediately.  Modifier keys are detected via `pygame.key.get_mods`.
 ## Assets
 
 Game graphics and data are described through JSON *manifests* rather than a
-fixed list of filenames.  Each manifest lives under `assets/<category>/` and
-enumerates entries with metadata and image paths.  Dedicated loaders such as
+fixed list of filenames.  Most manifests live under `assets/<category>/` and
+enumerate entries with metadata and image paths.  Dedicated loaders such as
 `loaders.flora_loader.FloraLoader` and
 `loaders.resources_loader.load_resources` parse these manifests, load the
 referenced PNGs via the `AssetManager` and make them available to the rest of
-the game.
+the game.  Biome and flora manifests are organised per realm under
+`assets/realms/<realm>/`, letting each realm ship its own `biomes.json` and
+`flora.json` files.  Additional JSON files can be dropped into these realm
+folders and will automatically be merged by the loaders.
 
 This approach allows each asset to define variants, biome tags or spawn rules
 without hard‑coding file names.  To add new artwork, place the image in the
@@ -149,9 +152,11 @@ context to read JSON manifests and register assets:
 
 * `loaders.resources_loader.load_resources` imports resource definitions from
   `assets/resources/resources.json`.
-* `loaders.flora_loader.FloraLoader` reads `assets/flora/flora.json` and can
-  automatically scatter props across the map via `autoplace` using biome
-  information and spawn rules.
+* `loaders.biomes.BiomeCatalog` merges every `biomes*.json` file from a realm
+  directory like `assets/realms/scarletia/`.
+* `loaders.flora_loader.FloraLoader` loads all `flora*.json` files from the same
+  realm directory and can automatically scatter props across the map via
+  `autoplace` using biome information and spawn rules.
 
 Once the assets are prepared, `main.py` builds the initial game state and
 enters the main loop.
