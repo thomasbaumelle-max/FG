@@ -20,6 +20,9 @@ except Exception:  # pragma: no cover - when pygame is unavailable
 
 _logger = logging.getLogger(__name__)
 
+
+_logger = logging.getLogger(__name__)
+
 import settings
 
 _sounds: Dict[str, 'pygame.mixer.Sound'] = {}
@@ -134,6 +137,7 @@ def load_sound(key: str, filename: str) -> None:
         return
     path = _find_asset(filename)
     if path is None or not os.path.isfile(path):
+        _logger.warning("Missing audio file %s", filename)
         return
     try:  # pragma: no cover - loading depends on external files
         snd = pygame.mixer.Sound(path)
