@@ -73,8 +73,8 @@ def load_biome_char_map(ctx: Context = _BOSS_CTX, realm: Optional[str] = None) -
     """Load ``BIOME_CHAR_MAP`` from JSON files.
 
     The base mapping comes from ``assets/biomes/char_map.json``.  If ``realm`` is
-    provided, an additional ``<realm>/char_map.json`` is merged on top allowing
-    custom realms to extend or override the default characters.
+    provided, an additional ``assets/realms/<realm>/char_map.json`` is merged on
+    top allowing custom realms to extend or override the default characters.
     """
 
     mapping: Dict[str, str] = {}
@@ -86,7 +86,7 @@ def load_biome_char_map(ctx: Context = _BOSS_CTX, realm: Optional[str] = None) -
         pass
     if realm:
         try:
-            realm_map = read_json(ctx, f"{realm}/char_map.json")
+            realm_map = read_json(ctx, f"realms/{realm}/char_map.json")
             if isinstance(realm_map, dict):
                 mapping.update({k: str(v) for k, v in realm_map.items()})
         except Exception:
