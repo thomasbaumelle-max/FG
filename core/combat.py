@@ -686,6 +686,7 @@ class Combat:
             u.acted = False
         combat_rules.start_round_reset_retaliations(self.turn_order)
         self.current_index = 0
+        audio.play_sound('turn_start')
 
     def _rt(self, unit: Unit):
         return self._rt_by_unit.get(unit)
@@ -1154,6 +1155,8 @@ class Combat:
         if self.current_index >= len(self.turn_order):
             # End of round: start a new round
             self.reset_turn_order()
+        else:
+            audio.play_sound('turn_start')
 
     def apply_passive_abilities(self, unit: Unit) -> None:
         """Apply passive abilities that trigger at the start of the unit's turn."""
@@ -1342,7 +1345,6 @@ class Combat:
             if current_unit.skip_turn:
                 self.advance_turn()
                 continue
-            audio.play_sound('turn_start')
             if self.auto_mode:
                 for event in pygame.event.get():
                     if self.overlays:
