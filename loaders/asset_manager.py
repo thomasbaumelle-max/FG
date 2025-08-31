@@ -72,8 +72,25 @@ class AssetManager(dict):
         # assets.
         self._load_alpha_masks()
 
-    def get(self, key: str | None, default: Any = None) -> Any:
-        """Return the image for ``key`` or a placeholder if missing."""
+    def get(
+        self,
+        key: str | None,
+        default: Any = None,
+        *,
+        biome_id: str | None = None,
+    ) -> Any:
+        """Return the image for ``key`` or a placeholder if missing.
+
+        Parameters
+        ----------
+        key:
+            Asset identifier or relative path. ``None`` returns ``default``.
+        default:
+            Fallback surface returned when the asset is missing.
+        biome_id:
+            Optional id of the biome requesting the asset.  Included in
+            warning messages to help diagnose configuration issues.
+        """
 
         if default is None:
             default = self._fallback
@@ -88,9 +105,12 @@ class AssetManager(dict):
             fname = key if ext else key + ".png"
             fname = fname.replace(os.sep, "/")
             candidates = [fname, fname.lower(), fname.upper()]
+            attempted_paths: List[str] = []
 
             # First try the case-insensitive index built at startup.
             path = self._index.get(fname.lower())
+            if path:
+                attempted_paths.append(path)
             if path and os.path.isfile(path):
                 try:
                     surf = pygame.image.load(path).convert_alpha()
@@ -102,6 +122,7 @@ class AssetManager(dict):
                 for base in self.search_paths:
                     for candidate in candidates:
                         path = os.path.join(base, candidate)
+                        attempted_paths.append(path)
                         if os.path.isfile(path):
                             try:
                                 surf = pygame.image.load(path).convert_alpha()
@@ -115,7 +136,14 @@ class AssetManager(dict):
                         break
             if cache_key not in self:
                 self[cache_key] = default
-                logger.warning("Missing asset %s", fname)
+                logger.warning(
+                    "Missing asset %s (biome=%s, search_paths=%s, candidates=%s, attempted=%s)",
+                    fname,
+                    biome_id,
+                    self.search_paths,
+                    candidates,
+                    attempted_paths,
+                )
 
         return super().get(cache_key, default)
 
