@@ -1,8 +1,11 @@
+import os
+import json
+import sys
+import logging
+from typing import Dict, Optional
+
 try:
-    import os
-    import json
     import pygame
-    from typing import Dict, Optional
     try:
         from .loaders.asset_manager import AssetManager
         from .loaders.core import Context, find_file, read_json
@@ -15,6 +18,9 @@ except Exception:  # pragma: no cover - when pygame is unavailable
     Context = None  # type: ignore
     find_file = None  # type: ignore
     read_json = None  # type: ignore
+
+
+_logger = logging.getLogger(__name__)
 
 import settings
 
@@ -121,11 +127,18 @@ def init(asset_manager: AssetManager | None = None) -> None:
         set_asset_manager(asset_manager)
 
     if _has_mixer():
+        if "SDL_AUDIODRIVER" not in os.environ:
+            if sys.platform.startswith("win"):
+                os.environ["SDL_AUDIODRIVER"] = "directsound"
+            else:
+                os.environ["SDL_AUDIODRIVER"] = "pulseaudio"
         try:  # pragma: no cover - depends on system audio
             if not pygame.mixer.get_init():
                 pygame.mixer.init()
-        except Exception:
-            pass
+        except Exception as exc:
+            _logger.error("Failed to initialise audio mixer: %s", exc)
+        if pygame.mixer.get_init() is None:
+            _logger.warning("Audio device not available; sound will be disabled.")
 
     _load_manifests()
 
