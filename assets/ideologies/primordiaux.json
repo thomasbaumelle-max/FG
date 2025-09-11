@@ -1,0 +1,35 @@
+[
+  {
+    "id": "solarius",
+    "side": "light",
+    "name": "Solarius",
+    "title": "Primordial du Soleil",
+    "passive": "Rayonnement divin",
+    "major_power": "Juron de lumière",
+    "signature": "Tempête solaire",
+    "summon": "Avatar solaire",
+    "icon": "ideologies/solarius.png"
+  },
+  {
+    "id": "lunaria",
+    "side": "shadow",
+    "name": "Lunaria",
+    "title": "Primordiale de la Lune",
+    "passive": "Voile nocturne",
+    "major_power": "Phase obscure",
+    "signature": "Rêve argenté",
+    "summon": "Avatar lunaire",
+    "icon": "ideologies/lunaria.png"
+  },
+  {
+    "id": "gaia",
+    "side": "nature",
+    "name": "Gaia",
+    "title": "Primordiale de la Terre",
+    "passive": "Racines éternelles",
+    "major_power": "Rugissement terrestre",
+    "signature": "Bouclier de pierre",
+    "summon": "Avatar terrestre",
+    "icon": "ideologies/gaia.png"
+  }
+]
