@@ -43,9 +43,14 @@ def _place_features(rows: List[str], num_resources: int, num_cities: int) -> Lis
 
 
 def generate_continent_map(width: int, height: int, seed: int | None = None,
-                           num_resources: int = 5, num_cities: int = 2) -> List[str]:
+                           num_resources: int = 5, num_cities: int = 2,
+                           return_metadata: bool = False):
     """Generate a continent map and place resources and cities."""
-    rows = _base_generate(width, height, seed=seed)
+    generated = _base_generate(width, height, seed=seed, return_metadata=return_metadata)
+    if return_metadata and hasattr(generated, "rows"):
+        generated.rows = _place_features(generated.rows, num_resources, num_cities)
+        return generated
+    rows = generated if isinstance(generated, list) else generated.rows
     return _place_features(rows, num_resources, num_cities)
 
 
