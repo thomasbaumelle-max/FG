@@ -14,8 +14,8 @@ import os
 import random
 import copy
 from enum import Enum, auto
-from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple, Set, TYPE_CHECKING, Sequence
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Tuple, Set, TYPE_CHECKING, Sequence
 
 try:  # pragma: no cover - pygame is only required for rendering
     import pygame
@@ -264,6 +264,32 @@ def generate_combat_map(
 # mapping without modifying core code.
 
 
+@dataclass(slots=True)
+class WorldTileHistory:
+    """Record of cumulative geological activity for a world tile."""
+
+    soil_age: float = 0.0
+    volcanic_intensity: float = 0.0
+    sedimentation: float = 0.0
+    erosion: float = 0.0
+    flood_events: float = 0.0
+
+
+@dataclass(slots=True)
+class WorldTileGeology:
+    """Static environmental attributes for a tile."""
+
+    altitude: float = 0.0
+    slope: float = 0.0
+    soil_type: str = ""
+    coastal_proximity: float = 0.0
+    mean_temperature: float = 0.0
+    mean_humidity: float = 0.0
+    flood_zone: bool = False
+    volcanic_zone: bool = False
+    province_id: int = -1
+    history: WorldTileHistory = field(default_factory=WorldTileHistory)
+
 
 @dataclass(slots=True)
 class Tile:
@@ -305,6 +331,14 @@ class Tile:
     @obstacle.setter
     def obstacle(self, value: bool) -> None:  # pragma: no cover - trivial
         self.world.obstacles[self.y][self.x] = value
+
+    @property
+    def geology(self) -> WorldTileGeology:
+        return self.world.tile_geology[self.y][self.x]
+
+    @property
+    def history(self) -> WorldTileHistory:
+        return self.geology.history
 
     def capture(
         self,
@@ -378,6 +412,7 @@ class WorldMap:
         biome_weights: Optional[Dict[str, float]] = None,
         player_faction: Optional[str] = None,
         enemy_faction: Optional[str] = None,
+        tile_metadata: Optional[List[List[Any]]] = None,
     ) -> None:
         _reset_town_counter()
         self.player_faction = player_faction
@@ -412,13 +447,17 @@ class WorldMap:
         self.obstacles: List[List[bool]] = [
             [False for _ in range(self.width)] for _ in range(self.height)
         ]
+        self.tile_geology: List[List[WorldTileGeology]] = [
+            [WorldTileGeology() for _ in range(self.width)]
+            for _ in range(self.height)
+        ]
         # Grid of tile objects referencing the above arrays
         self.grid: List[List[Tile]] = [
             [Tile(self, x, y) for x in range(self.width)] for y in range(self.height)
         ]
 
         if map_data:
-            self._load_from_parsed_data(parsed_rows)
+            self._load_from_parsed_data(parsed_rows, tile_metadata)
             self._create_starting_area()
 
         total_tiles = max(1, self.width * self.height)
@@ -1538,7 +1577,11 @@ class WorldMap:
             tokens.append((biome, feature))
         return tokens
 
-    def _load_from_parsed_data(self, rows: List[List[Tuple[str, str]]]) -> None:
+    def _load_from_parsed_data(
+        self,
+        rows: List[List[Tuple[str, str]]],
+        metadata: Optional[List[List[Any]]] = None,
+    ) -> None:
         """Populate the grid from already parsed `(biome, feature)` rows."""
         for y, row in enumerate(rows):
             for x, (biome_char, feature) in enumerate(row):
@@ -1552,7 +1595,65 @@ class WorldMap:
                     tile.treasure = {"gold": (25, 150), "exp": (40, 80)}
                 elif feature == 'E':
                     tile.enemy_units = self._create_enemy_army_for_biome(tile.biome)
+                self._apply_tile_metadata(x, y, metadata)
                 # '.' or any other char leaves the tile empty
+
+    def _apply_tile_metadata(
+        self, x: int, y: int, metadata: Optional[List[List[Any]]] = None
+    ) -> None:
+        """Attach geological metadata to the tile when available."""
+
+        if metadata is None or not metadata:
+            return
+        if y >= len(metadata) or x >= len(metadata[y]):
+            return
+        meta = metadata[y][x]
+        if isinstance(meta, WorldTileGeology):
+            self.tile_geology[y][x] = meta
+            return
+        if hasattr(meta, "altitude"):
+            meta = {
+                "altitude": getattr(meta, "altitude", 0.0),
+                "slope": getattr(meta, "slope", 0.0),
+                "soil_type": getattr(meta, "soil_type", ""),
+                "coastal_proximity": getattr(meta, "coastal_proximity", 0.0),
+                "mean_temperature": getattr(meta, "mean_temperature", 0.0),
+                "mean_humidity": getattr(meta, "mean_humidity", 0.0),
+                "flood_zone": getattr(meta, "flood_zone", False),
+                "volcanic_zone": getattr(meta, "volcanic_zone", False),
+                "province_id": getattr(meta, "province_id", -1),
+                "history": getattr(meta, "history", {}),
+            }
+        if isinstance(meta, dict):
+            raw_history = meta.get("history", {})
+            if not isinstance(raw_history, dict) and hasattr(raw_history, "soil_age"):
+                raw_history = {
+                    "soil_age": getattr(raw_history, "soil_age", 0.0),
+                    "volcanic_intensity": getattr(raw_history, "volcanic_intensity", 0.0),
+                    "sedimentation": getattr(raw_history, "sedimentation", 0.0),
+                    "erosion": getattr(raw_history, "erosion", 0.0),
+                    "flood_events": getattr(raw_history, "flood_events", 0.0),
+                }
+            hist_data = raw_history if isinstance(raw_history, dict) else {}
+            history = WorldTileHistory(
+                soil_age=hist_data.get("soil_age", 0.0),
+                volcanic_intensity=hist_data.get("volcanic_intensity", 0.0),
+                sedimentation=hist_data.get("sedimentation", 0.0),
+                erosion=hist_data.get("erosion", 0.0),
+                flood_events=hist_data.get("flood_events", 0.0),
+            )
+            self.tile_geology[y][x] = WorldTileGeology(
+                altitude=meta.get("altitude", 0.0),
+                slope=meta.get("slope", 0.0),
+                soil_type=meta.get("soil_type", ""),
+                coastal_proximity=meta.get("coastal_proximity", 0.0),
+                mean_temperature=meta.get("mean_temperature", 0.0),
+                mean_humidity=meta.get("mean_humidity", 0.0),
+                flood_zone=meta.get("flood_zone", False),
+                volcanic_zone=meta.get("volcanic_zone", False),
+                province_id=meta.get("province_id", -1),
+                history=history,
+            )
 
     @classmethod
     def from_file(

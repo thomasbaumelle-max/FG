@@ -5,12 +5,37 @@ from __future__ import annotations
 import json
 import random
 from collections import deque
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Set
 
 import constants
 
 Cell = Tuple[int, int]
+
+
+@dataclass(slots=True)
+class NodalTileData:
+    """Intermediate geologic attributes for a generated tile."""
+
+    altitude: float
+    slope: float
+    soil_type: str
+    coastal_proximity: int
+    mean_temperature: float
+    mean_humidity: float
+    flood_zone: bool
+    volcanic_zone: bool
+    province_id: int
+    history: Dict[str, float]
+
+
+@dataclass(slots=True)
+class GeneratedMap:
+    """Full result of continent generation including nodal metadata."""
+
+    rows: List[str]
+    metadata: List[List[NodalTileData]]
 
 
 def _cellular_automata_land_mask(width: int, height: int,
@@ -72,6 +97,128 @@ def _remove_small_continents(grid: List[List[bool]], min_size: int) -> None:
         if len(cells) < min_size:
             for x, y in cells:
                 grid[y][x] = False
+
+
+def _distance_to_water(grid: List[List[bool]]) -> List[List[int]]:
+    """Return Manhattan distance from each cell to the nearest water tile."""
+
+    height = len(grid)
+    width = len(grid[0]) if height else 0
+    dist = [[-1 for _ in range(width)] for _ in range(height)]
+    q: deque[Cell] = deque()
+    for y in range(height):
+        for x in range(width):
+            if not grid[y][x]:
+                dist[y][x] = 0
+                q.append((x, y))
+    while q:
+        x, y = q.popleft()
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < width and 0 <= ny < height and dist[ny][nx] == -1:
+                dist[ny][nx] = dist[y][x] + 1
+                q.append((nx, ny))
+    return dist
+
+
+def _compute_tile_metadata(
+    grid: List[List[bool]],
+    biome_map: Dict[Cell, str],
+    continents: Dict[int, List[Cell]],
+) -> List[List[NodalTileData]]:
+    """Derive nodal attributes for every tile in ``grid``."""
+
+    height = len(grid)
+    width = len(grid[0]) if height else 0
+    province_lookup: Dict[Cell, int] = {}
+    for province_id, cells in continents.items():
+        for cell in cells:
+            province_lookup[cell] = province_id
+
+    dist_to_water = _distance_to_water(grid)
+    altitude = [[max(0, d) for d in row] for row in dist_to_water]
+    slope_grid = [[0.0 for _ in range(width)] for _ in range(height)]
+
+    for y in range(height):
+        for x in range(width):
+            neighbours = []
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < width and 0 <= ny < height:
+                    neighbours.append(abs(altitude[y][x] - altitude[ny][nx]))
+            slope_grid[y][x] = sum(neighbours) / len(neighbours) if neighbours else 0.0
+
+    soil_by_biome = {
+        "G": "loam",
+        "F": "humus",
+        "D": "sand",
+        "M": "rock",
+        "H": "scree",
+        "S": "peat",
+        "J": "laterite",
+        "I": "permafrost",
+        "R": "alluvium",
+        "W": "silt",
+        "O": "silt",
+    }
+    temp_by_biome = {
+        "G": 18.0,
+        "F": 16.0,
+        "D": 28.0,
+        "M": 4.0,
+        "H": 10.0,
+        "S": 20.0,
+        "J": 24.0,
+        "I": -6.0,
+        "R": 12.0,
+        "W": 8.0,
+        "O": 8.0,
+    }
+    humidity_by_biome = {
+        "G": 0.45,
+        "F": 0.65,
+        "D": 0.1,
+        "M": 0.3,
+        "H": 0.35,
+        "S": 0.7,
+        "J": 0.85,
+        "I": 0.2,
+        "R": 0.6,
+        "W": 0.5,
+        "O": 0.5,
+    }
+
+    metadata: List[List[NodalTileData]] = []
+    for y in range(height):
+        row_meta: List[NodalTileData] = []
+        for x in range(width):
+            biome_char = biome_map.get((x, y), "W")
+            coastal = dist_to_water[y][x]
+            flood_zone = biome_char == "R" or coastal <= 1
+            volcanic_zone = biome_char == "M"
+            history = {
+                "soil_age": float(50 + 5 * altitude[y][x]),
+                "volcanic_intensity": 1.0 if volcanic_zone else 0.05 * altitude[y][x],
+                "sedimentation": float(max(0, 3 - slope_grid[y][x]) + (1 if flood_zone else 0)),
+                "erosion": float(slope_grid[y][x] + (0.5 if coastal <= 1 else 0)),
+                "flood_events": float(5 if flood_zone else max(0, 2 - slope_grid[y][x])),
+            }
+            row_meta.append(
+                NodalTileData(
+                    altitude=altitude[y][x],
+                    slope=slope_grid[y][x],
+                    soil_type=soil_by_biome.get(biome_char, "unknown"),
+                    coastal_proximity=coastal,
+                    mean_temperature=temp_by_biome.get(biome_char, 12.0),
+                    mean_humidity=humidity_by_biome.get(biome_char, 0.4),
+                    flood_zone=flood_zone,
+                    volcanic_zone=volcanic_zone,
+                    province_id=province_lookup.get((x, y), -1),
+                    history=history,
+                )
+            )
+        metadata.append(row_meta)
+    return metadata
 
 
 def _generate_rivers(grid: List[List[bool]], biome_map: Dict[Cell, str]) -> None:
@@ -189,7 +336,8 @@ def generate_continent_map(
     min_continent_size: Optional[int] = None,
     biome_compatibility: Optional[Dict[str, set[str]]] = None,
     num_players: int = 2,
-) -> List[str]:
+    return_metadata: bool = False,
+) -> List[str] | GeneratedMap:
     """Generate map data with continents and biome regions.
 
     The returned list contains strings where every tile is encoded by two
@@ -271,6 +419,9 @@ def generate_continent_map(
                 char = biome_map.get((x, y), biome_chars[0])
                 row_chars.extend([char, "."])
         rows.append("".join(row_chars))
+    if return_metadata:
+        metadata = _compute_tile_metadata(grid, biome_map, continents)
+        return GeneratedMap(rows, metadata)
     return rows
 
 

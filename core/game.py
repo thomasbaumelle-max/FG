@@ -55,7 +55,14 @@ from core.entities import (
     STARTING_ARTIFACTS,
     ARTIFACT_ICONS,
 )
-from core.world import WorldMap, generate_combat_map, init_biome_images, Tile
+from core.world import (
+    WorldMap,
+    WorldTileGeology,
+    WorldTileHistory,
+    generate_combat_map,
+    init_biome_images,
+    Tile,
+)
 import core.world
 from core.faction import FactionDef
 from graphics.spritesheet import load_sprite_sheet
@@ -103,7 +110,7 @@ QUICK_SAVE_FILE = "quick_save.json"
 QUICK_PROFILE_FILE = "quick_save_profile.json"
 
 # Current version of the save file format.
-SAVE_FORMAT_VERSION = 1
+SAVE_FORMAT_VERSION = 2
 
 # Mapping from building names to their classes for serialisation
 # Legacy mapping retained for save compatibility; only Town uses a custom class.
@@ -322,17 +329,21 @@ class Game:
                 self.map_size, constants.MAP_SIZE_PRESETS[constants.DEFAULT_MAP_SIZE]
             )
             # Generate only the first region's biomes using the new indexing
-            map_rows = generate_continent_map(
+            generated_map = generate_continent_map(
                 width,
                 height,
                 map_type=self.map_type,
                 smoothing_iterations=5,
                 biome_chars="".join(core.world.BIOME_CHARS),
+                return_metadata=True,
             )
+            map_rows = generated_map.rows if hasattr(generated_map, "rows") else generated_map
+            metadata = getattr(generated_map, "metadata", None)
             self.world = WorldMap(
                 map_data=map_rows,
                 player_faction=self.faction_id,
                 enemy_faction=self.enemy_faction_id,
+                tile_metadata=metadata,
             )
 
             # Populate the world with additional features scaled to available land
@@ -3629,6 +3640,25 @@ class Game:
                     "biome": tile.biome,
                     "obstacle": tile.obstacle,
                 }
+                geo = tile.geology
+                t["geology"] = {
+                    "altitude": geo.altitude,
+                    "slope": geo.slope,
+                    "soil_type": geo.soil_type,
+                    "coastal_proximity": geo.coastal_proximity,
+                    "mean_temperature": geo.mean_temperature,
+                    "mean_humidity": geo.mean_humidity,
+                    "flood_zone": geo.flood_zone,
+                    "volcanic_zone": geo.volcanic_zone,
+                    "province_id": geo.province_id,
+                }
+                t["history"] = {
+                    "soil_age": geo.history.soil_age,
+                    "volcanic_intensity": geo.history.volcanic_intensity,
+                    "sedimentation": geo.history.sedimentation,
+                    "erosion": geo.history.erosion,
+                    "flood_events": geo.history.flood_events,
+                }
                 if tile.treasure is not None:
                     t["treasure"] = tile.treasure
                 if tile.enemy_units:
@@ -3679,6 +3709,8 @@ class Game:
     def _upgrade_save(self, data: Dict[str, Any], version: int) -> Dict[str, Any]:
         """Upgrade a save file in-place to the current format."""
         if version < 1:
+            data["version"] = SAVE_FORMAT_VERSION
+        elif version < 2:
             data["version"] = SAVE_FORMAT_VERSION
         return data
 
@@ -3760,6 +3792,26 @@ class Game:
                     ]
                     if enemies
                     else None
+                )
+                geology = tile_data.get("geology", {})
+                history_data = tile_data.get("history", {})
+                world.tile_geology[y][x] = WorldTileGeology(
+                    altitude=geology.get("altitude", 0.0),
+                    slope=geology.get("slope", 0.0),
+                    soil_type=geology.get("soil_type", ""),
+                    coastal_proximity=geology.get("coastal_proximity", 0.0),
+                    mean_temperature=geology.get("mean_temperature", 0.0),
+                    mean_humidity=geology.get("mean_humidity", 0.0),
+                    flood_zone=geology.get("flood_zone", False),
+                    volcanic_zone=geology.get("volcanic_zone", False),
+                    province_id=geology.get("province_id", -1),
+                    history=WorldTileHistory(
+                        soil_age=history_data.get("soil_age", 0.0),
+                        volcanic_intensity=history_data.get("volcanic_intensity", 0.0),
+                        sedimentation=history_data.get("sedimentation", 0.0),
+                        erosion=history_data.get("erosion", 0.0),
+                        flood_events=history_data.get("flood_events", 0.0),
+                    ),
                 )
                 building_info = tile_data.get("building")
                 if building_info:
